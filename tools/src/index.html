@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title data-i="meta.title">{{meta.title}}</title>
+<meta name="description" content="{{meta.desc}}" data-i-attr="content:meta.desc">
+<meta name="theme-color" content="#0A1128">
+<link rel="canonical" href="https://cryptonova.pro/">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<meta name="apple-itunes-app" content="app-id=6754893343">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CRYPTO NOVA AI">
+<meta property="og:url" content="https://cryptonova.pro/">
+<meta property="og:title" content="{{meta.title}}">
+<meta property="og:description" content="{{meta.desc}}">
+<meta property="og:image" content="https://cryptonova.pro/assets/img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+{{hreflang}}
+<link rel="preload" href="assets/fonts/unbounded_semibold.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/manrope_regular.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="assets/site.css?v={{v}}">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"MobileApplication","name":"CRYPTO NOVA AI","operatingSystem":"iOS","applicationCategory":"FinanceApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://cryptonova.pro/","installUrl":"https://apps.apple.com/app/id6754893343"}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="CRYPTO NOVA AI">
+      <img src="assets/img/logo-128.webp" alt="" width="32" height="32">
+      <b>CRYPTO NOVΛ<span>AI</span></b>
+    </a>
+    <nav class="nav" id="nav" aria-label="Main">
+      <a href="#system" data-i="nav.system">{{nav.system}}</a>
+      <a href="#live" data-i="nav.live">{{nav.live}}</a>
+      <a href="#app" data-i="nav.app">{{nav.app}}</a>
+      <a href="#try" data-i="nav.try">{{nav.try}}</a>
+      <a href="#faq" data-i="nav.faq">{{nav.faq}}</a>
+    </nav>
+    <div class="langsel">
+      <label class="sr" for="lang" data-i="nav.lang">{{nav.lang}}</label>
+      <select id="lang">
+        <option value="en">EN</option><option value="ru">RU</option><option value="uk">UK</option><option value="el">EL</option><option value="es">ES</option>
+      </select>
+    </div>
+    <a class="btn-dl" href="https://apps.apple.com/app/id6754893343" data-i="nav.download">{{nav.download}}</a>
+    <button class="menu-btn" id="menuBtn" aria-controls="nav" aria-expanded="false"><span class="sr" data-i="nav.menu">{{nav.menu}}</span><i></i><i></i><i></i></button>
+  </div>
+</header>
+
+<main id="main">
+<section class="hero" aria-labelledby="h1">
+  <div class="wrap">
+    <div>
+      <h1 id="h1"><span data-i="hero.h1a">{{hero.h1a}}</span> <span data-i="hero.h1b">{{hero.h1b}}</span></h1>
+      <p class="sub" data-i="hero.sub">{{hero.sub}}</p>
+      <div class="stores">{{stores}}</div>
+      <p class="note" data-i="hero.note">{{hero.note}}</p>
+      <p class="status" id="status" role="status"><i></i><span></span></p>
+    </div>
+    <div class="stage" id="stage">
+      <div class="turbine-wrap" aria-hidden="true"><svg class="turbine big" id="heroTurbine" viewBox="-300 -300 600 600"></svg></div>
+      <canvas id="flow" aria-hidden="true"></canvas>
+      <div class="hero-phone"><div class="phone"><div class="island"></div><div class="scr"><img id="heroScr" class="on" src="assets/img/screens/en/intro.webp" alt="CRYPTO NOVA AI" width="600" height="1300"></div></div></div>
+      <div class="fcard fc1"><div class="fk" data-i="fc.portfolio">{{fc.portfolio}}</div><div class="fv" id="fcVal">$10,000</div><div class="fs"><b id="fcPct" class="up"></b> <span data-i="fc.demo">{{fc.demo}}</span></div><div class="fspark" id="fcSpark"></div></div>
+      <div class="fcard fc2"><div class="fk" data-i="fc.trade">{{fc.trade}}</div><div class="frow"><b id="fcSym">AVAX</b><span id="fcSide" class="up"></span><b id="fcTp" class="up"></b></div><div class="fbar"><i id="fcBar"></i></div></div>
+      <div class="fcard fc3"><div class="frow"><span class="orb sm"></span><b data-i="fc.nova.q">{{fc.nova.q}}</b></div><p data-i="fc.nova.a">{{fc.nova.a}}</p></div>
+      <div class="fcard fc4"><div class="frow"><svg class="shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 4.5 5.6v5.7c0 4.6 3.1 8.4 7.5 9.9 4.4-1.5 7.5-5.3 7.5-9.9V5.6Z" fill="rgba(58,219,147,.14)" stroke="#3ADB93" stroke-width="1.5"/><path d="m8.6 12.2 2.4 2.4 4.4-4.6" fill="none" stroke="#3ADB93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div class="fk" data-i="fc.risk">{{fc.risk}}</div><b id="fcRisk" data-i="fc.risk.ok">{{fc.risk.ok}}</b></div></div></div>
+    </div>
+  </div>
+  <div class="ticker" aria-hidden="true"><div class="track" id="ticker"></div></div>
+</section>
+
+<section class="sec" id="system" aria-labelledby="sysH">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="display" id="sysH" data-i="eng.h2">{{eng.h2}}</h2>
+      <p class="lead" data-i="eng.lead">{{eng.lead}}</p>
+    </div>
+    <div class="engroom">
+      <svg class="engmap" id="engMap" viewBox="0 0 1200 660" role="group" aria-label="{{eng.h2}}"></svg>
+      <div class="englist" id="engList"></div>
+      <div class="engdetail" id="engDetail" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="live" aria-labelledby="liveH">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="display" id="liveH" data-i="live.h2">{{live.h2}}</h2>
+      <p class="lead" data-i="live.lead">{{live.lead}}</p>
+    </div>
+    <div class="live">
+      <div class="live-top">
+        <div>
+          <div class="k" data-i="live.value">{{live.value}}</div>
+          <div class="big" id="pVal">$10 000</div>
+          <div class="pnl" id="pPnl"></div>
+          <div class="since" id="pSince"></div>
+        </div>
+        <div class="curve" id="pCurve"></div>
+      </div>
+      <div class="live-split">
+        <h3 data-i="live.split">{{live.split}}</h3>
+        <div class="stack" id="pStack"></div>
+        <ul class="sleeves" id="pSleeves"></ul>
+      </div>
+      <p class="live-foot" data-i="live.foot">{{live.foot}}</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="app" aria-labelledby="appH">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2 class="display" id="appH" data-i="app.h2">{{app.h2}}</h2>
+      <p class="lead" data-i="app.lead">{{app.lead}}</p>
+    </div>
+    <div class="appgrid">
+      <div>
+        <div class="phone"><div class="island"></div><div class="scr" id="scr"></div></div>
+        <p class="tabdesc" id="tabdesc" aria-live="polite"></p>
+        <p class="appcap small" data-i="app.caption">{{app.caption}}</p>
+      </div>
+      <ul class="tabs" role="tablist" id="tabs">{{tabs}}</ul>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="try" aria-labelledby="tryH">
+  <div class="wrap">
+    <h2 class="display" id="tryH" data-i="try.h2">{{try.h2}}</h2>
+    <div class="trygrid">
+      <div class="tool" id="nova">
+        <div class="orbrow"><span class="orb"></span><h3 data-i="nova.t">{{nova.t}}</h3></div>
+        <p data-i="nova.p">{{nova.p}}</p>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div class="qs" id="qs"></div>
+        <p class="fine" data-i="nova.note">{{nova.note}}</p>
+      </div>
+      <div class="tool" id="piggy">
+        <h3 data-i="piggy.t">{{piggy.t}}</h3>
+        <p data-i="piggy.p">{{piggy.p}}</p>
+        <div class="ctrls">
+          <div class="ctrl"><span class="lb" data-i="piggy.amount">{{piggy.amount}}</span><div class="seg" id="pgAmt"></div></div>
+          <div class="ctrl"><span class="lb" data-i="piggy.every">{{piggy.every}}</span><div class="seg" id="pgFreq"></div></div>
+          <div class="ctrl"><span class="lb" data-i="piggy.since">{{piggy.since}}</span><div class="seg" id="pgYear"></div></div>
+        </div>
+        <div class="res">
+          <div><span data-i="piggy.put">{{piggy.put}}</span><b id="pgPut">$0</b></div>
+          <div><span data-i="piggy.worth">{{piggy.worth}}</span><b id="pgWorth">$0</b></div>
+          <div><span data-i="piggy.btc">{{piggy.btc}}</span><b id="pgBtc">0</b></div>
+        </div>
+        <div class="pchart" id="pgChart"></div>
+        <div class="legend"><span><i style="background:var(--muted)"></i><span data-i="piggy.chart.put">{{piggy.chart.put}}</span></span><span><i style="background:var(--ice)"></i><span data-i="piggy.chart.worth">{{piggy.chart.worth}}</span></span></div>
+        <p class="fine" data-i="piggy.note">{{piggy.note}}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="start" aria-labelledby="startH">
+  <div class="wrap">
+    <h2 class="display" id="startH" data-i="start.h2">{{start.h2}}</h2>
+    <div class="startgrid">
+      <div class="st"><div class="n">1</div><h3 data-i="start.s1.t">{{start.s1.t}}</h3><p data-i="start.s1.p">{{start.s1.p}}</p></div>
+      <div class="st"><div class="n">2</div><h3 data-i="start.s2.t">{{start.s2.t}}</h3><p data-i="start.s2.p">{{start.s2.p}}</p></div>
+      <div class="st"><div class="n">3</div><h3 data-i="start.s3.t">{{start.s3.t}}</h3><p data-i="start.s3.p">{{start.s3.p}}</p></div>
+    </div>
+    <div class="earn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M15 9.5c0-1.4-1.3-2.2-3-2.2s-3 .9-3 2.2c0 3 6 1.6 6 4.8 0 1.4-1.4 2.3-3 2.3s-3-.9-3-2.3"/></svg>
+      <div>
+        <h3 data-i="start.money.t">{{start.money.t}}</h3>
+        <p data-i="start.money.p">{{start.money.p}}</p>
+        <p class="small" data-i="start.risk">{{start.risk}}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="faq" aria-labelledby="faqH">
+  <div class="wrap faqgrid">
+    <h2 class="display" id="faqH" data-i="faq.h2">{{faq.h2}}</h2>
+    <div class="faq">{{faq}}</div>
+  </div>
+</section>
+
+<section class="final" aria-labelledby="finalH">
+  <div class="wrap">
+    <img src="assets/img/apple-touch-icon.png" alt="CRYPTO NOVA AI" width="120" height="120">
+    <div>
+      <h2 class="display" id="finalH" data-i="final.h2">{{final.h2}}</h2>
+      <p data-i="final.p">{{final.p}}</p>
+      <div class="stores">{{stores}}</div>
+    </div>
+  </div>
+</section>
+</main>
+
+{{footer}}
+
+<script src="assets/i18n.js?v={{v}}"></script>
+<script src="assets/snapshot.js?v={{v}}"></script>
+<script src="assets/site.js?v={{v}}"></script>
+</body>
+</html>
