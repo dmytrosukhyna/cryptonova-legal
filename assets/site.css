@@ -494,3 +494,15 @@ html[lang=el] .engdetail .big{font-family:var(--body);font-weight:800}
 .tab .ti{grid-row:1/3;width:44px;height:44px;padding:10px;border-radius:13px;background:rgba(127,211,255,.07);color:var(--ice);border:1px solid var(--line)}
 .tab[aria-selected=true] .ti{background:var(--azure);color:#00121A;border-color:var(--azure);box-shadow:0 0 22px rgba(0,180,216,.45)}
 @media (max-width:860px){.tab{grid-template-columns:auto auto;column-gap:8px}.tab .ti{grid-row:auto;width:26px;height:26px;padding:4px;border-radius:8px}}
+
+/* ===== the icon's shimmer (21.10): main buttons, the second headline line, chosen tab ===== */
+:root{--iris:linear-gradient(100deg,#7FE3FF 0%,#9AA6FF 38%,#D29CFF 70%,#FFC2A6 100%);--iris-vivid:linear-gradient(95deg,#5FE0FF 0%,#8C8CFF 42%,#E07CFF 70%,#FFB36B 100%)}
+.store.main,.btn-dl{background:var(--iris);color:#0A0F1C}
+.store.main:hover,.btn-dl:hover{filter:brightness(1.07);background:var(--iris);color:#0A0F1C}
+.store.main{box-shadow:0 14px 34px -14px rgba(180,130,255,.6)}
+.hero h1 span+span{background:var(--iris-vivid);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand b span{background:var(--iris-vivid);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tab[aria-selected=true] .ti{background:var(--iris);border-color:transparent;color:#0A0F1C;box-shadow:0 0 22px rgba(180,130,255,.45)}
+.tab[aria-selected=true] b{color:var(--text)}
+.seg button[aria-pressed=true]{background:var(--iris);border-color:transparent}
+.final{background:radial-gradient(120% 140% at 85% 0%,rgba(160,110,255,.22),rgba(0,180,216,0) 55%),var(--abyss)}
