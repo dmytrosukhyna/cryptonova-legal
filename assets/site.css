@@ -800,3 +800,5 @@ h2.display{font-size:clamp(1.45rem,1rem + 2vw,2.35rem);line-height:1.12}
 /* LIVE is green, not pink (owner: less pink) */
 .livebadge{color:#CFFFE9;background:rgba(58,219,147,.12);border-color:rgba(58,219,147,.5)}
 .livebadge i{background:#3ADB93;box-shadow:0 0 8px #3ADB93;animation:livePulse 1.6s ease-in-out infinite}
+.bootlogo canvas.emb{width:64px;height:64px;color:inherit}
+#bootLog .hi{all:unset;color:#fff;font:inherit;white-space:pre-wrap}
