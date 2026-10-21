@@ -143,6 +143,7 @@
           <div class="big" id="pVal">$10 000</div>
           <div class="pnl" id="pPnl"></div>
           <div class="since" id="pSince"></div>
+          <div class="livesplit" id="pSplit"></div>
           <div class="livenote" id="pLive" aria-live="off"></div>
         </div>
         <div class="curve" id="pCurve"></div>
@@ -210,9 +211,9 @@
         </div>
         <h4 class="pigcalc" data-i="pg.calc">{{pg.calc}}</h4>
         <div class="ctrls">
-          <div class="ctrl"><span class="lb" data-i="piggy.amount">{{piggy.amount}}</span><div class="seg" id="pgAmt"></div></div>
-          <div class="ctrl"><span class="lb" data-i="piggy.every">{{piggy.every}}</span><div class="seg" id="pgFreq"></div></div>
-          <div class="ctrl"><span class="lb" data-i="piggy.since">{{piggy.since}}</span><div class="seg" id="pgYear"></div></div>
+          <div class="ctrl"><span class="lb"><span data-i="piggy.amount">{{piggy.amount}}</span><button type="button" class="ii" aria-expanded="false" aria-controls="pgTip1" aria-label="{{pg.i.lbl}}" data-i-attr="aria-label:pg.i.lbl">i</button></span><p class="iitip" id="pgTip1" role="note" hidden data-i="pg.i1">{{pg.i1}}</p><div class="seg" id="pgAmt"></div></div>
+          <div class="ctrl"><span class="lb"><span data-i="piggy.every">{{piggy.every}}</span><button type="button" class="ii" aria-expanded="false" aria-controls="pgTip2" aria-label="{{pg.i.lbl}}" data-i-attr="aria-label:pg.i.lbl">i</button></span><p class="iitip" id="pgTip2" role="note" hidden data-i="pg.i2">{{pg.i2}}</p><div class="seg" id="pgFreq"></div></div>
+          <div class="ctrl"><span class="lb"><span data-i="piggy.since">{{piggy.since}}</span><button type="button" class="ii" aria-expanded="false" aria-controls="pgTip3" aria-label="{{pg.i.lbl}}" data-i-attr="aria-label:pg.i.lbl">i</button></span><p class="iitip" id="pgTip3" role="note" hidden data-i="pg.i3">{{pg.i3}}</p><div class="seg" id="pgYear"></div></div>
         </div>
         <div class="res">
           <div><span data-i="piggy.put">{{piggy.put}}</span><b id="pgPut">$0</b></div>
@@ -242,8 +243,8 @@
         <p data-i="start.money.p">{{start.money.p}}</p>
       </div>
       <ol class="earnflow" aria-label="{{start.money.t}}">
-        <li><span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg></span><span data-i="earn.f1">{{earn.f1}}</span></li>
-        <li><span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5M5 10v8M9.7 10v8M14.3 10v8M19 10v8M3 20h18"/></svg></span><span data-i="earn.f2">{{earn.f2}}</span></li>
+        <li><span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg></span><span data-i="earn.f1">{{earn.f1}}</span><span class="ef-run" aria-hidden="true"><i></i><i></i><i></i></span></li>
+        <li><span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5M5 10v8M9.7 10v8M14.3 10v8M19 10v8M3 20h18"/></svg></span><span data-i="earn.f2">{{earn.f2}}</span><span class="ef-run gold" aria-hidden="true"><i></i><i></i><i></i></span></li>
         <li class="us"><span class="ei"><canvas class="earnsph" data-sphere aria-hidden="true"></canvas></span><span data-i="earn.f3">{{earn.f3}}</span></li>
       </ol>
       <p class="small earnrisk" data-i="start.risk">{{start.risk}}</p>
@@ -260,7 +261,7 @@
 
 <section class="final" aria-labelledby="finalH">
   <div class="wrap">
-    <canvas class="finalsph" data-sphere role="img" aria-label="NOVA AI"></canvas>
+    <canvas class="finalsph" data-sphere="coins" role="img" aria-label="NOVA AI"></canvas>
     <div>
       <h2 class="display" id="finalH" data-i="final.h2">{{final.h2}}</h2>
       <p data-i="final.p">{{final.p}}</p>

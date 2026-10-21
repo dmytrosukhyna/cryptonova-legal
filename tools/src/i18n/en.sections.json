@@ -25,5 +25,17 @@
  "earn.f3": "and shares part of it with CRYPTO NOVA",
  "live.real": "Live · spot part at Binance prices · {ago}",
  "live.feed": "Updated {ago}",
- "ago.sec": "{n} s ago"
+ "ago.sec": "{n} s ago",
+ "tab.spot.p": "A long-term coin portfolio with every rebalance explained. Your own real account connects in 4 steps, and full automation is available on request.",
+ "pg.i.lbl": "What does this mean?",
+ "pg.i1": "How much to put aside each time: for example, $10 every week is about $520 a year.",
+ "pg.i2": "How often the exchange buys bitcoin on schedule: once a week or once a month. The more regular the buys, the smoother the average price.",
+ "pg.i3": "Which year the calculation starts from. We use real daily bitcoin prices from that year to today, so you see how the piggy bank would have done.",
+ "foot.op": "Founder and developer: Dmytro Sukhyna",
+ "faq.a7": "The app's founder and developer is Dmytro Sukhyna. Write to <a href=\"mailto:cryptonova.app@gmail.com\">cryptonova.app@gmail.com</a> or to <a href=\"https://t.me/crypto_nova_support\">@crypto_nova_support</a> on Telegram.",
+ "live.in.t": "Inside:",
+ "live.in.spot": "spot",
+ "live.in.fut": "futures",
+ "live.in.other": "other sources",
+ "live.desk.t": "The engines' own {n} demo accounts:"
 }

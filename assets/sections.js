@@ -109,10 +109,27 @@
     LV.shown = v;
     var pe = $("#pPnl"); if (pe) { pe.className = "pnl " + (pnl >= 0 ? "up" : "down"); pe.textContent = signed(pnl, usd(Math.abs(pnl), 2)) + "  (" + pct(pc) + ")"; }
     var se = $("#pSince"); if (se && p.since) se.textContent = t("live.pnl", { date: day(p.since, true) }) + ", " + usd(start) + " → " + usd(v);
+    split();
     if (r.live) { var tl = LV.tail, now = LV.pxAt; if (!tl.length || now - tl[tl.length - 1][0] > 5000) tl.push([now, v]); if (tl.length > 240) tl.shift(); }
     drawLive($("#pCurve"), p);
     note(r.live);
     emit("cn:pflive", { value: Math.round(v * 100) / 100, pnl: Math.round(pnl * 100) / 100, pct: Math.round(pc * 100) / 100, live: !!r.live });
+  }
+  /* owner 21.10 19:17: «спот плюс фьючерсы» — what the public portfolio holds, and what the engines' own accounts made */
+  function split() {
+    var el = $("#pSplit"); if (!el) return;
+    var h = CN.home() || {}, p = h.portfolio || {}, sl = p.sleeves || [], by = {}, esc = CN.esc, html = "";
+    sl.forEach(function (x) { if (x && x.key) by[x.key] = +x.usd || 0; });
+    var all = sl.reduce(function (a, x) { return a + (+x.usd || 0); }, 0);
+    function pair(label, val) { return '<span class="nw">' + esc(label) + " " + val + "</span>"; }
+    function pl(v) { return '<b class="' + (v >= 0 ? "up" : "down") + '">' + signed(v, usd(Math.abs(v))) + "</b>"; }
+    if (by.spot != null && by.futures != null && all > 0)
+      html += '<p class="ls-in"><span class="lt">' + esc(t("live.in.t")) + "</span> " + [pair(t("live.in.spot"), "<b>" + usd(by.spot) + "</b>"),
+        pair(t("live.in.fut"), "<b>" + usd(by.futures) + "</b>"), pair(t("live.in.other"), "<b>" + usd(all - by.spot - by.futures) + "</b>")].join(" · ") + "</p>";
+    var tt = h.total || {}, su = tt.spot_usd != null ? tt.spot_usd : (h.spot || {}).usd, fu = tt.futures_usd != null ? tt.futures_usd : (h.futures || {}).usd;
+    if (typeof su === "number" && typeof fu === "number")
+      html += '<p class="ls-desk"><span class="lt">' + esc(t("live.desk.t").replace("{n}", usd(10000))) + "</span> " + [pair(t("live.in.spot"), pl(su)), pair(t("live.in.fut"), pl(fu))].join(" · ") + "</p>";
+    el.innerHTML = html;
   }
   function note(live) {
     var n = $("#pLive"); if (!n) return;
@@ -144,13 +161,50 @@
     }).observe(chat, { childList: true, subtree: true, characterData: true });
   }
 
-  /* ================= piggy: a coin drops in on every change ================= */
-  var pig = $("#pigArt .pig");
-  function drop() { if (!pig || CN.reduce) return; pig.classList.remove("drop"); void pig.getBoundingClientRect(); pig.classList.add("drop"); }
-  var pgBox = $("#piggy");
-  if (pgBox) pgBox.addEventListener("click", function (e) { var b = e.target.closest ? e.target.closest(".seg button") : null; if (b) drop(); });
-  if (pig && "IntersectionObserver" in window) {
-    var seen = false;
-    new IntersectionObserver(function (en) { if (en[0].isIntersecting && !seen) { seen = true; setTimeout(drop, 400); } }, { threshold: 0.4 }).observe(pig);
-  }
+  /* ================= piggy: ⓘ explanations next to the calculator labels ================= */
+  $$(".ii").forEach(function (btn) {
+    var tip = doc.getElementById(btn.getAttribute("aria-controls")); if (!tip) return;
+    function set(open) { btn.setAttribute("aria-expanded", open ? "true" : "false"); tip.hidden = !open; btn.classList.toggle("on", open); }
+    btn.addEventListener("click", function (ev) { ev.stopPropagation(); var open = btn.getAttribute("aria-expanded") !== "true"; $$(".ii").forEach(function (o) { if (o !== btn && o.getAttribute("aria-expanded") === "true") { o.click(); } }); set(open); });
+    btn.addEventListener("keydown", function (ev) { if (ev.key === "Escape") { set(false); } });
+  });
+  doc.addEventListener("click", function (ev) { if (!ev.target.closest || !ev.target.closest(".iitip")) $$(".ii[aria-expanded='true']").forEach(function (b) { b.click(); }); });
+
+  /* ================= «Всё в одном приложении»: the phone turns its own pages ================= */
+  (function () {
+    var tabs = $("#tabs"), box = $(".appgrid"); if (!tabs || !box) return;
+    var pausedTill = 0, vis = false, timer = null;
+    function step() {
+      if (CN.reduce || doc.hidden || !vis || Date.now() < pausedTill) return;
+      var all = $$("#tabs .tab"); if (!all.length) return;
+      var i = all.findIndex ? all.findIndex(function (b) { return b.getAttribute("aria-selected") === "true"; }) : 0;
+      all[(i + 1) % all.length].click();   // the same path as a tap: the screen and its caption change together
+    }
+    function hold() { pausedTill = Date.now() + 10000; }
+    tabs.addEventListener("pointerdown", hold); tabs.addEventListener("keydown", hold);
+    var ph = $("#app .phone"); if (ph) ph.addEventListener("pointerdown", hold);
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { vis = en[0].isIntersecting; }, { threshold: 0.35 }).observe(box); else vis = true;
+    if (!CN.reduce) timer = setInterval(step, 3500);
+  })();
+
+  /* ================= cards lift on touch too (hover does it on a mouse) ================= */
+  $$(".howflow .hw, .earnflow li").forEach(function (c) {
+    c.addEventListener("touchstart", function () { c.classList.add("lift"); setTimeout(function () { c.classList.remove("lift"); }, 700); }, { passive: true });
+  });
+
+  /* ================= gentle reveal: every block fades up once when it comes into view ================= */
+  (function () {
+    if (CN.reduce || !("IntersectionObserver" in window)) return;
+    var sel = ".sec .sec-head, .sec > .wrap > .kicker, .sec > .wrap > h2, .think, .aibrain, .engroom, .pftabs, .live.hud, .appgrid, .trygrid .tool, .howflow .hw, .earn2, .faqgrid .faq details, .final .wrap > *";
+    var els = $$(sel).filter(function (el) { return !el.closest(".hero"); });
+    var io = new IntersectionObserver(function (en) {
+      en.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+    els.forEach(function (el, i) {
+      var r = el.getBoundingClientRect();
+      if (r.top < innerHeight && r.bottom > 0) return;          // already on screen: no flash
+      el.classList.add("rv"); el.style.transitionDelay = (el.matches(".hw, .faq details") ? (Array.prototype.indexOf.call(el.parentNode.children, el) % 4) * 70 : 0) + "ms";
+      io.observe(el);
+    });
+  })();
 })();
