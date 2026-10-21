@@ -827,3 +827,4 @@ h2.display{font-size:clamp(1.45rem,1rem + 2vw,2.35rem);line-height:1.12}
   .hero .stagecol .stage .hero-phone{width:33%}
 }
 .herotop h1{font-size:clamp(2.1rem,.6rem + 3.9vw,4.1rem);letter-spacing:-.03em}
+.hero .stagecol .sysrow .syslog div{white-space:normal;overflow:visible;text-overflow:clip}
