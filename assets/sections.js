@@ -127,8 +127,7 @@
       html += '<p class="ls-in"><span class="lt">' + esc(t("live.in.t")) + "</span> " + [pair(t("live.in.spot"), "<b>" + usd(by.spot) + "</b>"),
         pair(t("live.in.fut"), "<b>" + usd(by.futures) + "</b>"), pair(t("live.in.other"), "<b>" + usd(all - by.spot - by.futures) + "</b>")].join(" · ") + "</p>";
     var tt = h.total || {}, su = tt.spot_usd != null ? tt.spot_usd : (h.spot || {}).usd, fu = tt.futures_usd != null ? tt.futures_usd : (h.futures || {}).usd;
-    if (typeof su === "number" && typeof fu === "number")
-      html += '<p class="ls-desk"><span class="lt">' + esc(t("live.desk.t").replace("{n}", usd(10000))) + "</span> " + [pair(t("live.in.spot"), pl(su)), pair(t("live.in.fut"), pl(fu))].join(" · ") + "</p>";
+    void su; void fu; void pl;   // v7: no engine desk accounts here (owner: no technical detail in the public portfolio)
     el.innerHTML = html;
   }
   function note(live) {
@@ -182,7 +181,8 @@
     }
     function hold() { pausedTill = Date.now() + 10000; }
     tabs.addEventListener("pointerdown", hold); tabs.addEventListener("keydown", hold);
-    var ph = $("#app .phone"); if (ph) ph.addEventListener("pointerdown", hold);
+    var ph = $("#app .phone"); if (ph) { ph.addEventListener("pointerdown", hold); ph.addEventListener("touchstart", hold, { passive: true }); ph.addEventListener("wheel", hold, { passive: true }); }
+    var dots = $("#scrDots"); if (dots) dots.addEventListener("pointerdown", hold);
     if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { vis = en[0].isIntersecting; }, { threshold: 0.35 }).observe(box); else vis = true;
     if (!CN.reduce) timer = setInterval(step, 3500);
   })();
@@ -192,19 +192,30 @@
     c.addEventListener("touchstart", function () { c.classList.add("lift"); setTimeout(function () { c.classList.remove("lift"); }, 700); }, { passive: true });
   });
 
-  /* ================= gentle reveal: every block fades up once when it comes into view ================= */
+  /* ================= gentle reveal (v7): text blocks and small cards only — media never waits for an observer ================= */
   (function () {
     if (CN.reduce || !("IntersectionObserver" in window)) return;
-    var sel = ".sec .sec-head, .sec > .wrap > .kicker, .sec > .wrap > h2, .think, .aibrain, .engroom, .pftabs, .live.hud, .appgrid, .trygrid .tool, .howflow .hw, .earn2, .faqgrid .faq details, .final .wrap > *";
+    var sel = ".sec .sec-head, .whygrid li, .aisteps li, .pipe .eng, .howflow .hw, .faqgrid .faq details, .livecta, .final .wrap > div";
     var els = $$(sel).filter(function (el) { return !el.closest(".hero"); });
+    function show(el) { el.classList.add("in"); }
     var io = new IntersectionObserver(function (en) {
-      en.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
-    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
-    els.forEach(function (el, i) {
+      en.forEach(function (e) { if (e.isIntersecting) { show(e.target); io.unobserve(e.target); } });
+    }, { threshold: 0, rootMargin: "0px 0px -5% 0px" });
+    els.forEach(function (el) {
       var r = el.getBoundingClientRect();
       if (r.top < innerHeight && r.bottom > 0) return;          // already on screen: no flash
-      el.classList.add("rv"); el.style.transitionDelay = (el.matches(".hw, .faq details") ? (Array.prototype.indexOf.call(el.parentNode.children, el) % 4) * 70 : 0) + "ms";
+      el.classList.add("rv");
+      var sib = el.parentNode ? Array.prototype.indexOf.call(el.parentNode.children, el) : 0;
+      el.style.transitionDelay = (el.matches(".whygrid li, .aisteps li, .howflow .hw, .faq details") ? (sib % 3) * 70 : 0) + "ms";
       io.observe(el);
     });
+    var tk = null;
+    function sweep() {   // anything above the bottom of the screen is shown, whatever the observer did
+      tk = null; var H = innerHeight;
+      $$(".rv:not(.in)").forEach(function (el) { if (el.getBoundingClientRect().top < H) show(el); });
+    }
+    addEventListener("scroll", function () { if (!tk) tk = setTimeout(sweep, 150); }, { passive: true });
+    addEventListener("hashchange", function () { setTimeout(sweep, 400); });
+    addEventListener("pageshow", sweep);
   })();
 })();
