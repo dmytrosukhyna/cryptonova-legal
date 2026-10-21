@@ -1071,6 +1071,12 @@
     if (!nv || !chat) return;
     if (typing) { clearInterval(typing); typing = null; }
     chat.innerHTML = '<div class="msg bot">' + esc(nv.hello) + "</div>";
+    // the first time the chat comes into view NOVA answers the first question by itself — a live example, no empty box
+    if (!renderNova.demoArmed && "IntersectionObserver" in window) {
+      renderNova.demoArmed = true;
+      var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { io.disconnect(); setTimeout(function () { var q0 = $("#qs .q"); if (q0 && !typing && !$("#chat .msg.me")) q0.click(); }, 900); } }, { threshold: 0.25 });
+      io.observe(chat);
+    }
     qs.innerHTML = nv.items.map(function (it, i) { return '<button type="button" class="q" data-i="' + i + '">' + esc(it.q) + "</button>"; }).join("");
     $$(".q", qs).forEach(function (b) {
       b.addEventListener("click", function () {

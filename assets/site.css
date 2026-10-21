@@ -797,3 +797,6 @@ h2.display{font-size:clamp(1.45rem,1rem + 2vw,2.35rem);line-height:1.12}
 .labsteps li b{flex:none;width:22px;height:22px;border-radius:6px;border:1px solid rgba(127,211,255,.45);display:grid;place-items:center;font:700 11px/1 var(--mono);color:var(--ice)}
 .labsteps strong{color:#E6F6FF}
 .eitem canvas.eic{width:56px;height:56px;flex:none}
+/* LIVE is green, not pink (owner: less pink) */
+.livebadge{color:#CFFFE9;background:rgba(58,219,147,.12);border-color:rgba(58,219,147,.5)}
+.livebadge i{background:#3ADB93;box-shadow:0 0 8px #3ADB93;animation:livePulse 1.6s ease-in-out infinite}
