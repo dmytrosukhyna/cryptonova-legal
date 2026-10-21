@@ -546,9 +546,9 @@
       ctx.font = "700 " + Math.round(9.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = "#BFEAFF";
       ctx.fillText("NOVA AI", AI.x, AI.y + AI.r * 1.75);
       glowIn = Math.max(0, glowIn - dt * 1.6);
-      var ph = $(".hero-phone .phone"); if (ph) ph.style.boxShadow = "0 0 0 1px rgba(127,211,255,.25),0 0 " + (30 + glowIn * 40).toFixed(0) + "px " + (glowIn * 6).toFixed(0) + "px rgba(58,219,147," + (0.15 + glowIn * 0.35).toFixed(2) + "),0 30px 60px -20px rgba(0,0,0,.6)";
+      var ph = $(".hero-phone .phone"); if (ph) { var on = glowIn > 0.25; if (on !== ph.classList.contains("arrive")) ph.classList.toggle("arrive", on); }
       // the 01–04 chips under the picture light up with their stage
-      for (var c = 0; c < 4; c++) { act[c] = Math.max(now === -1 ? 0.5 : 0, act[c] - dt * 1.2); if (chips[c]) chips[c].style.setProperty("--a", act[c].toFixed(2)); }
+      for (var c = 0; c < 4; c++) { act[c] = Math.max(now === -1 ? 0.5 : 0, act[c] - dt * 1.2); var av = Math.round(act[c] * 10) / 10; if (chips[c] && chips[c]._a !== av) { chips[c]._a = av; chips[c].style.setProperty("--a", av.toFixed(1)); } }
       if (now !== -1) requestAnimationFrame(frame);
     }
     function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; last = 0; requestAnimationFrame(frame); } else if (!want) running = false; }
@@ -659,7 +659,7 @@
 
   /* ---------- how the system thinks: a stream that narrows stage by stage, real numbers under it ---------- */
   function renderThink() {
-    var ol = $("#tsteps"); if (!ol) return;
+    var ol = $("#tsteps");
     var e = E(), sc = D.scale || {}, h = (D.scorecard || {}).headline || {};
     var rows = [
       [num(sc.coins || 150), t("think.s1.p", { fut: num(sc.fut_markets || 18) })],
@@ -669,17 +669,17 @@
       [t("think.s5.b", { a: num(e.lab_reliable || 0), b: num(e.lab_tried || 0) }), t("think.s5.p")],
       [num(h.checked || 0), t("think.s6.p")]
     ];
-    ol.innerHTML = rows.map(function (r, i) { return '<li><div class="ix">0' + (i + 1) + '</div><h3>' + esc(t("think.s" + (i + 1) + ".t")) + '</h3><div class="big">' + esc(r[0]) + "</div><p>" + esc(r[1]) + "</p></li>"; }).join("");
+    if (ol) ol.innerHTML = rows.map(function (r, i) { return '<li><div class="ix">0' + (i + 1) + '</div><h3>' + esc(t("think.s" + (i + 1) + ".t")) + '</h3><div class="big">' + esc(r[0]) + "</div><p>" + esc(r[1]) + "</p></li>"; }).join("");
     if (!thinkRun) thinkRun = thinkFlow($("#thinkCv"));
     var ai = $("#aiSteps");
     if (ai) {
       var A = [
-        t("ai.s1.p", { n: num(sc.coins || 150), f: num(sc.fut_markets || 18) }),
+        t("ai.s1.p", { n: num(sc.coins || 150), f: num(sc.fut_markets || 18) }),   // v7: plain words, the coin count is live
         t("ai.s2.p", { a: num(e.lab_tried || 0), m: num(sc.lab_markets || 20), y: sc.since || 1927, c: num((sc.candle_checks || 0) / 1e6, 1) }),
         t("ai.s3.p", { p: num(h.checked || 0) }),
         t("ai.s4.p")
       ];
-      ai.innerHTML = A.map(function (x, i) { return '<li><b>0' + (i + 1) + '</b><div><h4>' + esc(t("ai.s" + (i + 1) + ".t")) + "</h4><p>" + esc(x) + "</p></div></li>"; }).join("");
+      ai.innerHTML = A.map(function (x, i) { return '<li><i class="aidot" aria-hidden="true"></i><div><h4>' + esc(t("ai.s" + (i + 1) + ".t")) + "</h4><p>" + esc(x) + "</p></div></li>"; }).join("");
     }
   }
   /* many assets enter on the left; each of the six stages lets fewer through (refused ones turn red and drop);
@@ -831,76 +831,50 @@
     }
   }
   function svgEl(tag, attrs, html) { var el = doc.createElementNS(SVGNS, tag); for (var a in attrs) el.setAttribute(a, attrs[a]); if (html) el.innerHTML = html; return el; }
-  function renderEngines() {
-    var map = $("#engMap"); if (!map) return;
-    map.innerHTML = "";
-    var CX = 600, CY = 330;
-    var flows = svgEl("g", {});
-    ENG.forEach(function (n, i) {
-      var left = n.x < CX, sx = n.x + (left ? 64 : -64), ex = CX + (left ? -96 : 96);
-      var d = "M" + sx + " " + n.y + " C" + (sx + (left ? 120 : -120)) + " " + n.y + " " + (ex + (left ? -110 : 110)) + " " + (CY + (n.y - CY) * 0.25) + " " + ex + " " + (CY + (n.y - CY) * 0.25);
-      flows.appendChild(svgEl("path", { d: d, "class": "flow", id: "fl" + i }));
-      flows.appendChild(svgEl("path", { d: d, "class": "dash" }));
-      if (!reduce) for (var j = 0; j < 3; j++) {
-        var du = (2.6 + i * 0.3).toFixed(1);
-        if (j < 2) flows.appendChild(svgEl("circle", { r: 4, fill: j ? "#3ADB93" : "#7FD3FF" }, '<animateMotion dur="' + du + 's" begin="' + (-j * 1.3 - i * 0.4) + 's" repeatCount="indefinite"><mpath href="#fl' + i + '"/></animateMotion>'));
-        // a refused one: red, fades out before it reaches the core — only the best gets in
-        else flows.appendChild(svgEl("circle", { r: 3.5, fill: "#FF6E86" }, '<animateMotion dur="' + du + 's" begin="' + (-0.65 - i * 0.4) + 's" repeatCount="indefinite" calcMode="linear" keyPoints="0;0.62" keyTimes="0;1"><mpath href="#fl' + i + '"/></animateMotion><animate attributeName="opacity" values="1;1;0" keyTimes="0;.7;1" dur="' + du + 's" begin="' + (-0.65 - i * 0.4) + 's" repeatCount="indefinite"/>'));
-      }
-    });
-    map.appendChild(flows);
-    if (!map.parentNode.classList.contains("engmapwrap")) {
-      var wr = doc.createElement("div"); wr.className = "engmapwrap"; map.parentNode.insertBefore(wr, map); wr.appendChild(map);
-      var cc = doc.createElement("canvas"); cc.className = "corecv"; cc.setAttribute("aria-hidden", "true");
-      cc.style.left = ((CX - 118) / 1200 * 100) + "%"; cc.style.top = ((CY - 118) / 660 * 100) + "%"; cc.style.width = (236 / 1200 * 100) + "%"; cc.style.height = (236 / 660 * 100) + "%";
-      wr.appendChild(cc);
-      // 21.10 15:27 owner: the N core was unclear — the hub is a small NOVA radar (the same idea as the hero)
-      // 21.10 16:31 owner: the hub is the NOVA AI sphere — the 7th element, the result of the six engines
-      if (window.NovaSphere) engCore = NovaSphere.mount(cc, {});
+  /* v7 (owner 21.10 21:48): the six engines in the order the work flows — data → ideas → demo test → risk → money → record —
+     then NOVA AI. No numbers. Each card opens on a tap: what it does, why it matters to you, and its live numbers. */
+  var ENG_ORDER = ["scan", "lab", "conv", "risk", "port", "log", "core"], engOpen = {}, engLang = "";
+  function engViz(k) {
+    switch (k) {
+      case "scan": return '<p class="small">' + esc(t("eng.scan.x", { n: num(E().signals_checked || 0) })) + "</p>" + tradeHTML();
+      case "lab": return funnelHTML();
+      case "conv": return stagesHTML();
+      case "risk": return riskHTML();
+      case "port": return portMiniHTML();
+      case "log": return logHTML();
+      default: return "";
     }
-    // NOVA core: the energy sphere with the N is drawn on a canvas over this spot (see makeCore); here only the hit area and the label
-    var core = svgEl("g", { transform: "translate(" + CX + " " + CY + ")", "class": "node" + (engSel === "core" ? " on" : ""), tabindex: "0", role: "button", "data-k": "core", "aria-label": t("eng.core") });
-    core.innerHTML = '<circle r="108" fill="rgba(0,0,0,0)"/><circle class="halo" r="116" fill="none" stroke="#7FD3FF" stroke-width="1.5" stroke-dasharray="3 6"/>' +
-      '<text y="146" text-anchor="middle" class="corelbl">' + esc(t("eng.core")) + "</text>";
-    map.appendChild(core);
-    ENG.forEach(function (n) {
-      var left = n.x < CX;
-      var g = svgEl("g", { transform: "translate(" + n.x + " " + n.y + ")", "class": "node" + (engSel === n.k ? " on" : ""), tabindex: "0", role: "button", "data-k": n.k, "aria-label": engTitle(n.k) + ": " + engMetric(n.k) });
-      g.innerHTML = turbine(56, n.blades, n.sp, { halo: true }) +
-        '<text x="' + (left ? -90 : 90) + '" y="-4" text-anchor="' + (left ? "end" : "start") + '" class="lbl">' + esc(engTitle(n.k)) + "</text>" +
-        '<text x="' + (left ? -90 : 90) + '" y="20" text-anchor="' + (left ? "end" : "start") + '" class="met">' + esc(engMetric(n.k)) + "</text>";
-      map.appendChild(g);
-    });
-    // long labels: shrink to fit the free side
-    $$(".lbl, .met", map).forEach(function (tx) {
-      var max = tx.closest('[data-k="core"]') ? 300 : 225, w = 0;
-      try { w = tx.getComputedTextLength(); } catch (e) { w = 0; }
-      if (w > max) tx.style.fontSize = (parseFloat(getComputedStyle(tx).fontSize) * max / w).toFixed(1) + "px";
-    });
-    $$(".node", map).forEach(function (g) {
-      function go() { engSel = g.getAttribute("data-k"); renderEngines(); }
-      g.addEventListener("click", go);
-      g.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); go(); var f = $('#engMap [data-k="' + engSel + '"]'); if (f) f.focus(); } });
-    });
-    // phone layout: a list of turbines on a flowing line
-    var list = $("#engList"), det0 = $("#engDetail");
-    if (det0 && det0.parentNode === list) list.insertAdjacentElement("afterend", det0);
-    list.innerHTML = ["core"].concat(ENG.map(function (n) { return n.k; })).map(function (k) {
-      var n = ENG.filter(function (x) { return x.k === k; })[0] || { blades: 12, sp: 5 };
-      return '<button type="button" class="eitem" data-k="' + k + '" aria-expanded="' + (k === engSel) + '" aria-controls="engDetail"><svg viewBox="-80 -80 160 160" aria-hidden="true">' + (k === "core" ? '' : turbine(52, n.blades, n.sp)) + "</svg><span><b>" + esc(engTitle(k)) + "</b><span>" + esc(engMetric(k)) + "</span></span></button>";
-    }).join("");
-    var ec = $('.eitem[data-k="core"] svg', list); if (ec) { var cv2 = doc.createElement("canvas"); cv2.className = "eic"; cv2.setAttribute("data-sphere", ""); cv2.setAttribute("aria-hidden", "true"); ec.parentNode.replaceChild(cv2, ec); if (window.NovaSphere) NovaSphere.auto(); }
-    $$(".eitem", list).forEach(function (b) {
-      b.addEventListener("click", function () {
-        engSel = b.getAttribute("data-k"); renderEngines();
-        var det = $("#engDetail"), it = $('.eitem[data-k="' + engSel + '"]', list);
-        if (det && it && window.matchMedia("(max-width:860px)").matches) it.insertAdjacentElement("afterend", det);
+  }
+  function renderEngines() {
+    var box = $("#engPipe"); if (!box) return;
+    var n = num((D.scale || {}).coins || 150);
+    if (engLang !== lang || !box.children.length) {
+      engLang = lang;
+      box.innerHTML = ENG_ORDER.map(function (k) {
+        var nb = ENG.filter(function (x) { return x.k === k; })[0] || { blades: 12, sp: 5 }, core = k === "core", id = "eng-" + k, open = !!engOpen[k];
+        var icon = core ? '<canvas class="engsph" data-sphere aria-hidden="true"></canvas>' : '<svg viewBox="-80 -80 160 160" aria-hidden="true">' + turbine(52, nb.blades, nb.sp) + "</svg>";
+        return '<div class="eng' + (core ? " core" : "") + (open ? " open" : "") + '" data-k="' + k + '">' +
+          '<button type="button" class="enghead" aria-expanded="' + open + '" aria-controls="' + id + '">' +
+          '<span class="engic">' + icon + '</span><span class="engname"><b>' + esc(core ? t("eng.core.t") : t("eng." + k + ".t")) + "</b><span>" + esc(t("eng." + k + ".s")) + "</span></span>" +
+          (core ? "" : '<span class="engmet"></span>') + '<span class="engchev" aria-hidden="true"></span></button>' +
+          '<div class="engwrap" id="' + id + '" role="region" aria-label="' + esc(core ? t("eng.core.t") : t("eng." + k + ".t")) + '"><div class="engin"><div class="engbody">' +
+          '<div class="engtxt"><h4>' + esc(t("eng.lbl.what")) + "</h4><p>" + esc(t("eng." + k + ".what", { n: n })) + "</p><h4>" + esc(t("eng.lbl.why")) + "</h4><p>" + esc(t("eng." + k + ".why")) + "</p>" +
+          (core ? '<p class="engask"><a href="#ai">' + esc(t("eng.ask")) + "</a></p>" : "") + "</div>" +
+          (core ? "" : '<div class="engnow"><div class="now">' + esc(t("eng.now")) + '</div><div class="engviz"></div></div>') + "</div></div></div></div>";
+      }).join("");
+      $$(".enghead", box).forEach(function (b) {
+        b.addEventListener("click", function () {
+          var card = b.parentNode, k = card.getAttribute("data-k"), open = !card.classList.contains("open");
+          engOpen[k] = open; card.classList.toggle("open", open); b.setAttribute("aria-expanded", open ? "true" : "false");
+        });
       });
+      if (window.NovaSphere) NovaSphere.auto();
+    }
+    ENG_ORDER.forEach(function (k) {
+      var card = $('.eng[data-k="' + k + '"]', box); if (!card) return;
+      var m = $(".engmet", card); if (m) m.textContent = engMetric(k);
+      var v = $(".engviz", card); if (v) v.innerHTML = engViz(k);
     });
-    var det = $("#engDetail");
-    if (window.matchMedia("(max-width:860px)").matches) { var it = $('.eitem[data-k="' + engSel + '"]', list); if (it) it.insertAdjacentElement("afterend", det); }
-    else if (det.parentNode !== map.parentNode || det.previousElementSibling !== list) list.insertAdjacentElement("afterend", det);
-    det.innerHTML = engDetail(engSel);
   }
   function engDetail(k) {
     var e = E(), big = "", desc = "", viz = "";
@@ -911,7 +885,7 @@
       case "risk": big = t("risk." + ((D.risk || {}).state || "OK")); desc = t("sys.s3.p"); viz = riskHTML(); break;
       case "port": var p = H().portfolio || {}; big = p.value_usd != null ? usd(p.value_usd) : ""; desc = t("eng.port.d"); viz = portMiniHTML(); break;
       case "log": big = num(((D.scorecard || {}).headline || {}).recorded || 0); desc = t("eng.log.d"); viz = logHTML(); break;
-      default: big = "NOVA"; desc = t("eng.core.d"); viz = '<div class="orbrow"><span class="orb"></span><b>' + esc(t("nova.t")) + '</b></div><p class="small" style="margin-top:10px">' + esc(t("nova.p")) + '</p><p style="margin-top:14px"><a href="#try">' + esc(t("nav.try")) + "</a></p>";
+      default: big = "NOVA"; desc = t("eng.core.d"); viz = '<div class="orbrow"><span class="orb"></span><b>' + esc(t("nova.t")) + '</b></div><p class="small" style="margin-top:10px">' + esc(t("nova.p")) + '</p><p style="margin-top:14px"><a href="#ai">' + esc(t("nav.ai")) + "</a></p>";
     }
     return '<div><h3>' + esc(engTitle(k)) + '</h3><div class="big">' + esc(big) + "</div><p>" + esc(desc) + '</p></div><div><div class="now">' + esc(t("eng.now")) + "</div>" + viz + "</div>";
   }
@@ -946,7 +920,7 @@
   function logHTML() {
     var s = D.scorecard || {}, h = s.headline || {}, head = ((s.chain || {}).ledger || {}).head;
     return '<div class="recnums">' + [["recorded", "rec.recorded"], ["checked", "rec.checked"], ["sources", "rec.sources"]].map(function (r) { return "<div><b>" + num(h[r[0]] || 0) + "</b><span>" + esc(t(r[1])) + "</span></div>"; }).join("") +
-      '</div><div class="hash">' + (head ? "SHA-256 <code>" + esc(head.slice(0, 16)) + "…</code>" : "") + '<a href="https://cryptonova.vip/scorecard.html">' + esc(t("rec.open")) + "</a></div>";
+      '</div>' + (head ? '<div class="hash">SHA-256 <code>' + esc(head.slice(0, 16)) + "…</code></div>" : "");
   }
   var SLEEVE_COL = { spot: "#00B4D8", active: "#7FD3FF", futures: "#3ADB93", funding: "#FFC562", basis: "#9AA6FF", yield: "#4E7BFF", susde: "#5FE3C8" };
   function portMiniHTML() {
@@ -1053,29 +1027,65 @@
       '<span class="cv-x cv-l">' + esc(date(t0)) + '</span><span class="cv-x cv-r">' + esc(date(t1)) + "</span>";
   }
 
-  /* ---------- app tabs ---------- */
-  var tabKey = "home", TABS = ["home", "trade", "nova", "piggy", "learn", "spot"];
+  /* ---------- app screens (v7, owner 21.10 21:48): swipe right on the phone; the tabs and dots follow ---------- */
+  var tabKey = "home", TABS = ["home", "trade", "nova", "piggy", "learn", "spot"], scrLoaded = false;
+  function scrLoad() {
+    if (scrLoaded) return; scrLoaded = true;
+    $$("#scr img[data-src]").forEach(function (im) { im.src = im.getAttribute("data-src"); im.removeAttribute("data-src"); });
+  }
   function renderScreens() {
     var scr = $("#scr"); if (!scr) return;
-    scr.setAttribute("role", "tabpanel");
-    scr.innerHTML = TABS.map(function (k) {
-      return '<img data-k="' + k + '" alt="' + esc(t("tab." + k + ".t")) + '" ' + (k === tabKey ? 'src="assets/img/screens/' + lang + "/" + k + '.webp" class="on"' : 'data-src="assets/img/screens/' + lang + "/" + k + '.webp"') + ' width="600" height="1300" decoding="async">';
+    scrLoaded = false;
+    scr.setAttribute("role", "region"); scr.setAttribute("aria-roledescription", "carousel"); scr.setAttribute("aria-label", t("app.h2"));
+    scr.innerHTML = TABS.map(function (k, i) {
+      return '<img data-k="' + k + '" alt="' + esc(t("tab." + k + ".t")) + '" ' + (i === 0 ? 'src="assets/img/screens/' + lang + "/" + k + '.webp"' : 'data-src="assets/img/screens/' + lang + "/" + k + '.webp"') +
+        ' width="600" height="1300" decoding="async" draggable="false">';
     }).join("");
-    var d = $("#tabdesc"); if (d) d.textContent = t("tab." + tabKey + ".p");
+    var dots = $("#scrDots");
+    if (dots) dots.innerHTML = TABS.map(function (k) { return '<button type="button" data-k="' + k + '" aria-label="' + esc(t("tab." + k + ".t")) + '"></button>'; }).join("");
+    $$("#scrDots button").forEach(function (b) { b.addEventListener("click", function () { selectTab(b.getAttribute("data-k")); }); });
     $$("#tabs .tab").forEach(function (b) { b.setAttribute("aria-label", t("tab." + b.getAttribute("data-k") + ".t")); });
-    if ("requestIdleCallback" in window) requestIdleCallback(preload); else setTimeout(preload, 1500);
+    var box = $("#app");
+    if (box && "IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { scrLoad(); io.disconnect(); } }, { rootMargin: "800px 0px" }); io.observe(box); }
+    else scrLoad();
+    selectTab(tabKey, false, true);
   }
-  function preload() { $$("#scr img[data-src]").forEach(function (im) { im.src = im.getAttribute("data-src"); im.removeAttribute("data-src"); }); }
-  function selectTab(k, focus) {
+  function markTab(k) {
     tabKey = k;
-    $$("#tabs .tab").forEach(function (b) { var on = b.getAttribute("data-k") === k; b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1; if (on && focus) b.focus(); });
-    $$("#scr img").forEach(function (im) {
-      var on = im.getAttribute("data-k") === k;
-      if (on && im.getAttribute("data-src")) { im.src = im.getAttribute("data-src"); im.removeAttribute("data-src"); }
-      im.classList.toggle("on", on);
-    });
-    var d = $("#tabdesc"); if (d) d.textContent = t("tab." + k + ".p");
+    $$("#tabs .tab").forEach(function (b) { var on = b.getAttribute("data-k") === k; b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1; });
+    $$("#scrDots button").forEach(function (b) { b.setAttribute("aria-current", b.getAttribute("data-k") === k ? "true" : "false"); });
+    var d = $("#tabdesc"); if (d) d.innerHTML = "<b>" + esc(t("tab." + k + ".t")) + "</b> " + esc(t("tab." + k + ".p"));
   }
+  function selectTab(k, focus, instant) {
+    var scr = $("#scr"), i = TABS.indexOf(k); if (i < 0) return;
+    markTab(k); scrLoad();
+    if (focus) { var tb = $('#tabs .tab[data-k="' + k + '"]'); if (tb) tb.focus(); }
+    if (scr && scr.clientWidth) { scr._prog = Date.now(); scr.scrollTo({ left: i * scr.clientWidth, behavior: instant || reduce ? "auto" : "smooth" }); }
+  }
+  (function () {
+    var scr = $("#scr"); if (!scr) return;
+    var tm = null;
+    scr.addEventListener("scroll", function () {
+      clearTimeout(tm);
+      tm = setTimeout(function () { var i = Math.round(scr.scrollLeft / Math.max(1, scr.clientWidth)); var k = TABS[Math.max(0, Math.min(TABS.length - 1, i))]; if (k !== tabKey) markTab(k); }, 90);
+    }, { passive: true });
+    // a mouse drags the strip too (touch already scrolls natively)
+    var drag = null;
+    scr.addEventListener("pointerdown", function (ev) { if (ev.pointerType !== "mouse") return; drag = { x: ev.clientX, l: scr.scrollLeft }; scr.classList.add("drag"); scr.setPointerCapture(ev.pointerId); });
+    scr.addEventListener("pointermove", function (ev) { if (drag) scr.scrollLeft = drag.l - (ev.clientX - drag.x); });
+    function end(ev) {
+      if (!drag) return; var dx = ev.clientX - drag.x, i = TABS.indexOf(tabKey); drag = null; scr.classList.remove("drag");
+      if (Math.abs(dx) > 40) i = Math.max(0, Math.min(TABS.length - 1, Math.round(scr.scrollLeft / scr.clientWidth)));
+      selectTab(TABS[i]);
+    }
+    scr.addEventListener("pointerup", end); scr.addEventListener("pointercancel", end);
+    scr.addEventListener("keydown", function (ev) {
+      var i = TABS.indexOf(tabKey);
+      if (ev.key === "ArrowRight") { ev.preventDefault(); selectTab(TABS[(i + 1) % TABS.length]); }
+      if (ev.key === "ArrowLeft") { ev.preventDefault(); selectTab(TABS[(i - 1 + TABS.length) % TABS.length]); }
+    });
+    window.addEventListener("resize", function () { var j = TABS.indexOf(tabKey); scr.scrollTo({ left: j * scr.clientWidth, behavior: "auto" }); });
+  })();
   $$("#tabs .tab").forEach(function (b) {
     b.addEventListener("click", function () { selectTab(b.getAttribute("data-k")); });
     b.addEventListener("keydown", function (ev) {
@@ -1161,7 +1171,7 @@
   function renderHeroStats() {
     var sc = D.scale || {}, a = $("#hs1"), b = $("#hs2");
     if (a && sc.coins) a.textContent = num(sc.coins);
-    if (b && sc.candle_checks) b.textContent = "≈" + num(sc.candle_checks / 1e6, 1);
+    void b;
   }
   function emit(n) { try { doc.dispatchEvent(new CustomEvent(n)); } catch (e) { /* old browsers */ } }
   function renderData() {   // everything that shows live numbers; safe to call on every refresh
