@@ -120,6 +120,7 @@
           <div class="big" id="pVal">$10 000</div>
           <div class="pnl" id="pPnl"></div>
           <div class="since" id="pSince"></div>
+          <div class="livenote" id="pLive" aria-live="off"></div>
         </div>
         <div class="curve" id="pCurve"></div>
       </div>
@@ -168,16 +169,43 @@
     <p class="kicker" data-i="k.try">{{k.try}}</p>
     <h2 class="display" id="tryH" data-i="try.h2">{{try.h2}}</h2>
     <div class="trygrid">
-      <div class="tool hud" id="nova">
-        <div class="orbrow"><span class="orb"></span><h3 data-i="nova.t">{{nova.t}}</h3></div>
-        <p data-i="nova.p">{{nova.p}}</p>
+      <div class="tool hud novabox" id="nova">
+        <div class="novahead"><canvas class="novasph" id="novaSph" aria-hidden="true"></canvas><div><p class="novatag" data-i="nova.tag">{{nova.tag}}</p><h3 data-i="nova.t">{{nova.t}}</h3></div></div>
+        <p class="novap" data-i="nova.p">{{nova.p}}</p>
         <div class="chat" id="chat" aria-live="polite"></div>
         <div class="qs" id="qs"></div>
         <p class="fine" data-i="nova.note">{{nova.note}}</p>
       </div>
-      <div class="tool hud" id="piggy">
-        <h3 data-i="piggy.t">{{piggy.t}}</h3>
-        <p data-i="piggy.p">{{piggy.p}}</p>
+      <div class="tool hud piggybox" id="piggy">
+        <div class="pighead">
+          <div class="pigart" id="pigArt"><svg class="pig" viewBox="0 0 220 160" aria-hidden="true">
+            <defs>
+              <linearGradient id="pgGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FD3FF" stop-opacity=".30"/><stop offset="1" stop-color="#2C5BD8" stop-opacity=".08"/></linearGradient>
+              <radialGradient id="pgGlow" cx=".5" cy=".55" r=".55"><stop offset="0" stop-color="#7FD3FF" stop-opacity=".32"/><stop offset="1" stop-color="#7FD3FF" stop-opacity="0"/></radialGradient>
+              <linearGradient id="pgCoin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE7AE"/><stop offset="1" stop-color="#F0A63A"/></linearGradient>
+            </defs>
+            <ellipse class="pg-aura" cx="114" cy="92" rx="104" ry="64" fill="url(#pgGlow)"/>
+            <g class="pg-legs" fill="url(#pgGlass)" stroke="#7FD3FF" stroke-width="2"><rect x="62" y="116" width="16" height="26" rx="6"/><rect x="86" y="120" width="16" height="22" rx="6"/><rect x="124" y="120" width="16" height="22" rx="6"/><rect x="146" y="116" width="16" height="26" rx="6"/></g>
+            <path d="M46 84c-11-3-16 8-9 12 6 4 11-4 4-7" fill="none" stroke="#7FD3FF" stroke-width="2" stroke-linecap="round"/>
+            <path d="M134 54C135 42 140 32 147 26c5 9 10 19 13 30z" fill="url(#pgGlass)" stroke="#7FD3FF" stroke-width="2" stroke-linejoin="round"/>
+            <ellipse cx="110" cy="90" rx="66" ry="46" fill="#0A1636"/>
+            <ellipse class="pg-body" cx="110" cy="90" rx="66" ry="46" fill="url(#pgGlass)" stroke="#7FD3FF" stroke-width="2.2"/>
+            <rect x="164" y="75" width="25" height="28" rx="11" fill="#0E1F48" stroke="#7FD3FF" stroke-width="2"/>
+            <ellipse cx="172.5" cy="89" rx="2.2" ry="3.6" fill="#7FD3FF"/><ellipse cx="181" cy="89" rx="2.2" ry="3.6" fill="#7FD3FF"/>
+            <circle cx="150" cy="72" r="3.4" fill="#DDF5FF"/><circle cx="151.2" cy="70.8" r="1.1" fill="#fff"/>
+            <rect x="95" y="43" width="30" height="5" rx="2.5" fill="#050B22" stroke="#7FD3FF" stroke-width="1.6"/>
+            <path d="M62 78c7-15 22-25 41-28" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="3" stroke-linecap="round"/>
+            <g class="pg-circuit" fill="none" stroke="rgba(127,211,255,.5)" stroke-width="1.2" stroke-linecap="round"><path d="M64 102h16l7-7h8M134 104h12l6-6h8M74 116h20"/><circle cx="64" cy="102" r="2"/><circle cx="160" cy="98" r="2"/><circle cx="94" cy="116" r="2"/></g>
+            <g class="pg-btc"><circle cx="114" cy="94" r="15" fill="rgba(255,200,97,.10)" stroke="#FFC861" stroke-width="1.8"/><path d="M110 86v16M112.5 84v2.6M112.5 101.6v2.4M110 86h5.2a3.6 3.6 0 0 1 0 7.2H110M110 93.2h6a4 4 0 0 1 0 8H110" fill="none" stroke="#FFC861" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+            <g class="pg-coin"><circle cx="110" cy="14" r="10" fill="url(#pgCoin)" stroke="#FFD27A" stroke-width="1"/><path d="M107.4 9v10M109 8v1.6M109 19v1.6M107.4 9h3.4a2.4 2.4 0 0 1 0 4.8h-3.4M107.4 13.8h3.9a2.6 2.6 0 0 1 0 5.2h-3.9" fill="none" stroke="#7A4A06" stroke-width="1.3" stroke-linecap="round"/></g>
+          </svg></div>
+          <div><h3 data-i="piggy.t">{{piggy.t}}</h3><p class="pigp" data-i="piggy.p">{{piggy.p}}</p></div>
+        </div>
+        <div class="pighow">
+          <h4 data-i="pg.how">{{pg.how}}</h4>
+          <ol class="pigsteps"><li><b>1</b><span data-i="pg.s1">{{pg.s1}}</span></li><li><b>2</b><span data-i="pg.s2">{{pg.s2}}</span></li><li><b>3</b><span data-i="pg.s3">{{pg.s3}}</span></li></ol>
+        </div>
+        <h4 class="pigcalc" data-i="pg.calc">{{pg.calc}}</h4>
         <div class="ctrls">
           <div class="ctrl"><span class="lb" data-i="piggy.amount">{{piggy.amount}}</span><div class="seg" id="pgAmt"></div></div>
           <div class="ctrl"><span class="lb" data-i="piggy.every">{{piggy.every}}</span><div class="seg" id="pgFreq"></div></div>
@@ -198,19 +226,24 @@
 
 <section class="sec" id="start" aria-labelledby="startH">
   <div class="wrap">
-    <h2 class="display" id="startH" data-i="start.h2">{{start.h2}}</h2>
-    <div class="startgrid">
-      <div class="st"><div class="n">1</div><h3 data-i="start.s1.t">{{start.s1.t}}</h3><p data-i="start.s1.p">{{start.s1.p}}</p></div>
-      <div class="st"><div class="n">2</div><h3 data-i="start.s2.t">{{start.s2.t}}</h3><p data-i="start.s2.p">{{start.s2.p}}</p></div>
-      <div class="st"><div class="n">3</div><h3 data-i="start.s3.t">{{start.s3.t}}</h3><p data-i="start.s3.p">{{start.s3.p}}</p></div>
+    <div class="sec-head">
+      <p class="kicker" data-i="k.how">{{k.how}}</p>
+      <h2 class="display" id="startH" data-i="start.h2">{{start.h2}}</h2>
+      <p class="lead" data-i="how.lead">{{how.lead}}</p>
     </div>
-    <div class="earn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M15 9.5c0-1.4-1.3-2.2-3-2.2s-3 .9-3 2.2c0 3 6 1.6 6 4.8 0 1.4-1.4 2.3-3 2.3s-3-.9-3-2.3"/></svg>
-      <div>
-        <h3 data-i="start.money.t">{{start.money.t}}</h3>
+    <ol class="howflow"><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/><path d="M3 12h1.5M19.5 12H21M12 3v1.5"/></svg></span><span class="hn">01</span><h3 data-i="how.s1.t">{{how.s1.t}}</h3><p data-i="how.s1.p">{{how.s1.p}}</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16l-6.2 7.2V18l-3.6 2v-7.8z"/></svg></span><span class="hn">02</span><h3 data-i="how.s2.t">{{how.s2.t}}</h3><p data-i="how.s2.p">{{how.s2.p}}</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M10 7.5h4M10 11h4M10 14.5h2.4"/></svg></span><span class="hn">03</span><h3 data-i="how.s3.t">{{how.s3.t}}</h3><p data-i="how.s3.p">{{how.s3.p}}</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2 19 6v5.2c0 4.4-3 8.2-7 9.6-4-1.4-7-5.2-7-9.6V6z"/><path d="m9 12.2 2.1 2.1 4-4.2"/></svg></span><span class="hn">04</span><h3 data-i="how.s4.t">{{how.s4.t}}</h3><p data-i="how.s4.p">{{how.s4.p}}</p></li></ol>
+    <div class="earn2">
+      <div class="earntext">
+        <p class="kicker" data-i="start.money.t">{{start.money.t}}</p>
+        <p class="earnbig" data-i="earn.big">{{earn.big}}</p>
         <p data-i="start.money.p">{{start.money.p}}</p>
-        <p class="small" data-i="start.risk">{{start.risk}}</p>
       </div>
+      <ol class="earnflow" aria-label="{{start.money.t}}">
+        <li><span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg></span><span data-i="earn.f1">{{earn.f1}}</span></li>
+        <li><span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5M5 10v8M9.7 10v8M14.3 10v8M19 10v8M3 20h18"/></svg></span><span data-i="earn.f2">{{earn.f2}}</span></li>
+        <li class="us"><span class="ei"><canvas class="earnsph" data-sphere aria-hidden="true"></canvas></span><span data-i="earn.f3">{{earn.f3}}</span></li>
+      </ol>
+      <p class="small earnrisk" data-i="start.risk">{{start.risk}}</p>
     </div>
   </div>
 </section>
@@ -224,7 +257,7 @@
 
 <section class="final" aria-labelledby="finalH">
   <div class="wrap">
-    <img src="assets/img/icon-240.webp" alt="CRYPTO NOVA AI" width="120" height="120">
+    <canvas class="finalsph" data-sphere role="img" aria-label="NOVA AI"></canvas>
     <div>
       <h2 class="display" id="finalH" data-i="final.h2">{{final.h2}}</h2>
       <p data-i="final.p">{{final.p}}</p>
