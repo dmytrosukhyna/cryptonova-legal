@@ -205,7 +205,7 @@
   /* ---------- the NOVA energy core (hero and engine room) ----------
      A glass sphere with a geodesic «filter» net, plasma filaments inside, the N at the centre. In the hero, coins drift
      in: the coins the system holds in its spot portfolio pass the filter and are drawn in, others bounce off the shield. */
-  var LOGO = new Image(); LOGO.decoding = "async"; LOGO.src = "assets/img/n-core.webp";
+  var LOGO = new Image(); LOGO.decoding = "async"; LOGO.src = "assets/img/n-holo.webp";
   var STABLE = { USDT: 1, USDC: 1, DAI: 1, FDUSD: 1, USDE: 1, USDS: 1, PYUSD: 1, TUSD: 1, USD1: 1, XAUT: 1, PAXG: 1, WBTC: 1, WETH: 1, STETH: 1, WSTETH: 1, WEETH: 1, CBBTC: 1, LEO: 1, WBT: 1, BUIDL: 1, USDTB: 1, BSC: 1 };
   function corePool() {
     var sp = H().spot || {}, ok = (sp.movers || []).map(function (m) { return m.sym; }).filter(Boolean);
@@ -663,7 +663,7 @@
     if (det0 && det0.parentNode === list) list.insertAdjacentElement("afterend", det0);
     list.innerHTML = ["core"].concat(ENG.map(function (n) { return n.k; })).map(function (k) {
       var n = ENG.filter(function (x) { return x.k === k; })[0] || { blades: 12, sp: 5 };
-      return '<button type="button" class="eitem" data-k="' + k + '" aria-expanded="' + (k === engSel) + '" aria-controls="engDetail"><svg viewBox="-80 -80 160 160" aria-hidden="true">' + (k === "core" ? '<circle r="62" fill="rgba(0,180,216,.16)" stroke="rgba(127,211,255,.5)"/><image href="assets/img/n-core.webp" x="-48" y="-48" width="96" height="96"/>' : turbine(52, n.blades, n.sp)) + "</svg><span><b>" + esc(engTitle(k)) + "</b><span>" + esc(engMetric(k)) + "</span></span></button>";
+      return '<button type="button" class="eitem" data-k="' + k + '" aria-expanded="' + (k === engSel) + '" aria-controls="engDetail"><svg viewBox="-80 -80 160 160" aria-hidden="true">' + (k === "core" ? '<circle r="62" fill="rgba(0,180,216,.16)" stroke="rgba(127,211,255,.5)"/><image href="assets/img/n-holo.webp" x="-48" y="-48" width="96" height="96"/>' : turbine(52, n.blades, n.sp)) + "</svg><span><b>" + esc(engTitle(k)) + "</b><span>" + esc(engMetric(k)) + "</span></span></button>";
     }).join("");
     $$(".eitem", list).forEach(function (b) {
       b.addEventListener("click", function () {

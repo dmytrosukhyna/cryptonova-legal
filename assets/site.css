@@ -644,3 +644,4 @@ h2.display{font-size:clamp(1.45rem,1rem + 2vw,2.35rem);line-height:1.12}
 .thinkflow{height:230px;width:100%}
 @media (max-width:640px){.thinkflow{display:block;height:170px}}
 @media (max-width:600px){#core{position:relative;inset:auto;width:100%;height:auto;aspect-ratio:1/1;grid-column:1/-1;margin:0}.corelegend{position:static;transform:none;margin:0 0 8px}}
+.bootlogo .emb{width:46px;height:46px;color:var(--ice);flex:none}
