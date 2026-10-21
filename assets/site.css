@@ -510,9 +510,10 @@ main,.foot,.top{position:relative;z-index:1}.top{z-index:30}
 .fcard .fv,.live .big,.engdetail .big,.res b,.tk b,.recnums div b,.st .n{font-family:var(--display);font-weight:650}
 .live .pnl,.sleeves li .n,.trade .th .pct,.tstats b{font-family:var(--mono);font-weight:500}
 .hud{position:relative;background:linear-gradient(180deg,rgba(14,24,56,.92),rgba(9,16,40,.92)),linear-gradient(rgba(127,211,255,.05) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,rgba(127,211,255,.05) 1px,transparent 1px) 0 0/24px 24px;background-blend-mode:normal}
-.hud::before,.hud::after{content:"";position:absolute;width:14px;height:14px;border:1.5px solid var(--ice);opacity:.7;pointer-events:none}
-.hud::before{left:0;top:0;border-right:0;border-bottom:0;border-top-left-radius:4px}
-.hud::after{right:0;bottom:0;border-left:0;border-top:0;border-bottom-right-radius:4px}
+.hud::before,.hud::after{content:"";position:absolute;width:24px;height:24px;border:1.5px solid var(--ice);opacity:.7;pointer-events:none}
+/* the corner bracket follows the card's own corner (a 4px bracket on an 18px card looked like a notch) */
+.hud::before{left:0;top:0;border-right:0;border-bottom:0;border-top-left-radius:inherit}
+.hud::after{right:0;bottom:0;border-left:0;border-top:0;border-bottom-right-radius:inherit}
 .tool,.engdetail,.live,.earn{border-radius:var(--r-lg)}
 .msg{border-radius:12px}
 .chat{border-radius:12px}
