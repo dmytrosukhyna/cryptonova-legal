@@ -111,3 +111,59 @@
 @keyframes npBump{0%,74%,100%{transform:scale(1)}80%{transform:scale(1.025)}88%{transform:scale(.995)}}
 @media (max-width:600px){.pighead{grid-template-columns:130px minmax(0,1fr)}.pigart{width:130px}}
 @media (prefers-reduced-motion:reduce){.npig,.npig-body,.npig-coin,.npig-flash{animation:none}.npig-coin{opacity:1}}
+
+/* ===== polish 21.10 19:17 (owner's list) ===== */
+/* #live: what the public portfolio holds + the engines' own accounts */
+.livesplit{margin-top:10px;display:grid;gap:4px;font:500 .78rem/1.45 var(--mono);color:var(--soft);letter-spacing:.01em}
+.livesplit p{margin:0}
+.livesplit b{color:#E6F2FF;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.livesplit b.up{color:#3ADB93}.livesplit b.down{color:#FF6E86}
+.livesplit .ls-desk{color:var(--muted)}
+
+/* buttons: keep the moving edge, drop the light sweep («разводы») */
+.badge-as::after,.btn-dl::after{display:none!important;animation:none!important}
+
+/* #try NOVA: the questions as an even grid */
+.novabox .qs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch}
+.novabox .q{display:flex;align-items:center;justify-content:flex-start;text-align:left;min-height:46px;height:100%;width:100%;padding:10px 14px;margin:0}
+@media (max-width:640px){.novabox .qs{grid-template-columns:1fr}}
+
+/* #try piggy: calmer next to the rest of the page */
+.npig{filter:brightness(.8) saturate(.82) drop-shadow(0 8px 18px rgba(40,120,255,.18))}
+/* ⓘ next to the calculator labels */
+.ctrl .lb{display:inline-flex;align-items:center;gap:7px}
+.ii{display:inline-grid;place-items:center;width:18px;height:18px;padding:0;border-radius:50%;border:1px solid rgba(127,211,255,.5);background:rgba(127,211,255,.08);color:var(--ice);font:700 11px/1 var(--mono);text-transform:none;letter-spacing:0;cursor:pointer;transition:background .2s,border-color .2s}
+.ii:hover,.ii.on,.ii:focus-visible{background:rgba(127,211,255,.22);border-color:var(--ice);outline:none}
+.ii:focus-visible{box-shadow:0 0 0 2px rgba(127,211,255,.45)}
+.iitip{margin:6px 0 8px;padding:9px 12px;border-radius:10px;border:1px solid rgba(127,211,255,.3);background:rgba(10,22,48,.92);color:var(--soft);font-size:.8125rem;line-height:1.45;text-transform:none;letter-spacing:0;animation:msgIn .25s ease-out both}
+
+/* #start: arrows exactly in the middle of the cards; cards lift */
+.hw{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.hw:not(:last-child)::after{top:50%;margin-top:-5px}
+.hw:hover,.hw:focus-within,.hw.lift{transform:translateY(-4px);border-color:rgba(127,211,255,.45);box-shadow:0 16px 34px -18px rgba(40,120,255,.55)}
+.hw:last-child:hover,.hw:last-child.lift{border-color:rgba(58,219,147,.65);box-shadow:0 16px 34px -18px rgba(58,219,147,.45)}
+@media (max-width:560px){.hw:not(:last-child)::after{display:none}}
+/* how we earn: coins run along the arrows */
+.earnflow li{transition:transform .25s ease}
+.earnflow li:hover .ei,.earnflow li.lift .ei{border-color:var(--ice);box-shadow:0 0 18px rgba(127,211,255,.35)}
+.ef-run{position:absolute;left:calc(50% + 32px);width:calc(100% - 64px + 14px);top:24px;height:6px;pointer-events:none;overflow:hidden}
+.ef-run i{position:absolute;top:0;left:-6px;width:6px;height:6px;border-radius:50%;background:var(--ice);box-shadow:0 0 6px rgba(127,211,255,.8);opacity:0;animation:efRun 2.4s linear infinite}
+.ef-run.gold i{background:#FFC861;box-shadow:0 0 6px rgba(255,200,97,.8)}
+.ef-run i:nth-child(2){animation-delay:.8s}.ef-run i:nth-child(3){animation-delay:1.6s}
+.earnflow li:not(:last-child)::after{z-index:1}
+@keyframes efRun{0%{left:-6px;opacity:0}12%{opacity:1}85%{opacity:1}100%{left:calc(100% - 4px);opacity:0}}
+@media (max-width:420px){
+  .earnflow{gap:30px}
+  .earnflow .ei{flex:0 0 52px}
+  .earnflow li:not(:last-child)::after{bottom:-26px}
+  .ef-run{left:23px;top:calc(50% + 29px);width:6px;height:calc(50% - 4px)}
+  .ef-run i{left:0;animation-name:efRunV}
+}
+@keyframes efRunV{0%{top:-6px;opacity:0}12%{opacity:1}85%{opacity:1}100%{top:calc(100% - 4px);opacity:0}}
+
+/* gentle reveal */
+.rv{opacity:0;translate:0 12px;transition:opacity .6s ease,translate .6s ease}
+.rv.in{opacity:1;translate:0 0}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;translate:none;transition:none}.ef-run{display:none}.hw,.earnflow li{transition:none}}
+.livesplit .nw{white-space:nowrap}
+.ii{position:relative}.ii::before{content:"";position:absolute;inset:-11px}
