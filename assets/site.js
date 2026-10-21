@@ -462,12 +462,13 @@
     if (!cv || !cv.getContext) return null;
     var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, running = false, visible = true, t0 = performance.now(), last = 0;
     var SRC = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPERLIQUID", "NEWS", "ON-CHAIN", "1927–2026"], SRC_S = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPER", "NEWS", "CHAIN", "1927+"];
-    var L = [], P = [], phoneX = 0, phoneY = 0, glowIn = 0, sx = 0, narrow = false, AI = { x: 0, y: 0, r: 0, hit: 0 }, act = [0, 0, 0, 0];
+    var L = [], P = [], phoneX = 0, phoneY = 0, phoneT = 0, phoneB = 0, FAN = 15, glowIn = 0, sx = 0, narrow = false, AI = { x: 0, y: 0, r: 0, hit: 0 }, act = [0, 0, 0, 0];
     var chips = $$("#sysflow li");
     function size() {
       dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
       var ph = $(".hero-phone"), cb = cv.getBoundingClientRect(), pb = ph ? ph.getBoundingClientRect() : null;
       phoneX = pb && pb.width ? (pb.left - cb.left) * dpr : W * 0.7; phoneY = pb && pb.height ? (pb.top - cb.top + pb.height * 0.42) * dpr : Hh / 2;
+      phoneT = pb && pb.height ? (pb.top - cb.top + pb.height * 0.16) * dpr : Hh * 0.2; phoneB = pb && pb.height ? (pb.top - cb.top + pb.height * 0.84) * dpr : Hh * 0.8;
       narrow = cv.clientWidth < 520;
       ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace";
       var mw = 0; (narrow ? SRC_S : SRC).forEach(function (n) { mw = Math.max(mw, ctx.measureText(n).width); });
@@ -476,27 +477,34 @@
       var x0 = sx + Math.max(W * 0.05, 16 * dpr), x1 = AI.x - AI.r * 1.6 - Math.max(W * 0.04, 14 * dpr), sizes = [6, 8, 6];
       L = sizes.map(function (n, li) { var x = x0 + (x1 - x0) * li / (sizes.length - 1); var out = []; for (var k = 0; k < n; k++) out.push({ x: x, y: Hh * (0.08 + 0.78 * (n === 1 ? 0.5 : k / (n - 1))), lit: 0 }); return out; });
     }
+    function fan(i) {   // curve i of the fan: from the sphere's right edge to a point on the phone's left edge
+      var k = FAN > 1 ? i / (FAN - 1) : 0.5, ax = AI.x + AI.r * 0.55, ay = AI.y + (k - 0.5) * AI.r * 0.5, bx = phoneX + 1 * dpr, by = phoneT + (phoneB - phoneT) * k;
+      return { ax: ax, ay: ay, bx: bx, by: by, cx: (ax + bx) / 2, cy: ay + (by - ay) * 0.15 };
+    }
     function srcY(i) { return Hh * (0.06 + 0.82 * i / (SRC.length - 1)); }
-    function spawn() { var si = Math.floor(Math.random() * SRC.length); P.push({ seg: -1, k: Math.floor(Math.random() * L[0].length), from: { x: sx, y: srcY(si) }, s: 0, v: 1.1 + Math.random() * 0.7, bad: false, a: 1 }); }
+    function spawn() { var si = Math.floor(Math.random() * SRC.length); P.push({ seg: -1, k: Math.floor(Math.random() * L[0].length), from: { x: sx, y: srcY(si) }, s: 0, v: 0.55 + Math.random() * 0.35, bad: false, a: 1 }); }
     function glow(x, y, r, col, a) { var g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, "rgba(" + col + "," + a.toFixed(3) + ")"); g.addColorStop(1, "rgba(" + col + ",0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); }
     function frame(now) {
       if (!running && now !== -1) return;
       var tm = Math.max(0, ((now === -1 ? t0 + 4000 : now) - t0) / 1000), dt = Math.min(0.05, last ? tm - last : 0.016); last = tm;
       ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
       if (!L.length) size();
-      if (now !== -1 && Math.random() < dt * 14) spawn();
-      if (now === -1 && !P.length) for (var q = 0; q < 26; q++) { spawn(); var pp = P[P.length - 1]; pp.seg = Math.floor(Math.random() * 4) - 1; if (pp.seg >= 0) pp.k = Math.floor(Math.random() * L[Math.min(pp.seg, 2)].length); pp.s = Math.random(); }
+      if (now !== -1 && Math.random() < dt * 8) spawn();
+      if (now === -1 && !P.length) for (var q = 0; q < 26; q++) { spawn(); var pp = P[P.length - 1]; pp.seg = Math.floor(Math.random() * 4) - 1; pp.f = Math.floor(Math.random() * FAN); if (pp.seg >= 0) pp.k = Math.floor(Math.random() * L[Math.min(pp.seg, 2)].length); pp.s = Math.random(); }
       // sources
       ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
       (narrow ? SRC_S : SRC).forEach(function (n, i) { var y = srcY(i); ctx.fillStyle = "rgba(127,211,255,.75)"; ctx.fillText(n, sx - 6 * dpr, y); ctx.fillStyle = "rgba(127,211,255,.9)"; ctx.beginPath(); ctx.arc(sx, y, 2.2 * dpr, 0, 6.2832); ctx.fill(); });
       // wires: layers, layer 3 → NOVA AI, NOVA AI → phone
-      ctx.lineWidth = dpr * 0.7; ctx.strokeStyle = "rgba(127,211,255,.07)"; ctx.beginPath();
+      ctx.lineWidth = dpr * 0.6; ctx.strokeStyle = "rgba(127,211,255,.085)"; ctx.beginPath();
       for (var li = 0; li < L.length - 1; li++) L[li].forEach(function (a) { L[li + 1].forEach(function (b) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); }); });
       L[2].forEach(function (a) { ctx.moveTo(a.x, a.y); ctx.lineTo(AI.x - AI.r * 0.6, AI.y + (a.y - AI.y) * 0.12); });
       ctx.stroke();
-      ctx.strokeStyle = "rgba(58,219,147," + (0.16 + glowIn * 0.3).toFixed(3) + ")"; ctx.lineWidth = 1.2 * dpr; ctx.beginPath();
-      [-1, 0, 1].forEach(function (o) { ctx.moveTo(AI.x + AI.r * 0.6, AI.y + o * AI.r * 0.2); ctx.lineTo(phoneX, phoneY + o * AI.r * 0.5); });
-      ctx.stroke();
+      // a soft fan of light from NOVA AI into the phone (owner 19:17: not «3 arrows»)
+      for (var fi = 0; fi < FAN; fi++) {
+        var fq = fan(fi), gl = ctx.createLinearGradient(fq.ax, 0, fq.bx, 0);
+        gl.addColorStop(0, "rgba(127,211,255," + (0.28 + glowIn * 0.12).toFixed(3) + ")"); gl.addColorStop(1, "rgba(58,219,147," + (0.14 + glowIn * 0.3).toFixed(3) + ")");
+        ctx.strokeStyle = gl; ctx.lineWidth = (fi % 3 ? 0.7 : 1.1) * dpr; ctx.beginPath(); ctx.moveTo(fq.ax, fq.ay); ctx.quadraticCurveTo(fq.cx, fq.cy, fq.bx, fq.by); ctx.stroke();
+      }
       // pulses
       P = P.filter(function (p) {
         p.s += p.v * dt;
@@ -504,17 +512,18 @@
         if (p.seg === -1) { A = p.from; Bp = L[0][p.k]; }
         else if (p.seg < 2) { A = L[p.seg][p.k]; Bp = L[p.seg + 1][p.nk != null ? p.nk : (p.nk = Math.floor(Math.random() * L[p.seg + 1].length))]; }
         else if (p.seg === 2) { A = L[2][p.k]; Bp = { x: AI.x - AI.r * 0.6, y: AI.y + (A.y - AI.y) * 0.12 }; }
-        else { A = { x: AI.x + AI.r * 0.6, y: AI.y + p.o * AI.r * 0.2 }; Bp = { x: phoneX + 2 * dpr, y: phoneY + p.o * AI.r * 0.5 }; }
+        else { var fq2 = fan(p.f); A = { x: fq2.ax, y: fq2.ay }; Bp = { x: fq2.bx, y: fq2.by }; p.cq = fq2; }
         if (p.bad) { p.a -= dt * 1.8; if (p.a <= 0) return false; }
         if (p.s >= 1 && !p.bad) {
           if (p.seg === 3) { glowIn = 1; act[3] = 1; phoneArrive(); return false; }
-          if (p.seg === 2) { AI.hit = 1; act[3] = Math.max(act[3], 0.6); if (Math.random() < 0.5) { p.seg = 3; p.s = 0; p.v = 1.4; p.o = Math.floor(Math.random() * 3) - 1; return true; } return false; }
+          if (p.seg === 2) { AI.hit = 1; act[3] = Math.max(act[3], 0.6); if (Math.random() < 0.5) { p.seg = 3; p.s = 0; p.v = 0.8; p.f = Math.floor(Math.random() * FAN); return true; } return false; }
           var node = p.seg === -1 ? L[0][p.k] : L[p.seg + 1][p.nk]; node.lit = 1; act[p.seg + 1] = 1;
           p.k = p.seg === -1 ? p.k : p.nk; p.nk = null; p.seg += 1; p.s = 0;
           if (p.seg >= 1 && Math.random() < 0.34) { p.bad = true; p.s = 0; p.v *= 0.4; }
           return true;
         }
         var s = Math.min(1, p.s), x = A.x + (Bp.x - A.x) * s, y = A.y + (Bp.y - A.y) * s;
+        if (p.seg === 3 && p.cq) { var u = 1 - s; x = u * u * p.cq.ax + 2 * u * s * p.cq.cx + s * s * p.cq.bx; y = u * u * p.cq.ay + 2 * u * s * p.cq.cy + s * s * p.cq.by; }
         var col = p.bad ? "255,110,134" : p.seg === 3 ? "58,219,147" : "127,211,255";
         glow(x, y, 8 * dpr, col, 0.55 * p.a);
         ctx.fillStyle = "rgba(" + col + "," + p.a.toFixed(3) + ")"; ctx.beginPath(); ctx.arc(x, y, (p.seg === 3 ? 2.4 : 1.9) * dpr, 0, 6.2832); ctx.fill();
@@ -524,9 +533,9 @@
       L.forEach(function (layer) {
         layer.forEach(function (n) {
           n.lit = Math.max(0, n.lit - dt * 2);
-          var r = 3.6 * dpr;
-          glow(n.x, n.y, r * 4, "127,211,255", 0.15 + n.lit * 0.5);
-          ctx.fillStyle = "rgba(8,16,40,1)"; ctx.strokeStyle = "rgba(127,211,255," + (0.55 + n.lit * 0.45).toFixed(3) + ")"; ctx.lineWidth = 1.3 * dpr;
+          var r = 3 * dpr;
+          glow(n.x, n.y, r * 4.5, "127,211,255", 0.1 + n.lit * 0.45);
+          ctx.fillStyle = "rgba(8,16,40,.9)"; ctx.strokeStyle = "rgba(127,211,255," + (0.5 + n.lit * 0.45).toFixed(3) + ")"; ctx.lineWidth = 1.1 * dpr;
           ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill(); ctx.stroke();
         });
       });
@@ -716,6 +725,19 @@
       ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
       // funnel
       ctx.fillStyle = "rgba(0,180,216,.05)"; ctx.beginPath(); ctx.moveTo(0, Hh * 0.04); ctx.lineTo(ex, ey - Hh * 0.06); ctx.lineTo(ex, ey + Hh * 0.06); ctx.lineTo(0, Hh * 0.96); ctx.closePath(); ctx.fill();
+      // owner 19:17: the beam is divided into frames, like a radar computing stage by stage, and a scan line runs through it
+      ctx.save(); ctx.beginPath(); ctx.moveTo(0, Hh * 0.04); ctx.lineTo(ex, ey - Hh * 0.06); ctx.lineTo(ex, ey + Hh * 0.06); ctx.lineTo(0, Hh * 0.96); ctx.closePath(); ctx.clip();
+      var edges = [0].concat(gates).concat([ex]);
+      for (var fi2 = 0; fi2 < edges.length - 1; fi2++) {
+        var xa = edges[fi2], xb = edges[fi2 + 1], ha = band(xa) + 8 * dpr, hb2 = band(xb) + 8 * dpr;
+        ctx.strokeStyle = "rgba(127,211,255,.10)"; ctx.lineWidth = dpr; ctx.strokeRect(xa + 3 * dpr, ey - ha + 3 * dpr, xb - xa - 6 * dpr, ha * 2 - 6 * dpr);
+        ctx.fillStyle = fi2 % 2 ? "rgba(127,211,255,.018)" : "rgba(127,211,255,.035)"; ctx.fillRect(xa + 3 * dpr, ey - Math.max(ha, hb2), xb - xa - 6 * dpr, Math.max(ha, hb2) * 2);
+        for (var tk = 0; tk < 6; tk++) { var tx = xa + (xb - xa) * (tk + 0.5) / 6; ctx.fillStyle = "rgba(127,211,255,.22)"; ctx.fillRect(tx, ey - band(tx) - 2 * dpr, dpr, 4 * dpr); ctx.fillRect(tx, ey + band(tx) - 2 * dpr, dpr, 4 * dpr); }
+      }
+      var sw = ((tm * 0.16) % 1.25 - 0.1) * ex, sg = ctx.createLinearGradient(sw - 70 * dpr, 0, sw, 0);
+      sg.addColorStop(0, "rgba(127,211,255,0)"); sg.addColorStop(0.85, "rgba(127,211,255,.10)"); sg.addColorStop(1, "rgba(190,240,255,.45)");
+      ctx.fillStyle = sg; ctx.fillRect(sw - 70 * dpr, 0, 70 * dpr, Hh);
+      ctx.restore();
       // gates: a filter mesh on every stage border
       gates.forEach(function (gx, i) {
         var hb = band(gx) + 10 * dpr;
@@ -740,10 +762,10 @@
       });
       // 21.10 15:27 owner: no N core here — a plain result box: what got through, with real numbers
       pulse = Math.max(0, pulse - dt * 1.5);
-      var hp = H().spot || {}, cnt = (D.conveyor || {}).counts || {}, bw = Math.min(W * 0.14, 150 * dpr), sxc = W - bw / 2 - 6 * dpr, half = Math.min(bw * 0.5, Hh * 0.3);
-      if (window.NovaSphere) NovaSphere.draw(ctx, sxc, ey - Hh * 0.13, half, tm, { busy: pulse > 0.3 });
+      var hp = H().spot || {}, cnt = (D.conveyor || {}).counts || {}, bw = Math.min(W * 0.14, 150 * dpr), sxc = W - bw / 2 - 6 * dpr, half = Math.min(bw * 0.45, Hh * 0.22);
+      if (window.NovaSphere) NovaSphere.draw(ctx, sxc, ey, half, tm, { busy: pulse > 0.3 });
       ctx.textAlign = "center"; ctx.textBaseline = "top";
-      var ty = ey - Hh * 0.13 + half * 0.78;
+      var ty = ey + half * 0.9;
       ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(127,211,255,.85)"; ctx.fillText(t("think.out"), sxc, ty);
       ctx.font = "700 " + Math.round(20 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = pulse > 0.05 ? "#7CFFC4" : "#3ADB93"; ctx.fillText(num(hp.n_coins || 11), sxc, ty + 13 * dpr);
       ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(200,230,250,.85)"; ctx.fillText(t("think.out.coins"), sxc, ty + 37 * dpr);

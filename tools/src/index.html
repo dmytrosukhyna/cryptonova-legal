@@ -55,13 +55,17 @@
 <main id="main">
 <section class="hero" aria-labelledby="h1">
   <div class="wrap">
-    <div>
+    <div class="herotop">
       <h1 id="h1"><span data-i="hero.h1a">{{hero.h1a}}</span> <span data-i="hero.h1b">{{hero.h1b}}</span></h1>
-      <p class="sub" data-i="hero.sub">{{hero.sub}}</p>
-      <div class="hstats" aria-label="{{hero.k1}}"><div><b id="hs1">150</b><span data-i="hero.k1">{{hero.k1}}</span></div><div><b id="hs2">≈5,9</b><span data-i="hero.k2">{{hero.k2}}</span></div><div><b>24/7</b><span data-i="hero.k3">{{hero.k3}}</span></div></div>
-      <div class="stores">{{stores}}</div>
-      <p class="note" data-i="hero.note">{{hero.note}}</p>
-      <p class="status" id="status" role="status"><i></i><span></span></p>
+      <div class="herorow">
+        <div class="herolead">
+          <p class="sub" data-i="hero.sub">{{hero.sub}}</p>
+          <div class="stores">{{stores}}</div>
+          <p class="note" data-i="hero.note">{{hero.note}}</p>
+          <p class="status" id="status" role="status"><i></i><span></span></p>
+        </div>
+        <div class="hstats" aria-label="{{hero.k1}}"><div><b id="hs1">150</b><span data-i="hero.k1">{{hero.k1}}</span></div><div><b id="hs2">≈5,9</b><span data-i="hero.k2">{{hero.k2}}</span></div><div><b>24/7</b><span data-i="hero.k3">{{hero.k3}}</span></div></div>
+      </div>
     </div>
     <div class="stagecol">
     <div class="stage" id="stage">
@@ -72,6 +76,7 @@
       <div class="fcard fc3"><div class="frow"><span class="orb sm"></span><b data-i="fc.nova.q">{{fc.nova.q}}</b></div><p data-i="fc.nova.a">{{fc.nova.a}}</p></div>
       <div class="fcard fc4"><div class="frow"><svg class="shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 4.5 5.6v5.7c0 4.6 3.1 8.4 7.5 9.9 4.4-1.5 7.5-5.3 7.5-9.9V5.6Z" fill="rgba(58,219,147,.14)" stroke="#3ADB93" stroke-width="1.5"/><path d="m8.6 12.2 2.4 2.4 4.4-4.6" fill="none" stroke="#3ADB93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div class="fk" data-i="fc.risk">{{fc.risk}}</div><b id="fcRisk" data-i="fc.risk.ok">{{fc.risk.ok}}</b></div></div></div>
     </div>
+    <div class="sysrow">
     <ol class="sysflow" id="sysflow" aria-label="{{sys.aria}}">
       <li data-s="0"><b>01</b><span data-i="sys.l1">{{sys.l1}}</span><small id="sf1"></small></li>
       <li data-s="1"><b>02</b><span data-i="sys.l2">{{sys.l2}}</span><small id="sf2"></small></li>
@@ -79,6 +84,7 @@
       <li data-s="3" class="ai"><b>04</b><span data-i="sys.l4">{{sys.l4}}</span><small id="sf4"></small></li>
     </ol>
     <div class="syslog" id="syslog" aria-hidden="true"></div>
+    </div>
     </div>
   </div>
   <div class="ticker" aria-hidden="true"><div class="track" id="ticker"></div></div>
@@ -96,7 +102,7 @@
       <ol class="tsteps" id="tsteps"></ol>
     </div>
     <div class="aibrain hud">
-      <div class="aiorb"><canvas data-sphere aria-hidden="true"></canvas><span>NOVA AI</span></div>
+      <div class="aiorb"><canvas data-sphere="coins" aria-hidden="true"></canvas><span>NOVA AI</span></div>
       <div class="aitext">
         <p class="kicker" data-i="ai.k">{{ai.k}}</p>
         <h3 data-i="ai.h">{{ai.h}}</h3>

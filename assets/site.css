@@ -802,3 +802,28 @@ h2.display{font-size:clamp(1.45rem,1rem + 2vw,2.35rem);line-height:1.12}
 .livebadge i{background:#3ADB93;box-shadow:0 0 8px #3ADB93;animation:livePulse 1.6s ease-in-out infinite}
 .bootlogo canvas.emb{width:64px;height:64px;color:inherit}
 #bootLog .hi{all:unset;color:#fff;font:inherit;white-space:pre-wrap}
+/* ===== v6 hero (owner 21.10 19:17): the title across the full width, the system below with room to breathe ===== */
+.hero .wrap{grid-template-columns:minmax(0,1fr)!important;gap:30px}
+.herotop h1{font-size:clamp(2.1rem,1rem + 3.9vw,4.6rem);line-height:1.02}
+.herotop h1 span{display:inline}
+@media (max-width:600px){.herotop h1 span{display:block}}
+.herorow{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:44px;align-items:start;margin-top:18px}
+.herorow .sub{max-width:660px;margin-top:0}
+.herorow .hstats{margin-top:4px;max-width:none}
+.hero .stagecol{width:100%;max-width:1200px;justify-self:stretch}
+.hero .stagecol .stage{aspect-ratio:1200/470}
+.hero .stagecol .stage .hero-phone{width:17.5%}
+.sysrow{display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:22px;align-items:start;margin-top:12px}
+.sysrow .sysflow{margin-top:0}
+.hero .stagecol .sysrow .syslog{margin-top:0;max-width:none}
+@media (max-width:900px){
+  .herorow{grid-template-columns:minmax(0,1fr);gap:18px}
+  .sysrow{grid-template-columns:minmax(0,1fr)}
+  .hero .stagecol .stage{aspect-ratio:1/.62}
+  .hero .stagecol .stage .hero-phone{width:25%}
+}
+@media (max-width:600px){
+  .hero .stagecol .stage{aspect-ratio:1/.9}
+  .hero .stagecol .stage .hero-phone{width:33%}
+}
+.herotop h1{font-size:clamp(2.1rem,.6rem + 3.9vw,4.1rem);letter-spacing:-.03em}
