@@ -12,7 +12,7 @@
  "nav.lang": "Idioma",
  "hero.h1a": "El motor de IA",
  "hero.h1b": "que nunca duerme.",
- "hero.sub": "Cada minuto, CRYPTO NOVA AI escanea el mercado cripto. Cada noche pone a prueba cientos de estrategias nuevas. En la app gratuita ves cada operación con su entrada, su stop y su motivo, aprendes con 50 lecciones breves y le preguntas a NOVA lo que quieras, por texto o por voz.",
+ "hero.sub": "CRYPTO NOVA AI no se detiene ni un minuto: vigila el mercado, revisa millones de datos históricos, descarta lo débil y se queda solo con lo que superó la prueba. En la app ves cada operación con su entrada, su stop y su motivo, aprendes con 50 lecciones breves y le preguntas a NOVA lo que quieras, por texto o por voz.",
  "hero.note": "Gratis. Sin suscripciones. Nunca guardamos tu dinero.",
  "cta.appstore.small": "Descárgalo en el",
  "cta.appstore.big": "App Store",
@@ -273,5 +273,12 @@
  "spot.coin.few": "monedas",
  "spot.coin.many": "monedas",
  "radar.scan": "ESCANEO · {n} MONEDAS",
- "radar.cycle": "CICLO {n} S"
+ "radar.cycle": "CICLO {n} S",
+ "hero.k1": "monedas vigiladas cada minuto",
+ "hero.k2": "millones de velas de historia revisadas cada noche",
+ "hero.k3": "sin una sola pausa",
+ "think.in": "ENTRADA · {n} MONEDAS",
+ "think.out": "EN LA CARTERA",
+ "think.out.coins": "MONEDAS",
+ "think.out.strats": "{n} ESTRATEGIAS EN DEMO"
 }

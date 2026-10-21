@@ -342,18 +342,19 @@
      A scope with range rings, bearing ticks and a phosphor sweep. Coins show up as contacts when the sweep passes:
      the coins the system holds in its spot portfolio get locked (green brackets) and are pulled to the core,
      the rest are marked as refused (red) and fade. Corner readouts are real: coins watched and the engine cycle. */
-  function makeRadar(cv) {
+  function makeRadar(cv, opt) {
+    opt = opt || {};
     if (!cv || !cv.getContext) return null;
     var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, R = 0, cx = 0, cy = 0, running = false, visible = true, t0 = performance.now(), last = 0;
     var B = [], ptr = { on: 0, x: 0, y: 0 }, absorb = 0, SPIN = 2 * Math.PI / 4.8;
-    function size() { dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr)); cx = W / 2; cy = Hh / 2; R = Math.min(W, Hh) * 0.41; }
+    function size() { dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr)); cx = W / 2; cy = Hh / 2; R = Math.min(W, Hh) * (opt.mini ? 0.44 : 0.41); }
     function spawn(b) {
       var pool = corePool(), ok = Math.random() < 0.38, used = B.map(function (x) { return x.sym; }), list = (ok ? pool.ok : pool.no).filter(function (x) { return used.indexOf(x) < 0; });
       if (!list.length) list = ok ? pool.ok : pool.no;
       b = b || {}; b.sym = list[Math.floor(Math.random() * list.length)]; b.ok = ok; b.a = Math.random() * Math.PI * 2; b.r = 0.32 + Math.random() * 0.6;
       b.lit = 0; b.seen = false; b.st = "idle"; b.k = 0; return b;
     }
-    for (var i = 0; i < 11; i++) B.push(spawn());
+    for (var i = 0; i < (opt.mini ? 6 : 11); i++) B.push(spawn());
     function mono(sz, w) { return (w || 500) + " " + Math.round(sz * dpr) + "px 'JetBrains Mono',ui-monospace,monospace"; }
     function ang(a) { a %= 2 * Math.PI; return a < 0 ? a + 2 * Math.PI : a; }
     function frame(now) {
@@ -374,7 +375,7 @@
       ctx.strokeStyle = "rgba(127,211,255,.45)";
       for (var d = 0; d < 360; d += 5) { var a = d * Math.PI / 180 - Math.PI / 2, l = d % 30 === 0 ? 0.05 : 0.022; ctx.lineWidth = (d % 30 === 0 ? 1.3 : 0.8) * dpr; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx.lineTo(cx + Math.cos(a) * R * (1 + l), cy + Math.sin(a) * R * (1 + l)); ctx.stroke(); }
       ctx.fillStyle = "rgba(160,215,245,.6)"; ctx.font = mono(9.5); ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      for (var dl = 0; dl < 360; dl += 30) { var al = dl * Math.PI / 180 - Math.PI / 2; ctx.fillText(("00" + dl).slice(-3), cx + Math.cos(al) * R * 1.14, cy + Math.sin(al) * R * 1.14); }
+      if (!opt.mini) for (var dl = 0; dl < 360; dl += 30) { var al = dl * Math.PI / 180 - Math.PI / 2; ctx.fillText(("00" + dl).slice(-3), cx + Math.cos(al) * R * 1.14, cy + Math.sin(al) * R * 1.14); }
       // crosshair
       ctx.strokeStyle = "rgba(127,211,255,.28)"; ctx.lineWidth = dpr; ctx.beginPath(); ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R, cy); ctx.moveTo(cx, cy - R); ctx.lineTo(cx, cy + R); ctx.stroke();
       // sweep with phosphor trail
@@ -407,7 +408,7 @@
           var s3 = 4.5 * dpr; ctx.strokeStyle = "rgba(255,110,134," + al2.toFixed(3) + ")"; ctx.lineWidth = 1.3 * dpr; ctx.beginPath(); ctx.moveTo(x - s3 + 9 * dpr, y - s3); ctx.lineTo(x + s3 + 9 * dpr, y + s3); ctx.moveTo(x + s3 + 9 * dpr, y - s3); ctx.lineTo(x - s3 + 9 * dpr, y + s3); ctx.stroke();
         }
         if (b.st !== "idle" || b.lit > 0.25) {
-          ctx.font = mono(10.5, b.st === "lock" ? 700 : 500); ctx.textAlign = "left"; ctx.textBaseline = "middle";
+          ctx.font = mono(opt.mini ? 9 : 10.5, b.st === "lock" ? 700 : 500); ctx.textAlign = "left"; ctx.textBaseline = "middle";
           ctx.fillStyle = "rgba(" + (b.st === "lock" ? "184,255,224" : b.st === "refuse" ? "255,170,185" : "200,235,255") + "," + Math.min(1, al2 + 0.1).toFixed(3) + ")";
           ctx.fillText(b.sym, x + (b.st === "refuse" ? 17 : 13) * dpr, y - 9 * dpr);
         }
@@ -426,6 +427,7 @@
         var dx = ptr.x - cx, dy = ptr.y - cy, rr2 = Math.sqrt(dx * dx + dy * dy) / R, brg = (Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 450) % 360));
         ctx.font = mono(9.5); ctx.fillStyle = "rgba(255,210,140,.9)"; ctx.textAlign = "left"; ctx.fillText(("00" + brg).slice(-3) + "° · " + Math.min(99, Math.round(rr2 * 100)) + "%", ptr.x + pr2 * 1.9, ptr.y + pr2 * 1.2);
       }
+      if (opt.mini) { if (now !== -1) requestAnimationFrame(frame); return; }
       // corner readouts (real numbers)
       var e = E(), sc = D.scale || {}, d0 = new Date(), hh2 = function (n) { return ("0" + n).slice(-2); };
       ctx.font = mono(10); ctx.fillStyle = "rgba(160,215,245,.75)"; ctx.textBaseline = "top"; ctx.textAlign = "left";
@@ -496,7 +498,7 @@
       dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
       var lis = $$("#tsteps li"), cb = cv.getBoundingClientRect(), wide = window.matchMedia("(min-width:1061px)").matches;
       gates = [];
-      ex = W - Math.min(W * 0.075, 62 * dpr); ey = Hh / 2;
+      ex = W - Math.min(W * 0.14, 150 * dpr) - 6 * dpr; ey = Hh / 2;
       if (wide && lis.length === 6) lis.forEach(function (li, i) { if (i) gates.push((li.getBoundingClientRect().left - cb.left) * dpr); });
       else for (var g = 1; g < 6; g++) gates.push((ex - 50 * dpr) * g / 5.6);
     }
@@ -540,15 +542,19 @@
         ctx.globalAlpha = 1;
         return c.x < W + 40 * dpr;
       });
-      // the core
+      // 21.10 15:27 owner: no N core here — a plain result box: what got through, with real numbers
       pulse = Math.max(0, pulse - dt * 1.5);
-      var rr = Math.min(Hh * 0.22, 44 * dpr) * (1 + pulse * 0.08);
-      var gg = ctx.createRadialGradient(ex, ey, 0, ex, ey, rr * 1.9); gg.addColorStop(0, pulse > 0.05 ? "rgba(58,219,147,.45)" : "rgba(0,180,216,.35)"); gg.addColorStop(1, "rgba(0,180,216,0)");
-      ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(ex, ey, rr * 1.9, 0, 6.2832); ctx.fill();
-      ctx.strokeStyle = "rgba(127,211,255,.55)"; ctx.lineWidth = 1.2 * dpr; ctx.beginPath(); ctx.arc(ex, ey, rr, 0, 6.2832); ctx.stroke();
-      if (LOGO.complete && LOGO.naturalWidth) { var lw = rr * 1.45; ctx.drawImage(LOGO, ex - lw / 2, ey - lw / 2, lw, lw * LOGO.naturalHeight / LOGO.naturalWidth); }
-      ctx.font = "600 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(58,219,147,.9)"; ctx.textAlign = "center"; ctx.textBaseline = "top";
-      ctx.fillText(t("boot.l6"), Math.min(ex, W - ctx.measureText(t("boot.l6")).width / 2 - 4 * dpr), ey + rr + 6 * dpr);
+      var hp = H().spot || {}, cnt = (D.conveyor || {}).counts || {}, bw = Math.min(W * 0.14, 150 * dpr), bh = Math.min(Hh * 0.62, 120 * dpr), bx = W - bw - 6 * dpr, by = ey - bh / 2;
+      var gg = ctx.createRadialGradient(bx + bw / 2, ey, 0, bx + bw / 2, ey, bw); gg.addColorStop(0, pulse > 0.05 ? "rgba(58,219,147,.30)" : "rgba(0,180,216,.18)"); gg.addColorStop(1, "rgba(0,180,216,0)");
+      ctx.fillStyle = gg; ctx.fillRect(bx - bw * 0.4, by - bh * 0.3, bw * 1.8, bh * 1.6);
+      ctx.fillStyle = "rgba(6,14,32,.92)"; ctx.strokeStyle = pulse > 0.05 ? "rgba(58,219,147,.9)" : "rgba(127,211,255,.6)"; ctx.lineWidth = 1.3 * dpr;
+      ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.fill(); ctx.stroke();
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(127,211,255,.8)"; ctx.fillText(t("think.out"), bx + bw / 2, by + 8 * dpr);
+      ctx.font = "700 " + Math.round(22 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "#3ADB93"; ctx.fillText(num(hp.n_coins || 11), bx + bw / 2, by + 22 * dpr);
+      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(200,230,250,.85)"; ctx.fillText(t("think.out.coins"), bx + bw / 2, by + 50 * dpr);
+      if (cnt.paper) { ctx.fillStyle = "rgba(127,211,255,.75)"; ctx.fillText(t("think.out.strats", { n: num(cnt.paper) }), bx + bw / 2, by + 66 * dpr); }
+      ctx.textAlign = "left"; ctx.fillStyle = "rgba(127,211,255,.7)"; ctx.fillText(t("think.in", { n: num((D.scale || {}).coins || 150) }), 8 * dpr, 6 * dpr);
       if (now !== -1) requestAnimationFrame(frame);
     }
     function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; last = 0; requestAnimationFrame(frame); } else if (!want) running = false; }
@@ -630,14 +636,15 @@
     if (!map.parentNode.classList.contains("engmapwrap")) {
       var wr = doc.createElement("div"); wr.className = "engmapwrap"; map.parentNode.insertBefore(wr, map); wr.appendChild(map);
       var cc = doc.createElement("canvas"); cc.className = "corecv"; cc.setAttribute("aria-hidden", "true");
-      cc.style.left = ((CX - 190) / 1200 * 100) + "%"; cc.style.top = ((CY - 190) / 660 * 100) + "%"; cc.style.width = (380 / 1200 * 100) + "%"; cc.style.height = (380 / 660 * 100) + "%";
+      cc.style.left = ((CX - 118) / 1200 * 100) + "%"; cc.style.top = ((CY - 118) / 660 * 100) + "%"; cc.style.width = (236 / 1200 * 100) + "%"; cc.style.height = (236 / 660 * 100) + "%";
       wr.appendChild(cc);
-      engCore = makeCore(cc, { r: 0.3, lattice: 160, logo: 0.95, angles: ENG.map(function (n) { return Math.atan2(n.y - CY, n.x - CX); }) });
+      // 21.10 15:27 owner: the N core was unclear — the hub is a small NOVA radar (the same idea as the hero)
+      engCore = makeRadar(cc, { mini: true });
     }
     // NOVA core: the energy sphere with the N is drawn on a canvas over this spot (see makeCore); here only the hit area and the label
     var core = svgEl("g", { transform: "translate(" + CX + " " + CY + ")", "class": "node" + (engSel === "core" ? " on" : ""), tabindex: "0", role: "button", "data-k": "core", "aria-label": t("eng.core") });
-    core.innerHTML = '<circle r="118" fill="rgba(0,0,0,0)"/><circle class="halo" r="132" fill="none" stroke="#7FD3FF" stroke-width="1.5" stroke-dasharray="3 6"/>' +
-      '<text y="166" text-anchor="middle" class="corelbl">' + esc(t("eng.core")) + "</text>";
+    core.innerHTML = '<circle r="108" fill="rgba(0,0,0,0)"/><circle class="halo" r="116" fill="none" stroke="#7FD3FF" stroke-width="1.5" stroke-dasharray="3 6"/>' +
+      '<text y="146" text-anchor="middle" class="corelbl">' + esc(t("eng.core")) + "</text>";
     map.appendChild(core);
     ENG.forEach(function (n) {
       var left = n.x < CX;
@@ -663,7 +670,7 @@
     if (det0 && det0.parentNode === list) list.insertAdjacentElement("afterend", det0);
     list.innerHTML = ["core"].concat(ENG.map(function (n) { return n.k; })).map(function (k) {
       var n = ENG.filter(function (x) { return x.k === k; })[0] || { blades: 12, sp: 5 };
-      return '<button type="button" class="eitem" data-k="' + k + '" aria-expanded="' + (k === engSel) + '" aria-controls="engDetail"><svg viewBox="-80 -80 160 160" aria-hidden="true">' + (k === "core" ? '<circle r="62" fill="rgba(0,180,216,.16)" stroke="rgba(127,211,255,.5)"/><image href="assets/img/n-holo.webp" x="-48" y="-48" width="96" height="96"/>' : turbine(52, n.blades, n.sp)) + "</svg><span><b>" + esc(engTitle(k)) + "</b><span>" + esc(engMetric(k)) + "</span></span></button>";
+      return '<button type="button" class="eitem" data-k="' + k + '" aria-expanded="' + (k === engSel) + '" aria-controls="engDetail"><svg viewBox="-80 -80 160 160" aria-hidden="true">' + (k === "core" ? '<circle r="62" fill="rgba(0,60,90,.35)" stroke="rgba(127,211,255,.55)"/><circle r="40" fill="none" stroke="rgba(127,211,255,.25)" stroke-dasharray="3 5"/><circle r="20" fill="none" stroke="rgba(127,211,255,.25)" stroke-dasharray="3 5"/><path d="M-62 0H62M0-62V62" stroke="rgba(127,211,255,.25)"/><path d="M0 0L44-44" stroke="#BEF0FF" stroke-width="2"/><circle cx="26" cy="18" r="4" fill="#3ADB93"/><circle cx="-30" cy="-12" r="3.5" fill="#FF6E86"/>' : turbine(52, n.blades, n.sp)) + "</svg><span><b>" + esc(engTitle(k)) + "</b><span>" + esc(engMetric(k)) + "</span></span></button>";
     }).join("");
     $$(".eitem", list).forEach(function (b) {
       b.addEventListener("click", function () {
@@ -921,8 +928,13 @@
   }
 
   /* ---------- go ---------- */
+  function renderHeroStats() {
+    var sc = D.scale || {}, a = $("#hs1"), b = $("#hs2");
+    if (a && sc.coins) a.textContent = num(sc.coins);
+    if (b && sc.candle_checks) b.textContent = "≈" + num(sc.candle_checks / 1e6, 1);
+  }
   function renderData() {   // everything that shows live numbers; safe to call on every refresh
-    renderStatus(); renderHeroCards(); renderTicker(); renderThink(); renderEngines(); renderPortfolio(); renderSpot(); renderOwn();
+    renderStatus(); renderHeroCards(); renderHeroStats(); renderTicker(); renderThink(); renderEngines(); renderPortfolio(); renderSpot(); renderOwn();
     var since = (H().portfolio || {}).since;
     $$("[data-i-html]").forEach(function (el) { el.innerHTML = t(el.getAttribute("data-i-html"), since ? { since: date(since, true) } : null); });
   }

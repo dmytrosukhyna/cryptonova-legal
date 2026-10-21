@@ -12,7 +12,7 @@
  "nav.lang": "Language",
  "hero.h1a": "The AI engine",
  "hero.h1b": "that never sleeps.",
- "hero.sub": "Every minute CRYPTO NOVA AI scans the crypto market. Every night it tests hundreds of new strategies. In the free app you see every trade with its entry, stop and reason, learn in 50 short lessons and ask NOVA anything, by text or voice.",
+ "hero.sub": "CRYPTO NOVA AI never stops: it watches the market, checks millions of data points of history, filters out the weak and keeps only what passed the test. In the app you see every trade with its entry, stop and reason, learn in 50 short lessons and ask NOVA anything, by text or voice.",
  "hero.note": "Free. No subscriptions. We never hold your money.",
  "cta.appstore.small": "Download on the",
  "cta.appstore.big": "App Store",
@@ -273,5 +273,12 @@
  "spot.coin.few": "coins",
  "spot.coin.many": "coins",
  "radar.scan": "SCAN · {n} COINS",
- "radar.cycle": "CYCLE {n} S"
+ "radar.cycle": "CYCLE {n} S",
+ "hero.k1": "coins watched every minute",
+ "hero.k2": "million candles of history checked a night",
+ "hero.k3": "without a single stop",
+ "think.in": "IN · {n} COINS",
+ "think.out": "IN THE PORTFOLIO",
+ "think.out.coins": "COINS",
+ "think.out.strats": "{n} STRATEGIES ON DEMO"
 }

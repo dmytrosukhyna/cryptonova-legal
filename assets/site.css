@@ -645,3 +645,9 @@ h2.display{font-size:clamp(1.45rem,1rem + 2vw,2.35rem);line-height:1.12}
 @media (max-width:640px){.thinkflow{display:block;height:170px}}
 @media (max-width:600px){#core{position:relative;inset:auto;width:100%;height:auto;aspect-ratio:1/1;grid-column:1/-1;margin:0}.corelegend{position:static;transform:none;margin:0 0 8px}}
 .bootlogo .emb{width:46px;height:46px;color:var(--ice);flex:none}
+.hstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:22px;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line);max-width:560px}
+.hstats div{padding:12px 14px 12px 0;min-width:0}.hstats div+div{padding-left:14px;border-left:1px solid var(--line)}
+.hstats b{display:block;font:760 clamp(1.35rem,1rem + 1.2vw,1.85rem)/1.05 var(--display);color:var(--ice);letter-spacing:-.03em}
+.hstats div:last-child b{color:#3ADB93}
+.hstats span{display:block;font:500 .6875rem/1.35 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+@media (max-width:420px){.hstats div{padding-right:8px}.hstats div+div{padding-left:8px}.hstats span{font-size:.6rem}}
