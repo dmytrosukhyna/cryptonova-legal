@@ -1,0 +1,169 @@
+/* CRYPTO NOVA — section styles (live portfolio, NOVA, piggy, how it works, final) */
+
+/* ---------- #live: a real LIVE readout ---------- */
+.live .big{font-variant-numeric:tabular-nums;transition:color .6s}
+.live .big.tick-up{color:#3ADB93}.live .big.tick-down{color:#FF8A9E}
+.livenote{display:flex;align-items:center;gap:8px;margin-top:10px;font:500 .75rem/1.4 var(--mono);color:var(--muted);letter-spacing:.02em}
+.livenote::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.livenote.on{color:#9FE8C6}.livenote.on::before{background:#3ADB93;box-shadow:0 0 0 0 rgba(58,219,147,.6);animation:lvPulse 1.6s ease-out infinite}
+.curve .cv-dot.live{box-shadow:0 0 0 0 rgba(58,219,147,.55);animation:lvPulse 1.6s ease-out infinite;z-index:2}
+.curve .cv-live{position:absolute;transform:translate(-100%,-170%);font:700 .6875rem/1 var(--mono);letter-spacing:.12em;color:#3ADB93;background:rgba(6,20,24,.85);border:1px solid rgba(58,219,147,.5);border-radius:6px;padding:4px 7px 4px 18px;white-space:nowrap;z-index:2}
+.curve .cv-live::before{content:"";position:absolute;left:7px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:#3ADB93;animation:lvBlink 1.2s steps(2) infinite}
+@keyframes lvPulse{0%{box-shadow:0 0 0 0 rgba(58,219,147,.55)}100%{box-shadow:0 0 0 12px rgba(58,219,147,0)}}
+@keyframes lvBlink{50%{opacity:.25}}
+
+/* ---------- #try: glass panels instead of black boxes ---------- */
+.trygrid .tool{background:linear-gradient(160deg,rgba(24,44,96,.55),rgba(10,18,44,.82) 55%,rgba(8,14,36,.9));border:1px solid rgba(127,211,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 30px 60px -30px rgba(0,0,0,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.novahead{display:flex;align-items:center;gap:16px}
+.novasph{width:76px;height:76px;flex:none;display:block}
+.novatag{font:600 .6875rem/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ice);margin:0 0 4px}
+.novabox h3{margin:0}
+.novap{color:var(--soft);margin-top:12px;font-size:.9375rem}
+.novabox .chat{background:transparent;border:0;border-top:1px solid rgba(127,211,255,.12);border-radius:0;padding:16px 2px 4px;gap:14px;min-height:260px}
+.novabox .msg{position:relative;font-size:.9375rem;line-height:1.55;animation:msgIn .35s ease-out both}
+.novabox .msg.bot{margin-left:38px;background:linear-gradient(180deg,rgba(30,58,120,.55),rgba(18,34,78,.55));border:1px solid rgba(127,211,255,.2);border-radius:4px 18px 18px 18px}
+.novabox .msg.bot::before{content:"";position:absolute;left:-38px;top:0;width:28px;height:28px;border-radius:50%;
+  background:radial-gradient(circle at 46% 44%,#F2FBFF 0,#A9E6FF 14%,#3C9BF0 40%,#1747A6 68%,#0B1F5C 90%);box-shadow:0 0 0 1px rgba(200,238,255,.75),0 0 12px rgba(110,200,255,.55)}
+.novabox .msg.me{background:linear-gradient(180deg,rgba(0,180,216,.28),rgba(0,140,190,.2));border:1px solid rgba(0,200,236,.45);border-radius:18px 4px 18px 18px;color:#EAFBFF}
+.novabox .msg.typing{min-width:64px;min-height:44px}
+.novabox .msg.typing::after{content:"";position:absolute;left:16px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--ice);box-shadow:12px 0 0 var(--ice),24px 0 0 var(--ice);animation:typeDots 1s infinite}
+@keyframes typeDots{0%{opacity:.25}50%{opacity:1}100%{opacity:.25}}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.novabox .qs{gap:8px}
+.novabox .q{background:rgba(127,211,255,.06);border:1px solid rgba(127,211,255,.28);color:#DCEBFF;border-radius:12px;padding:8px 13px;font:500 .8125rem/1.35 var(--body);transition:border-color .2s,background .2s,transform .2s}
+.novabox .q:hover{background:rgba(127,211,255,.14);border-color:var(--ice);transform:translateY(-1px)}
+.novabox .q:disabled{opacity:.45;cursor:default;transform:none}
+
+/* ---------- piggy ---------- */
+.pighead{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;align-items:center}
+.pigart{width:150px}
+.pig{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 0 10px rgba(127,211,255,.25))}
+.pigp{color:var(--soft);margin-top:6px;font-size:.9375rem}
+.pg-aura{animation:pgBreathe 4.5s ease-in-out infinite;transform-origin:114px 92px}
+.pg-body{animation:pgGlow 4.5s ease-in-out infinite}
+.pg-circuit{stroke-dasharray:3 4;animation:pgFlow 3s linear infinite}
+.pg-coin{opacity:0;transform:translateY(-14px)}
+.pig.drop .pg-coin{animation:pgDrop .9s cubic-bezier(.5,0,.7,1) both}
+.pig.drop .pg-btc{animation:pgPing .9s .55s ease-out both}
+@keyframes pgBreathe{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes pgGlow{0%,100%{stroke:#7FD3FF}50%{stroke:#BDEBFF}}
+@keyframes pgFlow{to{stroke-dashoffset:-14}}
+@keyframes pgDrop{0%{opacity:0;transform:translateY(-14px)}18%{opacity:1}70%{opacity:1;transform:translateY(28px)}100%{opacity:0;transform:translateY(36px)}}
+@keyframes pgPing{0%{filter:none}40%{filter:drop-shadow(0 0 8px rgba(255,200,97,.9))}100%{filter:none}}
+.pighow{margin-top:18px;border-top:1px solid rgba(127,211,255,.12);padding-top:14px}
+.pighow h4,.pigcalc{font:600 .75rem/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ice);margin:0}
+.pigcalc{margin-top:20px}
+.pigsteps{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px;counter-reset:none}
+.pigsteps li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;font-size:.875rem;line-height:1.45;color:var(--soft)}
+.pigsteps b{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;border:1px solid rgba(127,211,255,.4);background:rgba(127,211,255,.08);font:700 .75rem var(--mono);color:var(--ice)}
+@media (max-width:480px){.pighead{grid-template-columns:110px minmax(0,1fr);gap:12px}.pigart{width:110px}.novasph{width:60px;height:60px}}
+
+/* ---------- #start: how it works ---------- */
+.howflow{list-style:none;margin:36px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;position:relative}
+.hw{position:relative;background:linear-gradient(180deg,rgba(18,32,73,.75),rgba(10,18,44,.75));border:1px solid rgba(127,211,255,.18);border-radius:16px;padding:20px 18px 22px;min-width:0}
+.hw:not(:last-child)::after{content:"";position:absolute;right:-12px;top:38px;width:10px;height:10px;border-top:1.5px solid var(--ice);border-right:1.5px solid var(--ice);transform:rotate(45deg);opacity:.75;z-index:1}
+.hi{display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:rgba(127,211,255,.08);border:1px solid rgba(127,211,255,.3);color:var(--ice)}
+.hi svg{width:24px;height:24px}
+.hn{position:absolute;right:16px;top:18px;font:600 .75rem var(--mono);letter-spacing:.1em;color:var(--muted)}
+.hw h3{font:600 1.0625rem/1.3 var(--display);letter-spacing:-.01em;margin-top:16px}
+.hw p{color:var(--soft);font-size:.875rem;line-height:1.5;margin-top:8px}
+.hw:last-child{border-color:rgba(58,219,147,.4)}.hw:last-child .hi{color:#3ADB93;border-color:rgba(58,219,147,.45);background:rgba(58,219,147,.08)}
+@media (max-width:980px){.howflow{grid-template-columns:repeat(2,minmax(0,1fr))}.hw:nth-child(2)::after{display:none}}
+@media (max-width:560px){.howflow{grid-template-columns:1fr}.hw::after{display:none}.hw:not(:last-child)::before{content:"";position:absolute;left:40px;bottom:-12px;width:10px;height:10px;border-right:1.5px solid var(--ice);border-bottom:1.5px solid var(--ice);transform:rotate(45deg);opacity:.75}}
+
+/* how we earn */
+.earn2{margin-top:28px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:26px;align-items:center;background:linear-gradient(160deg,rgba(24,44,96,.5),rgba(10,18,44,.85));border:1px solid rgba(127,211,255,.22);border-radius:18px;padding:26px 28px}
+.earntext .kicker{margin:0}
+.earnbig{font:700 clamp(1.5rem,1.1rem + 1.4vw,2.1rem)/1.15 var(--display);letter-spacing:-.02em;color:#fff;margin:10px 0 8px}
+.earntext p:last-child{color:var(--soft);font-size:.9375rem}
+.earnflow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.earnflow li{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;font-size:.8125rem;line-height:1.4;color:var(--soft);min-width:0}
+.earnflow li:not(:last-child)::after{content:"";position:absolute;right:-11px;top:24px;width:8px;height:8px;border-top:1.5px solid var(--ice);border-right:1.5px solid var(--ice);transform:rotate(45deg)}
+.ei{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;border:1px solid rgba(127,211,255,.35);background:rgba(127,211,255,.07);color:var(--ice)}
+.ei svg{width:26px;height:26px}
+.earnflow .us .ei{border-color:rgba(58,219,147,.45);background:rgba(58,219,147,.06)}
+.earnsph{width:44px;height:44px;display:block}
+.earnrisk{grid-column:1/-1;color:var(--muted);font-size:.8125rem;margin:0;border-top:1px solid rgba(127,211,255,.12);padding-top:14px}
+@media (max-width:860px){.earn2{grid-template-columns:1fr;padding:22px 20px}}
+@media (max-width:420px){.earnflow{grid-template-columns:1fr;gap:18px}.earnflow li{flex-direction:row;text-align:left}.earnflow li:not(:last-child)::after{right:auto;left:22px;top:auto;bottom:-14px;transform:rotate(135deg)}}
+
+/* ---------- final ---------- */
+.finalsph{width:180px;height:180px;display:block}
+@media (max-width:640px){.finalsph{width:130px;height:130px}}
+
+@media (prefers-reduced-motion:reduce){.pg-aura,.pg-body,.pg-circuit,.livenote.on::before,.curve .cv-dot.live,.curve .cv-live::before,.novabox .msg{animation:none}}
+.novabox .chat.writing .msg.bot:not(.typing):last-child::after{content:"";display:inline-block;width:7px;height:1.05em;background:var(--ice);margin-left:3px;vertical-align:-3px;animation:lvBlink .8s steps(2) infinite}
+.live .big{font-size:clamp(2rem,1.3rem + 2.4vw,3.1rem);white-space:nowrap}
+.livenote{align-items:flex-start}.livenote::before{margin-top:4px}
+.pighead{grid-template-columns:170px minmax(0,1fr)}.pigart{width:170px}
+@media (max-width:480px){.pighead{grid-template-columns:118px minmax(0,1fr)}.pigart{width:118px}}
+/* the digital piggy (owner 21.10 19:00): his glass piggy floats, a bitcoin falls into the slot, the slot flashes */
+.pighead{grid-template-columns:200px minmax(0,1fr)}
+.pigart{width:200px}
+.npig{position:relative;width:100%;aspect-ratio:1312/1130;animation:npFloat 4.2s ease-in-out infinite;filter:drop-shadow(0 10px 24px rgba(40,120,255,.35))}
+.npig img{position:absolute;display:block;height:auto}
+.npig-body{left:0;top:24.96%;width:100%;z-index:2;animation:npBump 3.2s ease-in-out infinite}
+.npig-coin{left:46.9%;top:0;width:19.4%;z-index:1;animation:npCoin 3.2s cubic-bezier(.45,0,.55,1) infinite}
+.npig-flash{position:absolute;z-index:3;left:49%;top:22%;width:16%;aspect-ratio:2/1;border-radius:50%;background:radial-gradient(closest-side,rgba(255,214,140,.95),rgba(255,170,60,.35) 55%,rgba(255,170,60,0));opacity:0;animation:npFlash 3.2s ease-out infinite;pointer-events:none}
+@keyframes npFloat{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-3.5%) rotate(1.2deg)}}
+@keyframes npCoin{0%{transform:translateY(-38%) scaleX(1);opacity:0}12%{transform:translateY(0) scaleX(.86);opacity:1}26%{transform:translateY(-5%) scaleX(1)}40%{transform:translateY(0) scaleX(.86)}52%{transform:translateY(-2%) scaleX(1);opacity:1}74%{transform:translateY(78%) scaleX(.96);opacity:1}80%{transform:translateY(92%);opacity:0}100%{transform:translateY(92%);opacity:0}}
+@keyframes npFlash{0%,72%{opacity:0;transform:scale(.6)}80%{opacity:1;transform:scale(1.15)}100%{opacity:0;transform:scale(1.4)}}
+@keyframes npBump{0%,74%,100%{transform:scale(1)}80%{transform:scale(1.025)}88%{transform:scale(.995)}}
+@media (max-width:600px){.pighead{grid-template-columns:130px minmax(0,1fr)}.pigart{width:130px}}
+@media (prefers-reduced-motion:reduce){.npig,.npig-body,.npig-coin,.npig-flash{animation:none}.npig-coin{opacity:1}}
+
+/* ===== polish 21.10 19:17 (owner's list) ===== */
+/* #live: what the public portfolio holds + the engines' own accounts */
+.livesplit{margin-top:10px;display:grid;gap:4px;font:500 .78rem/1.45 var(--mono);color:var(--soft);letter-spacing:.01em}
+.livesplit p{margin:0}
+.livesplit b{color:#E6F2FF;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.livesplit b.up{color:#3ADB93}.livesplit b.down{color:#FF6E86}
+.livesplit .ls-desk{color:var(--muted)}
+
+/* buttons: keep the moving edge, drop the light sweep («разводы») */
+.badge-as::after,.btn-dl::after{display:none!important;animation:none!important}
+
+/* #try NOVA: the questions as an even grid */
+.novabox .qs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:stretch}
+.novabox .q{display:flex;align-items:center;justify-content:flex-start;text-align:left;min-height:46px;height:100%;width:100%;padding:10px 14px;margin:0}
+@media (max-width:640px){.novabox .qs{grid-template-columns:1fr}}
+
+/* #try piggy: calmer next to the rest of the page */
+.npig{filter:brightness(.8) saturate(.82) drop-shadow(0 8px 18px rgba(40,120,255,.18))}
+/* ⓘ next to the calculator labels */
+.ctrl .lb{display:inline-flex;align-items:center;gap:7px}
+.ii{display:inline-grid;place-items:center;width:18px;height:18px;padding:0;border-radius:50%;border:1px solid rgba(127,211,255,.5);background:rgba(127,211,255,.08);color:var(--ice);font:700 11px/1 var(--mono);text-transform:none;letter-spacing:0;cursor:pointer;transition:background .2s,border-color .2s}
+.ii:hover,.ii.on,.ii:focus-visible{background:rgba(127,211,255,.22);border-color:var(--ice);outline:none}
+.ii:focus-visible{box-shadow:0 0 0 2px rgba(127,211,255,.45)}
+.iitip{margin:6px 0 8px;padding:9px 12px;border-radius:10px;border:1px solid rgba(127,211,255,.3);background:rgba(10,22,48,.92);color:var(--soft);font-size:.8125rem;line-height:1.45;text-transform:none;letter-spacing:0;animation:msgIn .25s ease-out both}
+
+/* #start: arrows exactly in the middle of the cards; cards lift */
+.hw{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.hw:not(:last-child)::after{top:50%;margin-top:-5px}
+.hw:hover,.hw:focus-within,.hw.lift{transform:translateY(-4px);border-color:rgba(127,211,255,.45);box-shadow:0 16px 34px -18px rgba(40,120,255,.55)}
+.hw:last-child:hover,.hw:last-child.lift{border-color:rgba(58,219,147,.65);box-shadow:0 16px 34px -18px rgba(58,219,147,.45)}
+@media (max-width:560px){.hw:not(:last-child)::after{display:none}}
+/* how we earn: coins run along the arrows */
+.earnflow li{transition:transform .25s ease}
+.earnflow li:hover .ei,.earnflow li.lift .ei{border-color:var(--ice);box-shadow:0 0 18px rgba(127,211,255,.35)}
+.ef-run{position:absolute;left:calc(50% + 32px);width:calc(100% - 64px + 14px);top:24px;height:6px;pointer-events:none;overflow:hidden}
+.ef-run i{position:absolute;top:0;left:-6px;width:6px;height:6px;border-radius:50%;background:var(--ice);box-shadow:0 0 6px rgba(127,211,255,.8);opacity:0;animation:efRun 2.4s linear infinite}
+.ef-run.gold i{background:#FFC861;box-shadow:0 0 6px rgba(255,200,97,.8)}
+.ef-run i:nth-child(2){animation-delay:.8s}.ef-run i:nth-child(3){animation-delay:1.6s}
+.earnflow li:not(:last-child)::after{z-index:1}
+@keyframes efRun{0%{left:-6px;opacity:0}12%{opacity:1}85%{opacity:1}100%{left:calc(100% - 4px);opacity:0}}
+@media (max-width:420px){
+  .earnflow{gap:30px}
+  .earnflow .ei{flex:0 0 52px}
+  .earnflow li:not(:last-child)::after{bottom:-26px}
+  .ef-run{left:23px;top:calc(50% + 29px);width:6px;height:calc(50% - 4px)}
+  .ef-run i{left:0;animation-name:efRunV}
+}
+@keyframes efRunV{0%{top:-6px;opacity:0}12%{opacity:1}85%{opacity:1}100%{top:calc(100% - 4px);opacity:0}}
+
+/* gentle reveal */
+.rv{opacity:0;translate:0 12px;transition:opacity .6s ease,translate .6s ease}
+.rv.in{opacity:1;translate:0 0}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;translate:none;transition:none}.ef-run{display:none}.hw,.earnflow li{transition:none}}
+.livesplit .nw{white-space:nowrap}
+.ii{position:relative}.ii::before{content:"";position:absolute;inset:-11px}
