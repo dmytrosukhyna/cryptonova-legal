@@ -1039,12 +1039,17 @@
     if (a && sc.coins) a.textContent = num(sc.coins);
     if (b && sc.candle_checks) b.textContent = "≈" + num(sc.candle_checks / 1e6, 1);
   }
+  function emit(n) { try { doc.dispatchEvent(new CustomEvent(n)); } catch (e) { /* old browsers */ } }
   function renderData() {   // everything that shows live numbers; safe to call on every refresh
     renderStatus(); renderHeroCards(); renderHeroStats(); renderTicker(); renderThink(); renderEngines(); renderPortfolio(); renderSpot(); renderOwn();
+    emit("cn:data");
     var since = (H().portfolio || {}).since;
     $$("[data-i-html]").forEach(function (el) { el.innerHTML = t(el.getAttribute("data-i-html"), since ? { since: date(since, true) } : null); });
   }
-  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; ownBuilt = ""; renderPiggy(); renderOwn(); if (logTimer) startLog(); }   // interactive widgets: load and language change only
+  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; ownBuilt = ""; renderPiggy(); renderOwn(); if (logTimer) startLog(); emit("cn:static"); }
+  /* a small read-only API for the section scripts (assets/sections.js): texts, data and formatters */
+  window.CN = { t: function (k, v) { return t(k, v); }, $: $, $$: $$, esc: esc, usd: usd, num: num, lang: function () { return lang; },
+    home: function () { return H(); }, engine: function () { return E(); }, data: function () { return D; }, reduce: reduce, feed: FEED };   // interactive widgets: load and language change only
   boot(); renderData(); renderStatic(); initFlow();
   makeSystem($("#core")); startLog();
   var mq = window.matchMedia("(max-width:860px)"); if (mq.addEventListener) mq.addEventListener("change", renderEngines);

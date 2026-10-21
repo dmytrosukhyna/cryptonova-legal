@@ -5,7 +5,7 @@
 Writes: index.html, privacy.html, terms.html, support.html, delete.html, 404.html, assets/i18n.js, sitemap.xml.
 English is baked into the HTML (crawlers, no-JS); assets/site.js switches the language in the browser.
 """
-import html, json, os, re, sys, time
+import glob, html, json, os, re, sys, time
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC = os.path.join(ROOT, "tools", "src")
@@ -22,6 +22,10 @@ for l in LANGS:
     if os.path.exists(p):
         with open(p, encoding="utf-8") as f:
             T[l] = json.load(f)
+        # part catalogs <lang>.<part>.json (sections worked on in parallel) are merged in
+        for q in sorted(glob.glob(os.path.join(SRC, "i18n", f"{l}.*.json"))):
+            with open(q, encoding="utf-8") as f:
+                T[l].update(json.load(f))
 AVAIL = [l for l in LANGS if l in T]
 EN = T["en"]
 missing = {l: sorted(set(EN) - set(T[l])) for l in AVAIL if set(EN) - set(T[l])}
