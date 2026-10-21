@@ -448,6 +448,112 @@
     return { size: size };
   }
 
+  /* ---------- hero (21.10 15:40 owner: «не радар — наша AI-система, которая всё проверяет, изучает, мониторит 24/7»):
+     data streams from the sources run through layers of analysis; at every layer part of it is thrown away (red),
+     what survives lights up green and flows into the app on the phone. Under it, a live log of what the system does,
+     with the engine's real numbers. */
+  function makeSystem(cv) {
+    if (!cv || !cv.getContext) return null;
+    var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, running = false, visible = true, t0 = performance.now(), last = 0;
+    var SRC = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPERLIQUID", "NEWS", "ON-CHAIN", "1927–2026"], SRC_S = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPER", "NEWS", "CHAIN", "1927+"], L = [], P = [], phoneX = 0, glowIn = 0, sx = 0, narrow = false;
+    function size() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
+      var ph = $(".hero-phone"), cb = cv.getBoundingClientRect(), pb = ph ? ph.getBoundingClientRect() : null;
+      phoneX = pb && pb.width ? (pb.left - cb.left) * dpr : W * 0.7;
+      narrow = cv.clientWidth < 520;
+      ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace";
+      var mw = 0; (narrow ? SRC_S : SRC).forEach(function (n) { mw = Math.max(mw, ctx.measureText(n).width); });
+      sx = Math.max(W * 0.13, mw + 4 * dpr) + 6 * dpr;
+      var x0 = sx + Math.max(W * 0.06, 18 * dpr), x1 = phoneX - Math.max(W * 0.06, 16 * dpr), sizes = [6, 8, 6, 3];
+      L = sizes.map(function (n, li) { var x = x0 + (x1 - x0) * li / (sizes.length - 1); var out = []; for (var k = 0; k < n; k++) out.push({ x: x, y: Hh * (0.1 + 0.7 * (n === 1 ? 0.5 : k / (n - 1))), lit: 0 }); return out; });
+    }
+    function srcY(i) { return Hh * (0.07 + 0.76 * i / (SRC.length - 1)); }
+    function spawn() { var si = Math.floor(Math.random() * SRC.length); P.push({ seg: -1, k: Math.floor(Math.random() * L[0].length), from: { x: sx, y: srcY(si) }, s: 0, v: 1.1 + Math.random() * 0.7, bad: false, a: 1 }); }
+    function frame(now) {
+      if (!running && now !== -1) return;
+      var tm = ((now === -1 ? t0 + 4000 : now) - t0) / 1000, dt = Math.min(0.05, last ? tm - last : 0.016); last = tm;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
+      if (!L.length) size();
+      if (now !== -1 && Math.random() < dt * 14) spawn();
+      if (now === -1 && !P.length) for (var q = 0; q < 26; q++) { spawn(); var pp = P[P.length - 1]; pp.seg = Math.floor(Math.random() * 3); pp.s = Math.random(); }
+      // sources
+      ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      (narrow ? SRC_S : SRC).forEach(function (n, i) { var y = srcY(i); ctx.fillStyle = "rgba(127,211,255,.75)"; ctx.fillText(n, sx - 6 * dpr, y); ctx.fillStyle = "rgba(127,211,255,.9)"; ctx.beginPath(); ctx.arc(sx, y, 2.2 * dpr, 0, 6.2832); ctx.fill(); });
+      // edges
+      ctx.lineWidth = dpr * 0.7; ctx.strokeStyle = "rgba(127,211,255,.07)"; ctx.beginPath();
+      for (var li = 0; li < L.length - 1; li++) L[li].forEach(function (a) { L[li + 1].forEach(function (b) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); }); });
+      L[L.length - 1].forEach(function (a) { ctx.moveTo(a.x, a.y); ctx.lineTo(phoneX, a.y); });
+      ctx.stroke();
+      // pulses
+      P = P.filter(function (p) {
+        p.s += p.v * dt;
+        var A, Bp;
+        if (p.seg === -1) { A = p.from; Bp = L[0][p.k]; }
+        else if (p.seg < L.length - 1) { A = L[p.seg][p.k]; Bp = L[p.seg + 1][p.nk != null ? p.nk : (p.nk = Math.floor(Math.random() * L[p.seg + 1].length))]; }
+        else { A = L[L.length - 1][p.k]; Bp = { x: phoneX + 4 * dpr, y: A.y }; }
+        if (p.bad) { p.a -= dt * 1.8; if (p.a <= 0) return false; }
+        if (p.s >= 1 && !p.bad) {
+          if (p.seg === L.length - 1) { glowIn = 1; return false; }
+          var node = p.seg === -1 ? L[0][p.k] : L[p.seg + 1][p.nk]; node.lit = 1;
+          p.k = p.seg === -1 ? p.k : p.nk; p.nk = null; p.seg += 1; p.s = 0;
+          if (p.seg >= 1 && Math.random() < 0.36) { p.bad = true; p.s = 0; p.v *= 0.4; }
+          return true;
+        }
+        var s = Math.min(1, p.s), x = A.x + (Bp.x - A.x) * s, y = A.y + (Bp.y - A.y) * s, last2 = p.seg === L.length - 1;
+        var col = p.bad ? "255,110,134" : last2 ? "58,219,147" : "127,211,255";
+        var g = ctx.createRadialGradient(x, y, 0, x, y, 8 * dpr); g.addColorStop(0, "rgba(" + col + "," + (0.55 * p.a).toFixed(3) + ")"); g.addColorStop(1, "rgba(" + col + ",0)");
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 8 * dpr, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = "rgba(" + col + "," + p.a.toFixed(3) + ")"; ctx.beginPath(); ctx.arc(x, y, 1.9 * dpr, 0, 6.2832); ctx.fill();
+        return true;
+      });
+      // nodes
+      L.forEach(function (layer, li) {
+        layer.forEach(function (n) {
+          n.lit = Math.max(0, n.lit - dt * 2);
+          var r = (li === L.length - 1 ? 5.5 : 3.6) * dpr, col = li === L.length - 1 ? "58,219,147" : "127,211,255";
+          var g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 4); g.addColorStop(0, "rgba(" + col + "," + (0.15 + n.lit * 0.5).toFixed(3) + ")"); g.addColorStop(1, "rgba(" + col + ",0)");
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(n.x, n.y, r * 4, 0, 6.2832); ctx.fill();
+          ctx.fillStyle = "rgba(8,16,40,1)"; ctx.strokeStyle = "rgba(" + col + "," + (0.55 + n.lit * 0.45).toFixed(3) + ")"; ctx.lineWidth = 1.3 * dpr;
+          ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill(); ctx.stroke();
+        });
+      });
+      // layer captions
+      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = "rgba(127,211,255,.6)";
+      ["sys.l1", "sys.l2", "sys.l3", "sys.l4"].forEach(function (k, i) { if (L[i]) ctx.fillText(t(k), L[i][0].x, Hh * (narrow && i % 2 ? 0.94 : 0.88)); });
+      glowIn = Math.max(0, glowIn - dt * 1.6);
+      var ph = $(".hero-phone .phone"); if (ph) ph.style.boxShadow = "0 0 0 1px rgba(127,211,255,.25),0 0 " + (30 + glowIn * 40).toFixed(0) + "px " + (glowIn * 6).toFixed(0) + "px rgba(58,219,147," + (0.15 + glowIn * 0.35).toFixed(2) + "),0 30px 60px -20px rgba(0,0,0,.6)";
+      if (now !== -1) requestAnimationFrame(frame);
+    }
+    function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; last = 0; requestAnimationFrame(frame); } else if (!want) running = false; }
+    size(); window.addEventListener("resize", function () { size(); if (!running) frame(-1); });
+    doc.addEventListener("visibilitychange", setRun);
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; setRun(); }).observe(cv);
+    if (reduce) frame(-1); else setRun();
+    setTimeout(size, 600);
+    return { size: size };
+  }
+  /* the live log under the hero picture: real engine numbers, one line every ~1.6 s */
+  var logTimer = null;
+  function startLog() {
+    var el = $("#syslog"); if (!el) return;
+    if (logTimer) clearInterval(logTimer);
+    var i = 0;
+    function lines() {
+      var e = E(), sc = D.scale || {}, h = (D.scorecard || {}).headline || {}, c = (D.conveyor || {}).counts || {}, st = (D.risk || {}).state || "OK", sp = H().spot || {};
+      var out = [t("log.scan", { n: num(sc.coins || 150), f: num(sc.fut_markets || 18) }), t("log.lab", { a: num(e.lab_tried || 0), b: num(e.lab_tested || 0), c: num(e.lab_passed || 0), d: num(e.lab_reliable || 0) }),
+        t("log.drop", { n: num(Math.max(0, (e.lab_tried || 0) - (e.lab_reliable || 0))) }), t("log.hist", { n: num((sc.candle_checks || 0) / 1e6, 1) }),
+        st === "OK" ? t("log.risk") : "!" + t("log.riskw"), t("log.conv", { n: num(c.paper || 0) }), t("log.port", { n: num(sp.n_coins || 0) }), t("log.ledger", { n: num(h.recorded || 0) })];
+      return out.filter(Boolean);
+    }
+    function add() {
+      var L = lines(), d = new Date(), hh = function (n) { return ("0" + n).slice(-2); };
+      var row = doc.createElement("div"); row.innerHTML = '<span class="ts">' + hh(d.getHours()) + ":" + hh(d.getMinutes()) + ":" + hh(d.getSeconds()) + "</span> " + (function (x) { return x.charAt(0) === "!" ? esc(x.slice(1)) + ' <span class="wn">!</span>' : esc(x) + ' <span class="ok">OK</span>'; })(L[i++ % L.length]);
+      el.appendChild(row); while (el.children.length > 4) el.removeChild(el.firstChild);
+    }
+    for (var k = 0; k < 4; k++) add();
+    if (!reduce) logTimer = setInterval(function () { if (!doc.hidden) add(); }, 1600);
+  }
+
   /* ---------- boot: a short mission-control start, once per visit ---------- */
   function boot() {
     var b = $("#boot"); if (!b) return;
@@ -838,7 +944,7 @@
     }).join("");
     var d = $("#tabdesc"); if (d) d.textContent = t("tab." + tabKey + ".p");
     $$("#tabs .tab").forEach(function (b) { b.setAttribute("aria-label", t("tab." + b.getAttribute("data-k") + ".t")); });
-    var hs = $("#heroScr"); if (hs) hs.src = "assets/img/screens/" + lang + "/intro.webp";
+    var hs = $("#heroScr"); if (hs) hs.src = "assets/img/screens/" + lang + "/home.webp";
     if ("requestIdleCallback" in window) requestIdleCallback(preload); else setTimeout(preload, 1500);
   }
   function preload() { $$("#scr img[data-src]").forEach(function (im) { im.src = im.getAttribute("data-src"); im.removeAttribute("data-src"); }); }
@@ -938,9 +1044,9 @@
     var since = (H().portfolio || {}).since;
     $$("[data-i-html]").forEach(function (el) { el.innerHTML = t(el.getAttribute("data-i-html"), since ? { since: date(since, true) } : null); });
   }
-  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; ownBuilt = ""; renderPiggy(); renderOwn(); }   // interactive widgets: load and language change only
+  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; ownBuilt = ""; renderPiggy(); renderOwn(); if (logTimer) startLog(); }   // interactive widgets: load and language change only
   boot(); renderData(); renderStatic(); initFlow();
-  makeRadar($("#core"));
+  makeSystem($("#core")); startLog();
   var mq = window.matchMedia("(max-width:860px)"); if (mq.addEventListener) mq.addEventListener("change", renderEngines);
   if (window.fetch) { loadAll(); setInterval(function () { if (!doc.hidden) loadAll(); }, 5 * 60000); }
   setInterval(renderStatus, 60000);

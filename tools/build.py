@@ -60,11 +60,18 @@ def nova():
 DL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M12 7.5v7M9.2 11.8 12 14.6l2.8-2.8M10.5 18.5h3"/></svg>'
 
 
+APPLE = ('<svg class="apl" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 1.43c0 1.14-.49 2.27-1.18 3.08-.74.9-1.99 1.57-2.99 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.57-2.27 1.21-2.98.8-.94 2.14-1.64 3.25-1.68.03.13.05.28.05.43zm4.56 15.71c-.03.07-.46 1.58-1.52 3.12-.94 1.34-1.94 2.71-3.43 2.71-1.52 0-1.9-.88-3.63-.88-1.7 0-2.3.91-3.67.91-1.38 0-2.33-1.26-3.43-2.8-1.29-1.82-2.32-4.63-2.32-7.28 0-4.28 2.8-6.55 5.55-6.55 1.45 0 2.68.95 3.6.95.87 0 2.22-1.01 3.9-1.01.61 0 2.89.06 4.37 2.19-.13.09-2.38 1.37-2.38 4.19 0 3.26 2.85 4.42 2.96 4.45z"/></svg>')
+DROID = ('<svg class="drd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">'
+         '<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>')
+
+
 def stores():
-    return (f'<a class="store main" href="{APPSTORE}">{DL}<span><small data-i="cta.appstore.small">{e("cta.appstore.small")}</small>'
-            f'<strong data-i="cta.appstore.big">{e("cta.appstore.big")}</strong></span></a>'
-            f'<span class="store soon" aria-disabled="true">{DL}<span><small data-i="cta.play.small">{e("cta.play.small")}</small>'
-            f'<strong data-i="cta.play.big">{e("cta.play.big")}</strong></span><span class="tag" data-i="cta.play.soon">{e("cta.play.soon")}</span></span>')
+    # 21.10 owner: «скачать … уродливое» — the App Store button in the familiar black badge style; Android is a quiet «скоро»
+    # (no Google Play badge until the app is actually there)
+    return (f'<a class="badge-as" href="{APPSTORE}" aria-label="App Store">{APPLE}<span><small data-i="cta.appstore.small">{e("cta.appstore.small")}</small>'
+            f'<strong>App Store</strong></span></a>'
+            f'<span class="badge-soon" aria-disabled="true">{DROID}<span><small data-i="cta.play.small">{e("cta.play.small")}</small>'
+            f'<strong data-i="cta.play.soon">{e("cta.play.soon")}</strong></span></span>')
 
 
 ICONS = {

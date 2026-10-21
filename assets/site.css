@@ -651,3 +651,55 @@ h2.display{font-size:clamp(1.45rem,1rem + 2vw,2.35rem);line-height:1.12}
 .hstats div:last-child b{color:#3ADB93}
 .hstats span{display:block;font:500 .6875rem/1.35 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px}
 @media (max-width:420px){.hstats div{padding-right:8px}.hstats div+div{padding-left:8px}.hstats span{font-size:.6rem}}
+
+/* ===== v4 hero (21.10 15:40): the AI system flows into the app — no radar here ===== */
+.stage{aspect-ratio:1/0.92}
+.stage .fcard,.corelegend{display:none!important}
+#core{position:absolute;inset:0;width:100%;height:100%}
+.stage .hero-phone{display:block;position:absolute;left:auto;right:0;top:44%;width:34%;transform:translateY(-50%);perspective:none}
+.stage .hero-phone .phone{transform:none;animation:none;width:100%;border-radius:36px;padding:8px}
+.stage .hero-phone .phone .scr{border-radius:28px}
+.stage .hero-phone .phone .island{top:14px;height:16px}
+.syslog{position:absolute;left:0;bottom:0;width:62%;font:500 11px/1.65 var(--mono);color:#9fd8ff;background:rgba(4,9,22,.78);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:calc(4 * 1.65em + 16px)}
+.syslog div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.syslog .ts{color:var(--muted)}.syslog .ok{color:#3ADB93}
+@media (max-width:600px){
+  .stage{display:block;aspect-ratio:auto}
+  #core{position:relative;inset:auto;width:100%;aspect-ratio:1/0.95;height:auto;margin:0}
+  .stage .hero-phone{top:38%;width:36%}
+  .syslog{position:relative;width:100%;margin-top:8px;font-size:10.5px}
+}
+/* store badges */
+.stores{align-items:center}
+.badge-as{display:inline-flex;align-items:center;gap:10px;background:#000;color:#fff;border:1px solid #a6a6a6;border-radius:12px;padding:8px 18px 8px 14px;text-decoration:none;min-width:180px;transition:transform .15s,box-shadow .15s}
+.badge-as:hover{color:#fff;transform:translateY(-1px);box-shadow:0 10px 30px -10px rgba(127,211,255,.5)}
+.badge-as .apl{width:28px;height:28px;flex:none}
+.badge-as small{display:block;font:500 11px/1.1 var(--body);letter-spacing:.01em;color:#fff}
+.badge-as strong{display:block;font:600 22px/1.1 -apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif;letter-spacing:-.02em;margin-top:1px}
+.badge-soon{display:inline-flex;align-items:center;gap:10px;border:1px dashed var(--line-2);border-radius:12px;padding:8px 16px 8px 12px;color:var(--soft);min-width:170px}
+.badge-soon .drd{width:22px;height:22px;flex:none;color:var(--muted)}
+.badge-soon small{display:block;font:500 11px/1.1 var(--body);color:var(--muted)}
+.badge-soon strong{display:block;font:600 15px/1.25 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--soft)}
+@media (max-width:400px){.badge-as,.badge-soon{flex:1 1 100%;justify-content:center}}
+/* numbers centred and even */
+.hstats div{text-align:center;padding:12px 8px}.hstats div+div{padding-left:8px}
+.tsteps .big{font-variant-numeric:tabular-nums}
+/* v4.1: the log sits under the picture, never on top of it */
+#core{top:0;left:0;right:auto;bottom:auto;inset:auto;width:100%;height:calc(100% - 104px)}
+.stage .hero-phone{top:calc((100% - 104px) / 2);width:32%}
+.syslog{left:0;right:0;bottom:0;width:auto}
+.syslog .wn{color:#FFC861}
+@media (max-width:600px){
+  #core{height:auto}
+  .stage .hero-phone{top:calc((100vw - 32px) * 0.475);width:34%}
+  .syslog{left:auto;right:auto;bottom:auto}
+  .hstats span{letter-spacing:.03em}
+}
+.hero .wrap>*{min-width:0}
+@media (max-width:900px){.hero .wrap{grid-template-columns:minmax(0,1fr)}}
+.syslog{max-width:100%;overflow:hidden}
+@media (max-width:600px){
+  .syslog{min-height:calc(5 * 1.65em + 16px)}
+  .syslog div{white-space:normal;overflow:visible;text-overflow:clip;padding-left:0}
+  .syslog .ts{display:none}
+}
