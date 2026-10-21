@@ -206,6 +206,9 @@
      A glass sphere with a geodesic «filter» net, plasma filaments inside, the N at the centre. In the hero, coins drift
      in: the coins the system holds in its spot portfolio pass the filter and are drawn in, others bounce off the shield. */
   var LOGO = new Image(); LOGO.decoding = "async"; LOGO.src = "assets/img/n-holo.webp";
+  var COINCOL = { BTC: "#F7931A", ETH: "#8A92B2", SOL: "#9945FF", XRP: "#5B7FA6", BNB: "#F3BA2F", DOGE: "#C2A633", ADA: "#3468D1", LINK: "#2A5ADA", AVAX: "#E84142", SUI: "#4DA2FF", TON: "#0098EA", DOT: "#E6007A", NEAR: "#00C08B", LTC: "#A6A9AA", UNI: "#FF5CA8", TRX: "#EB0029", APT: "#3BD6B4", ARB: "#28A0F0", OP: "#FF0420", INJ: "#00A3FF", HBAR: "#7A7A7A", XLM: "#5AA1C9", ATOM: "#6F7390", FIL: "#0090FF", HYPE: "#5CE1C6", ENA: "#7B7B9A", PEPE: "#3D9B3A", SHIB: "#F06E28", WLD: "#9A9A9A", TAO: "#B8B8B8", ZEC: "#ECB244", XMR: "#FF6600", BCH: "#0AC18E", ETC: "#3AB83A", AAVE: "#B6509E", ONDO: "#5A7BD8", STX: "#FC6432", TIA: "#7B2BF9", SEI: "#9E1F19", RENDER: "#E4342F", PENDLE: "#29C3B1", CRV: "#40649F", ALGO: "#6D6D6D", ICP: "#29ABE2", VET: "#15BDFF", MNT: "#65B3AE", CRO: "#103F68" };
+  var GLYPH = { BTC: "₿", ETH: "Ξ", LTC: "Ł", DOGE: "Ð", XRP: "X", SOL: "S", ADA: "₳" };
+  function hashS(x) { var h = 0; for (var i = 0; i < x.length; i++) h = (h * 31 + x.charCodeAt(i)) | 0; return Math.abs(h); }
   var STABLE = { USDT: 1, USDC: 1, DAI: 1, FDUSD: 1, USDE: 1, USDS: 1, PYUSD: 1, TUSD: 1, USD1: 1, XAUT: 1, PAXG: 1, WBTC: 1, WETH: 1, STETH: 1, WSTETH: 1, WEETH: 1, CBBTC: 1, LEO: 1, WBT: 1, BUIDL: 1, USDTB: 1, BSC: 1 };
   function corePool() {
     var sp = H().spot || {}, ok = (sp.movers || []).map(function (m) { return m.sym; }).filter(Boolean);
@@ -452,76 +455,91 @@
      data streams from the sources run through layers of analysis; at every layer part of it is thrown away (red),
      what survives lights up green and flows into the app on the phone. Under it, a live log of what the system does,
      with the engine's real numbers. */
+  /* ---------- hero: the AI system flows into the app (owner 21.10 16:20) ----------
+     sources → 01 collect → 02 analyse → 03 test → 04 NOVA AI (the sphere) → the phone. Weak signals turn red and drop;
+     the ones NOVA AI selects fly green into the phone, and the phone's balance follows the live portfolio value. */
   function makeSystem(cv) {
     if (!cv || !cv.getContext) return null;
     var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, running = false, visible = true, t0 = performance.now(), last = 0;
-    var SRC = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPERLIQUID", "NEWS", "ON-CHAIN", "1927–2026"], SRC_S = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPER", "NEWS", "CHAIN", "1927+"], L = [], P = [], phoneX = 0, glowIn = 0, sx = 0, narrow = false;
+    var SRC = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPERLIQUID", "NEWS", "ON-CHAIN", "1927–2026"], SRC_S = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPER", "NEWS", "CHAIN", "1927+"];
+    var L = [], P = [], phoneX = 0, phoneY = 0, glowIn = 0, sx = 0, narrow = false, AI = { x: 0, y: 0, r: 0, hit: 0 }, act = [0, 0, 0, 0];
+    var chips = $$("#sysflow li");
     function size() {
       dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
       var ph = $(".hero-phone"), cb = cv.getBoundingClientRect(), pb = ph ? ph.getBoundingClientRect() : null;
-      phoneX = pb && pb.width ? (pb.left - cb.left) * dpr : W * 0.7;
+      phoneX = pb && pb.width ? (pb.left - cb.left) * dpr : W * 0.7; phoneY = pb && pb.height ? (pb.top - cb.top + pb.height * 0.42) * dpr : Hh / 2;
       narrow = cv.clientWidth < 520;
       ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace";
       var mw = 0; (narrow ? SRC_S : SRC).forEach(function (n) { mw = Math.max(mw, ctx.measureText(n).width); });
-      sx = Math.max(W * 0.13, mw + 4 * dpr) + 6 * dpr;
-      var x0 = sx + Math.max(W * 0.06, 18 * dpr), x1 = phoneX - Math.max(W * 0.06, 16 * dpr), sizes = [6, 8, 6, 3];
-      L = sizes.map(function (n, li) { var x = x0 + (x1 - x0) * li / (sizes.length - 1); var out = []; for (var k = 0; k < n; k++) out.push({ x: x, y: Hh * (0.1 + 0.7 * (n === 1 ? 0.5 : k / (n - 1))), lit: 0 }); return out; });
+      sx = Math.max(W * 0.11, mw + 4 * dpr) + 6 * dpr;
+      AI.r = Math.max(16 * dpr, Math.min(W * 0.06, Hh * 0.1)); AI.x = phoneX - AI.r * 1.5 - Math.max(W * 0.03, 10 * dpr); AI.y = Hh * 0.47;
+      var x0 = sx + Math.max(W * 0.05, 16 * dpr), x1 = AI.x - AI.r * 1.6 - Math.max(W * 0.04, 14 * dpr), sizes = [6, 8, 6];
+      L = sizes.map(function (n, li) { var x = x0 + (x1 - x0) * li / (sizes.length - 1); var out = []; for (var k = 0; k < n; k++) out.push({ x: x, y: Hh * (0.08 + 0.78 * (n === 1 ? 0.5 : k / (n - 1))), lit: 0 }); return out; });
     }
-    function srcY(i) { return Hh * (0.07 + 0.76 * i / (SRC.length - 1)); }
+    function srcY(i) { return Hh * (0.06 + 0.82 * i / (SRC.length - 1)); }
     function spawn() { var si = Math.floor(Math.random() * SRC.length); P.push({ seg: -1, k: Math.floor(Math.random() * L[0].length), from: { x: sx, y: srcY(si) }, s: 0, v: 1.1 + Math.random() * 0.7, bad: false, a: 1 }); }
+    function glow(x, y, r, col, a) { var g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, "rgba(" + col + "," + a.toFixed(3) + ")"); g.addColorStop(1, "rgba(" + col + ",0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); }
     function frame(now) {
       if (!running && now !== -1) return;
-      var tm = ((now === -1 ? t0 + 4000 : now) - t0) / 1000, dt = Math.min(0.05, last ? tm - last : 0.016); last = tm;
+      var tm = Math.max(0, ((now === -1 ? t0 + 4000 : now) - t0) / 1000), dt = Math.min(0.05, last ? tm - last : 0.016); last = tm;
       ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
       if (!L.length) size();
       if (now !== -1 && Math.random() < dt * 14) spawn();
-      if (now === -1 && !P.length) for (var q = 0; q < 26; q++) { spawn(); var pp = P[P.length - 1]; pp.seg = Math.floor(Math.random() * 3); pp.s = Math.random(); }
+      if (now === -1 && !P.length) for (var q = 0; q < 26; q++) { spawn(); var pp = P[P.length - 1]; pp.seg = Math.floor(Math.random() * 4) - 1; if (pp.seg >= 0) pp.k = Math.floor(Math.random() * L[Math.min(pp.seg, 2)].length); pp.s = Math.random(); }
       // sources
       ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
       (narrow ? SRC_S : SRC).forEach(function (n, i) { var y = srcY(i); ctx.fillStyle = "rgba(127,211,255,.75)"; ctx.fillText(n, sx - 6 * dpr, y); ctx.fillStyle = "rgba(127,211,255,.9)"; ctx.beginPath(); ctx.arc(sx, y, 2.2 * dpr, 0, 6.2832); ctx.fill(); });
-      // edges
+      // wires: layers, layer 3 → NOVA AI, NOVA AI → phone
       ctx.lineWidth = dpr * 0.7; ctx.strokeStyle = "rgba(127,211,255,.07)"; ctx.beginPath();
       for (var li = 0; li < L.length - 1; li++) L[li].forEach(function (a) { L[li + 1].forEach(function (b) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); }); });
-      L[L.length - 1].forEach(function (a) { ctx.moveTo(a.x, a.y); ctx.lineTo(phoneX, a.y); });
+      L[2].forEach(function (a) { ctx.moveTo(a.x, a.y); ctx.lineTo(AI.x - AI.r * 0.6, AI.y + (a.y - AI.y) * 0.12); });
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(58,219,147," + (0.16 + glowIn * 0.3).toFixed(3) + ")"; ctx.lineWidth = 1.2 * dpr; ctx.beginPath();
+      [-1, 0, 1].forEach(function (o) { ctx.moveTo(AI.x + AI.r * 0.6, AI.y + o * AI.r * 0.2); ctx.lineTo(phoneX, phoneY + o * AI.r * 0.5); });
       ctx.stroke();
       // pulses
       P = P.filter(function (p) {
         p.s += p.v * dt;
         var A, Bp;
         if (p.seg === -1) { A = p.from; Bp = L[0][p.k]; }
-        else if (p.seg < L.length - 1) { A = L[p.seg][p.k]; Bp = L[p.seg + 1][p.nk != null ? p.nk : (p.nk = Math.floor(Math.random() * L[p.seg + 1].length))]; }
-        else { A = L[L.length - 1][p.k]; Bp = { x: phoneX + 4 * dpr, y: A.y }; }
+        else if (p.seg < 2) { A = L[p.seg][p.k]; Bp = L[p.seg + 1][p.nk != null ? p.nk : (p.nk = Math.floor(Math.random() * L[p.seg + 1].length))]; }
+        else if (p.seg === 2) { A = L[2][p.k]; Bp = { x: AI.x - AI.r * 0.6, y: AI.y + (A.y - AI.y) * 0.12 }; }
+        else { A = { x: AI.x + AI.r * 0.6, y: AI.y + p.o * AI.r * 0.2 }; Bp = { x: phoneX + 2 * dpr, y: phoneY + p.o * AI.r * 0.5 }; }
         if (p.bad) { p.a -= dt * 1.8; if (p.a <= 0) return false; }
         if (p.s >= 1 && !p.bad) {
-          if (p.seg === L.length - 1) { glowIn = 1; return false; }
-          var node = p.seg === -1 ? L[0][p.k] : L[p.seg + 1][p.nk]; node.lit = 1;
+          if (p.seg === 3) { glowIn = 1; act[3] = 1; phoneArrive(); return false; }
+          if (p.seg === 2) { AI.hit = 1; act[3] = Math.max(act[3], 0.6); if (Math.random() < 0.5) { p.seg = 3; p.s = 0; p.v = 1.4; p.o = Math.floor(Math.random() * 3) - 1; return true; } return false; }
+          var node = p.seg === -1 ? L[0][p.k] : L[p.seg + 1][p.nk]; node.lit = 1; act[p.seg + 1] = 1;
           p.k = p.seg === -1 ? p.k : p.nk; p.nk = null; p.seg += 1; p.s = 0;
-          if (p.seg >= 1 && Math.random() < 0.36) { p.bad = true; p.s = 0; p.v *= 0.4; }
+          if (p.seg >= 1 && Math.random() < 0.34) { p.bad = true; p.s = 0; p.v *= 0.4; }
           return true;
         }
-        var s = Math.min(1, p.s), x = A.x + (Bp.x - A.x) * s, y = A.y + (Bp.y - A.y) * s, last2 = p.seg === L.length - 1;
-        var col = p.bad ? "255,110,134" : last2 ? "58,219,147" : "127,211,255";
-        var g = ctx.createRadialGradient(x, y, 0, x, y, 8 * dpr); g.addColorStop(0, "rgba(" + col + "," + (0.55 * p.a).toFixed(3) + ")"); g.addColorStop(1, "rgba(" + col + ",0)");
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 8 * dpr, 0, 6.2832); ctx.fill();
-        ctx.fillStyle = "rgba(" + col + "," + p.a.toFixed(3) + ")"; ctx.beginPath(); ctx.arc(x, y, 1.9 * dpr, 0, 6.2832); ctx.fill();
+        var s = Math.min(1, p.s), x = A.x + (Bp.x - A.x) * s, y = A.y + (Bp.y - A.y) * s;
+        var col = p.bad ? "255,110,134" : p.seg === 3 ? "58,219,147" : "127,211,255";
+        glow(x, y, 8 * dpr, col, 0.55 * p.a);
+        ctx.fillStyle = "rgba(" + col + "," + p.a.toFixed(3) + ")"; ctx.beginPath(); ctx.arc(x, y, (p.seg === 3 ? 2.4 : 1.9) * dpr, 0, 6.2832); ctx.fill();
         return true;
       });
       // nodes
-      L.forEach(function (layer, li) {
+      L.forEach(function (layer) {
         layer.forEach(function (n) {
           n.lit = Math.max(0, n.lit - dt * 2);
-          var r = (li === L.length - 1 ? 5.5 : 3.6) * dpr, col = li === L.length - 1 ? "58,219,147" : "127,211,255";
-          var g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r * 4); g.addColorStop(0, "rgba(" + col + "," + (0.15 + n.lit * 0.5).toFixed(3) + ")"); g.addColorStop(1, "rgba(" + col + ",0)");
-          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(n.x, n.y, r * 4, 0, 6.2832); ctx.fill();
-          ctx.fillStyle = "rgba(8,16,40,1)"; ctx.strokeStyle = "rgba(" + col + "," + (0.55 + n.lit * 0.45).toFixed(3) + ")"; ctx.lineWidth = 1.3 * dpr;
+          var r = 3.6 * dpr;
+          glow(n.x, n.y, r * 4, "127,211,255", 0.15 + n.lit * 0.5);
+          ctx.fillStyle = "rgba(8,16,40,1)"; ctx.strokeStyle = "rgba(127,211,255," + (0.55 + n.lit * 0.45).toFixed(3) + ")"; ctx.lineWidth = 1.3 * dpr;
           ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill(); ctx.stroke();
         });
       });
-      // layer captions
-      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = "rgba(127,211,255,.6)";
-      ["sys.l1", "sys.l2", "sys.l3", "sys.l4"].forEach(function (k, i) { if (L[i]) ctx.fillText(t(k), L[i][0].x, Hh * (narrow && i % 2 ? 0.94 : 0.88)); });
+      // NOVA AI: the brand sphere decides
+      AI.hit = Math.max(0, AI.hit - dt * 1.4);
+      if (AI.hit > 0.02) glow(AI.x, AI.y, AI.r * 2.1, "120,210,255", 0.35 * AI.hit);
+      if (window.NovaSphere) NovaSphere.draw(ctx, AI.x, AI.y, AI.r * 2.1, tm, { busy: AI.hit > 0.5, still: false });
+      ctx.font = "700 " + Math.round(9.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = "#BFEAFF";
+      ctx.fillText("NOVA AI", AI.x, AI.y + AI.r * 1.75);
       glowIn = Math.max(0, glowIn - dt * 1.6);
       var ph = $(".hero-phone .phone"); if (ph) ph.style.boxShadow = "0 0 0 1px rgba(127,211,255,.25),0 0 " + (30 + glowIn * 40).toFixed(0) + "px " + (glowIn * 6).toFixed(0) + "px rgba(58,219,147," + (0.15 + glowIn * 0.35).toFixed(2) + "),0 30px 60px -20px rgba(0,0,0,.6)";
+      // the 01–04 chips under the picture light up with their stage
+      for (var c = 0; c < 4; c++) { act[c] = Math.max(now === -1 ? 0.5 : 0, act[c] - dt * 1.2); if (chips[c]) chips[c].style.setProperty("--a", act[c].toFixed(2)); }
       if (now !== -1) requestAnimationFrame(frame);
     }
     function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; last = 0; requestAnimationFrame(frame); } else if (!want) running = false; }
@@ -529,9 +547,61 @@
     doc.addEventListener("visibilitychange", setRun);
     if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; setRun(); }).observe(cv);
     if (reduce) frame(-1); else setRun();
-    setTimeout(size, 600);
+    setTimeout(function () { size(); if (!running) frame(-1); }, 600);
     return { size: size };
   }
+
+  /* ---------- the phone in the hero: drawn in code, the new app home ----------
+     Real numbers only: the public portfolio from the feed (and its live value from #live via "cn:pflive"),
+     the open trades of CRYPTO NOVA. When a selected signal flies in, the balance moves to the latest value. */
+  var PH = { shown: null, target: null, pnl: null, pct: null, row: 0, anim: 0 };
+  function renderPhone() {
+    var el = $("#heroScr"); if (!el) return;
+    var p = H().portfolio || {}, open = ((H().futures || {}).open || []).slice(0, 5);
+    if (PH.target == null && p.value_usd != null) { PH.target = p.value_usd; PH.pnl = p.pnl_usd; PH.pct = p.pnl_pct; }
+    if (PH.shown == null) PH.shown = PH.target;
+    var tabs = ["M3 11l9-7 9 7v9H3z", "M3 17l6-6 4 4 8-8", "", "M12 3a9 9 0 1 0 9 9h-9z", "M4 5h16v14H4zM8 9h8M8 13h5"];
+    el.innerHTML = '<div class="ph"><div class="ph-top"><canvas class="ph-logo" data-sphere aria-hidden="true"></canvas><b>CRYPTO NOVA</b><span class="ph-mode"><i></i>PUBLIC · LIVE</span></div>' +
+      '<div class="ph-card"><div class="ph-k">' + esc(t("ph.portfolio")) + '</div><div class="ph-val" id="phVal">' + (PH.shown != null ? usd(PH.shown) : "—") + '</div>' +
+      '<div class="ph-pnl" id="phPnl"></div><div class="ph-chart" id="phChart"></div></div>' +
+      (function () { var sp = H().spot || {}, fu = H().futures || {};
+        function tile(k, o) { var v = o.pct; return '<div class="ph-tile"><div class="ph-k">' + esc(k) + '</div><b class="' + ((v || 0) >= 0 ? "up" : "down") + '">' + (v != null ? pct(v) : "—") + "</b><small>" + (o.usd != null ? signed(o.usd, usd(Math.abs(o.usd))) : "") + "</small></div>"; }
+        return '<div class="ph-tiles">' + tile(t("ph.spot", { n: num(sp.n_coins || 0) }), sp) + tile(t("ph.fut"), fu) + "</div>"; })() +
+      '<div class="ph-k2">' + esc(t("ph.signals")) + '</div><ul class="ph-sig" id="phSig">' +
+      open.map(function (o, i) { var long = String(o.side).toUpperCase() !== "SHORT", v = o.pct || 0;
+        return '<li data-i="' + i + '"><b>' + esc(o.sym) + '</b><span class="' + (long ? "up" : "down") + '">' + esc(t(long ? "tc.long" : "tc.short")) + '</span><em class="' + (v >= 0 ? "up" : "down") + '">' + pct(v) + "</em></li>"; }).join("") +
+      (open.length ? "" : '<li class="none">' + esc(t("ph.none")) + "</li>") + "</ul>" +
+      '<div class="ph-tabs">' + tabs.map(function (d, i) { return i === 2 ? '<canvas class="ph-nova" data-sphere aria-hidden="true"></canvas>' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + d + '"/></svg>'; }).join("") + "</div></div>";
+    phPnl(); spark($("#phChart"), p.curve, p.start_usd || 10000);
+    if (window.NovaSphere) NovaSphere.auto();
+  }
+  function phPnl() {
+    var e = $("#phPnl"); if (!e || PH.pnl == null) return;
+    e.className = "ph-pnl " + (PH.pnl >= 0 ? "up" : "down"); e.textContent = signed(PH.pnl, usd(Math.abs(PH.pnl))) + " · " + pct(PH.pct || 0);
+  }
+  function phoneArrive() {
+    var v = $("#phVal"), rows = $$("#phSig li[data-i]");
+    if (rows.length) { rows.forEach(function (r) { r.classList.remove("hit"); }); var r = rows[PH.row++ % rows.length]; void r.offsetWidth; r.classList.add("hit"); }
+    if (!v || PH.target == null || PH.shown == null) return;
+    if (Math.abs(PH.target - PH.shown) < 0.005) { v.classList.remove("tick"); void v.offsetWidth; v.classList.add("tick"); return; }
+    var from = PH.shown, to = PH.target, st = performance.now(), dir = to > from ? "up" : "down";
+    v.classList.remove("up", "down"); v.classList.add(dir);
+    cancelAnimationFrame(PH.anim);
+    (function step(n) { var k = Math.min(1, (n - st) / 700), e = 1 - Math.pow(1 - k, 3); PH.shown = from + (to - from) * e; v.textContent = usd(PH.shown, 2); if (k < 1) PH.anim = requestAnimationFrame(step); else setTimeout(function () { v.classList.remove("up", "down"); }, 600); })(st);
+    phPnl();
+  }
+  doc.addEventListener("cn:pflive", function (ev) {
+    var d = ev.detail || {}; if (typeof d.value !== "number") return;
+    PH.target = d.value; if (typeof d.pnl === "number") PH.pnl = d.pnl; if (typeof d.pct === "number") PH.pct = d.pct;
+    if (PH.shown == null) { PH.shown = d.value; var v = $("#phVal"); if (v) v.textContent = usd(d.value, 2); phPnl(); }
+    if (reduce) phoneArrive();
+  });
+  function renderFlowChips() {
+    var e = E(), sc = D.scale || {};
+    var v = [t("sys.f1", { n: num(sc.coins || 150) }), t("sys.f2", { n: num(e.lab_tried || 0) }), t("sys.f3", { y: sc.since || 1927 }), t("sys.f4")];
+    v.forEach(function (x, i) { var el = $("#sf" + (i + 1)); if (el) el.textContent = x; });
+  }
+
   /* the live log under the hero picture: real engine numbers, one line every ~1.6 s */
   var logTimer = null;
   function startLog() {
@@ -592,6 +662,16 @@
     ];
     ol.innerHTML = rows.map(function (r, i) { return '<li><div class="ix">0' + (i + 1) + '</div><h3>' + esc(t("think.s" + (i + 1) + ".t")) + '</h3><div class="big">' + esc(r[0]) + "</div><p>" + esc(r[1]) + "</p></li>"; }).join("");
     if (!thinkRun) thinkRun = thinkFlow($("#thinkCv"));
+    var ai = $("#aiSteps");
+    if (ai) {
+      var A = [
+        t("ai.s1.p", { n: num(sc.coins || 150), f: num(sc.fut_markets || 18) }),
+        t("ai.s2.p", { a: num(e.lab_tried || 0), m: num(sc.lab_markets || 20), y: sc.since || 1927, c: num((sc.candle_checks || 0) / 1e6, 1) }),
+        t("ai.s3.p", { p: num(h.checked || 0) }),
+        t("ai.s4.p")
+      ];
+      ai.innerHTML = A.map(function (x, i) { return '<li><b>0' + (i + 1) + '</b><div><h4>' + esc(t("ai.s" + (i + 1) + ".t")) + "</h4><p>" + esc(x) + "</p></div></li>"; }).join("");
+    }
   }
   /* many assets enter on the left; each of the six stages lets fewer through (refused ones turn red and drop);
      the few that survive reach the N core on the right. Gates sit on the column borders of the steps below. */
@@ -614,6 +694,20 @@
       C.push({ sym: P[Math.floor(Math.random() * P.length)], x: -30 * dpr, y: Hh * (0.08 + Math.random() * 0.84), v: (60 + Math.random() * 40) * dpr, fate: fate, st: "go", a: 1, vy: 0 });
     }
     function band(x) { var k = Math.min(1, Math.max(0, x / ex)); return Hh * (0.46 - 0.4 * k); }
+    /* owner 16:20: coins as coins, not boxes — a minted disc in the coin's own colour with its ticker */
+    function coin(sym, x, y, r, st) {
+      var base = COINCOL[sym] || ("hsl(" + (hashS(sym) % 360) + ",55%,55%)");
+      var g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+      g.addColorStop(0, "rgba(255,255,255,.85)"); g.addColorStop(0.28, base); g.addColorStop(1, "rgba(8,14,32,.95)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+      ctx.lineWidth = Math.max(1, r * 0.12); ctx.strokeStyle = st === "out" ? "rgba(255,110,134,.95)" : st === "won" ? "rgba(58,219,147,.95)" : "rgba(220,240,255,.55)";
+      ctx.beginPath(); ctx.arc(x, y, r - ctx.lineWidth / 2, 0, 6.2832); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.lineWidth = Math.max(0.6, r * 0.06); ctx.beginPath(); ctx.arc(x, y, r * 0.72, 0, 6.2832); ctx.stroke();
+      var gl = GLYPH[sym] || sym.slice(0, sym.length > 3 ? 3 : sym.length);
+      ctx.font = "700 " + Math.round(r * (gl.length > 2 ? 0.62 : gl.length > 1 ? 0.78 : 1.05)) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = "rgba(4,10,24,.55)"; ctx.fillText(gl, x + r * 0.06, y + r * 0.1); ctx.fillStyle = "#fff"; ctx.fillText(gl, x, y + r * 0.04);
+      if (st === "won") { var h = ctx.createRadialGradient(x, y, r, x, y, r * 2.2); h.addColorStop(0, "rgba(58,219,147,.35)"); h.addColorStop(1, "rgba(58,219,147,0)"); ctx.fillStyle = h; ctx.beginPath(); ctx.arc(x, y, r * 2.2, 0, 6.2832); ctx.fill(); }
+    }
     function frame(now) {
       if (!running && now !== -1) return;
       var tm = ((now === -1 ? t0 + 5000 : now) - t0) / 1000, dt = Math.min(0.05, last ? tm - last : 0.016); last = tm;
@@ -639,27 +733,21 @@
           if (c.fate >= 5 && c.x >= ex - 26 * dpr) { pulse = 1; return false; }
         } else { c.vy *= 1.03; c.y += c.vy * dt; c.x += c.v * 0.15 * dt; c.a -= dt * 1.2; if (c.a <= 0) return false; }
         var won = c.fate >= 5 && c.x > gates[4], col = c.st === "out" ? "255,110,134" : won ? "58,219,147" : "127,211,255";
-        var fs = Math.round(9.5 * dpr); ctx.font = "600 " + fs + "px 'JetBrains Mono',monospace";
-        var w = ctx.measureText(c.sym).width + 9 * dpr, h = 15 * dpr;
         ctx.globalAlpha = Math.max(0, c.a);
-        ctx.fillStyle = "rgba(6,12,30,.9)"; ctx.strokeStyle = "rgba(" + col + ",.85)"; ctx.lineWidth = dpr;
-        ctx.beginPath(); ctx.rect(c.x - w / 2, c.y - h / 2, w, h); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "rgba(" + (c.st === "out" ? "255,180,190" : won ? "190,255,225" : "220,240,255") + ",1)"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(c.sym, c.x, c.y + 0.5 * dpr);
+        coin(c.sym, c.x, c.y, (W < 900 ? 9 : 11) * dpr, c.st === "out" ? "out" : won ? "won" : "");
         ctx.globalAlpha = 1;
         return c.x < W + 40 * dpr;
       });
       // 21.10 15:27 owner: no N core here — a plain result box: what got through, with real numbers
       pulse = Math.max(0, pulse - dt * 1.5);
-      var hp = H().spot || {}, cnt = (D.conveyor || {}).counts || {}, bw = Math.min(W * 0.14, 150 * dpr), bh = Math.min(Hh * 0.62, 120 * dpr), bx = W - bw - 6 * dpr, by = ey - bh / 2;
-      var gg = ctx.createRadialGradient(bx + bw / 2, ey, 0, bx + bw / 2, ey, bw); gg.addColorStop(0, pulse > 0.05 ? "rgba(58,219,147,.30)" : "rgba(0,180,216,.18)"); gg.addColorStop(1, "rgba(0,180,216,0)");
-      ctx.fillStyle = gg; ctx.fillRect(bx - bw * 0.4, by - bh * 0.3, bw * 1.8, bh * 1.6);
-      ctx.fillStyle = "rgba(6,14,32,.92)"; ctx.strokeStyle = pulse > 0.05 ? "rgba(58,219,147,.9)" : "rgba(127,211,255,.6)"; ctx.lineWidth = 1.3 * dpr;
-      ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.fill(); ctx.stroke();
+      var hp = H().spot || {}, cnt = (D.conveyor || {}).counts || {}, bw = Math.min(W * 0.14, 150 * dpr), sxc = W - bw / 2 - 6 * dpr, half = Math.min(bw * 0.5, Hh * 0.3);
+      if (window.NovaSphere) NovaSphere.draw(ctx, sxc, ey - Hh * 0.13, half, tm, { busy: pulse > 0.3 });
       ctx.textAlign = "center"; ctx.textBaseline = "top";
-      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(127,211,255,.8)"; ctx.fillText(t("think.out"), bx + bw / 2, by + 8 * dpr);
-      ctx.font = "700 " + Math.round(22 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "#3ADB93"; ctx.fillText(num(hp.n_coins || 11), bx + bw / 2, by + 22 * dpr);
-      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(200,230,250,.85)"; ctx.fillText(t("think.out.coins"), bx + bw / 2, by + 50 * dpr);
-      if (cnt.paper) { ctx.fillStyle = "rgba(127,211,255,.75)"; ctx.fillText(t("think.out.strats", { n: num(cnt.paper) }), bx + bw / 2, by + 66 * dpr); }
+      var ty = ey - Hh * 0.13 + half * 0.78;
+      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(127,211,255,.85)"; ctx.fillText(t("think.out"), sxc, ty);
+      ctx.font = "700 " + Math.round(20 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = pulse > 0.05 ? "#7CFFC4" : "#3ADB93"; ctx.fillText(num(hp.n_coins || 11), sxc, ty + 13 * dpr);
+      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(200,230,250,.85)"; ctx.fillText(t("think.out.coins"), sxc, ty + 37 * dpr);
+      if (cnt.paper) { ctx.fillStyle = "rgba(127,211,255,.75)"; ctx.fillText(t("think.out.strats", { n: num(cnt.paper) }), sxc, ty + 51 * dpr); }
       ctx.textAlign = "left"; ctx.fillStyle = "rgba(127,211,255,.7)"; ctx.fillText(t("think.in", { n: num((D.scale || {}).coins || 150) }), 8 * dpr, 6 * dpr);
       if (now !== -1) requestAnimationFrame(frame);
     }
@@ -745,7 +833,8 @@
       cc.style.left = ((CX - 118) / 1200 * 100) + "%"; cc.style.top = ((CY - 118) / 660 * 100) + "%"; cc.style.width = (236 / 1200 * 100) + "%"; cc.style.height = (236 / 660 * 100) + "%";
       wr.appendChild(cc);
       // 21.10 15:27 owner: the N core was unclear — the hub is a small NOVA radar (the same idea as the hero)
-      engCore = makeRadar(cc, { mini: true });
+      // 21.10 16:31 owner: the hub is the NOVA AI sphere — the 7th element, the result of the six engines
+      if (window.NovaSphere) engCore = NovaSphere.mount(cc, {});
     }
     // NOVA core: the energy sphere with the N is drawn on a canvas over this spot (see makeCore); here only the hit area and the label
     var core = svgEl("g", { transform: "translate(" + CX + " " + CY + ")", "class": "node" + (engSel === "core" ? " on" : ""), tabindex: "0", role: "button", "data-k": "core", "aria-label": t("eng.core") });
@@ -776,8 +865,9 @@
     if (det0 && det0.parentNode === list) list.insertAdjacentElement("afterend", det0);
     list.innerHTML = ["core"].concat(ENG.map(function (n) { return n.k; })).map(function (k) {
       var n = ENG.filter(function (x) { return x.k === k; })[0] || { blades: 12, sp: 5 };
-      return '<button type="button" class="eitem" data-k="' + k + '" aria-expanded="' + (k === engSel) + '" aria-controls="engDetail"><svg viewBox="-80 -80 160 160" aria-hidden="true">' + (k === "core" ? '<circle r="62" fill="rgba(0,60,90,.35)" stroke="rgba(127,211,255,.55)"/><circle r="40" fill="none" stroke="rgba(127,211,255,.25)" stroke-dasharray="3 5"/><circle r="20" fill="none" stroke="rgba(127,211,255,.25)" stroke-dasharray="3 5"/><path d="M-62 0H62M0-62V62" stroke="rgba(127,211,255,.25)"/><path d="M0 0L44-44" stroke="#BEF0FF" stroke-width="2"/><circle cx="26" cy="18" r="4" fill="#3ADB93"/><circle cx="-30" cy="-12" r="3.5" fill="#FF6E86"/>' : turbine(52, n.blades, n.sp)) + "</svg><span><b>" + esc(engTitle(k)) + "</b><span>" + esc(engMetric(k)) + "</span></span></button>";
+      return '<button type="button" class="eitem" data-k="' + k + '" aria-expanded="' + (k === engSel) + '" aria-controls="engDetail"><svg viewBox="-80 -80 160 160" aria-hidden="true">' + (k === "core" ? '' : turbine(52, n.blades, n.sp)) + "</svg><span><b>" + esc(engTitle(k)) + "</b><span>" + esc(engMetric(k)) + "</span></span></button>";
     }).join("");
+    var ec = $('.eitem[data-k="core"] svg', list); if (ec) { var cv2 = doc.createElement("canvas"); cv2.className = "eic"; cv2.setAttribute("data-sphere", ""); cv2.setAttribute("aria-hidden", "true"); ec.parentNode.replaceChild(cv2, ec); if (window.NovaSphere) NovaSphere.auto(); }
     $$(".eitem", list).forEach(function (b) {
       b.addEventListener("click", function () {
         engSel = b.getAttribute("data-k"); renderEngines();
@@ -794,7 +884,7 @@
     var e = E(), big = "", desc = "", viz = "";
     switch (k) {
       case "scan": big = t("eng.scan.m", { n: num(e.cycle_sec || 60) }); desc = t("eng.scan.d"); viz = '<p class="small" style="margin-bottom:12px">' + esc(t("eng.scan.x", { n: num(e.signals_checked || 0) })) + "</p>" + tradeHTML(); break;
-      case "lab": big = num(e.lab_tried || 0); desc = t("sys.s1.p", { m: num(e.lab_markets || 20) }); viz = funnelHTML(); break;
+      case "lab": big = num(e.lab_tried || 0); desc = t("sys.s1.p", { m: num(e.lab_markets || 20) }); viz = funnelHTML() + labStepsHTML(); break;
       case "conv": big = num(((D.conveyor || {}).counts || {}).paper || 0); desc = t("sys.s2.p"); viz = stagesHTML(); break;
       case "risk": big = t("risk." + ((D.risk || {}).state || "OK")); desc = t("sys.s3.p"); viz = riskHTML(); break;
       case "port": var p = H().portfolio || {}; big = p.value_usd != null ? usd(p.value_usd) : ""; desc = t("eng.port.d"); viz = portMiniHTML(); break;
@@ -810,6 +900,13 @@
       var v = e[r[0]] || 0, w = Math.max(9, Math.sqrt(v / max) * 100);
       return '<div class="fun"><div class="bar" style="width:' + w.toFixed(1) + '%">' + num(v) + "</div><span>" + esc(t(r[1])) + "</span></div>";
     }).join("") + '</div><p class="funnel-note">' + esc(t("f.note")) + "</p>";
+  }
+  /* owner 16:20: «лабораторию детальнее расписать» — the five steps a rule goes through, with tonight's numbers */
+  function labStepsHTML() {
+    var e = E(), sc = D.scale || {}, c = (D.conveyor || {}).counts || {};
+    var v = [t("lab.s1", { n: num(e.lab_tried || 0) }), t("lab.s2", { m: num(sc.lab_markets || e.lab_markets || 20), y: sc.since || 1927, c: num((sc.candle_checks || 0) / 1e6, 1) }),
+      t("lab.s3", { n: num(e.lab_passed || 0) }), t("lab.s4", { n: num(e.lab_reliable || 0) }), t("lab.s5", { n: num(c.paper || 0) })];
+    return '<h4 class="labh">' + esc(t("lab.h")) + '</h4><ol class="labsteps">' + v.map(function (x, i) { return "<li><b>" + (i + 1) + "</b><span><strong>" + esc(t("lab.t" + (i + 1))) + "</strong> " + esc(x) + "</span></li>"; }).join("") + "</ol>";
   }
   function stagesHTML() {
     var c = (D.conveyor || {}).counts || {};
@@ -944,7 +1041,6 @@
     }).join("");
     var d = $("#tabdesc"); if (d) d.textContent = t("tab." + tabKey + ".p");
     $$("#tabs .tab").forEach(function (b) { b.setAttribute("aria-label", t("tab." + b.getAttribute("data-k") + ".t")); });
-    var hs = $("#heroScr"); if (hs) hs.src = "assets/img/screens/" + lang + "/home.webp";
     if ("requestIdleCallback" in window) requestIdleCallback(preload); else setTimeout(preload, 1500);
   }
   function preload() { $$("#scr img[data-src]").forEach(function (im) { im.src = im.getAttribute("data-src"); im.removeAttribute("data-src"); }); }
@@ -1041,7 +1137,7 @@
   }
   function emit(n) { try { doc.dispatchEvent(new CustomEvent(n)); } catch (e) { /* old browsers */ } }
   function renderData() {   // everything that shows live numbers; safe to call on every refresh
-    renderStatus(); renderHeroCards(); renderHeroStats(); renderTicker(); renderThink(); renderEngines(); renderPortfolio(); renderSpot(); renderOwn();
+    renderStatus(); renderHeroCards(); renderHeroStats(); renderTicker(); renderThink(); renderEngines(); renderPortfolio(); renderSpot(); renderOwn(); renderPhone(); renderFlowChips();
     emit("cn:data");
     var since = (H().portfolio || {}).since;
     $$("[data-i-html]").forEach(function (el) { el.innerHTML = t(el.getAttribute("data-i-html"), since ? { since: date(since, true) } : null); });

@@ -31,11 +31,11 @@ def home(lang):
         p["curve"] = thin(p["curve"])
     fut = h.get("futures") or {}
     keep = ("sym", "side", "entry", "price", "stop", "target", "pct", "why_title", "why", "checks", "opened")
-    opened = [{k: t.get(k) for k in keep} for t in (fut.get("open") or [])[:3]]
+    opened = [{k: t.get(k) for k in keep} for t in (fut.get("open") or [])[:5]]
     sp = h.get("spot") or {}
     spot = {k: sp.get(k) for k in ("usd", "pct", "n_coins", "cash_pct", "alloc", "movers")}
     return {"asof": h.get("asof"), "portfolio": p, "engine": h.get("engine"),
-            "futures": {"open": opened}, "market": h.get("market"), "spot": spot}
+            "futures": {"open": opened, **{k: fut.get(k) for k in ("usd", "pct", "trades", "wins", "closed_n") if k in fut}}, "market": h.get("market"), "spot": spot}
 
 
 def scorecard():

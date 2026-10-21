@@ -703,3 +703,97 @@ h2.display{font-size:clamp(1.45rem,1rem + 2vw,2.35rem);line-height:1.12}
   .syslog div{white-space:normal;overflow:visible;text-overflow:clip;padding-left:0}
   .syslog .ts{display:none}
 }
+
+/* ===== v5 hero (21.10 16:20): AI sphere in the flow, coded phone, 01–04 chips, light log ===== */
+.hero .stagecol{min-width:0;width:min(100%,620px);justify-self:center}
+.hero .stagecol .stage{width:100%;aspect-ratio:1/0.74;margin:0}
+.hero .stagecol #core{position:absolute;inset:0;width:100%;height:100%;top:0;left:0}
+.hero .stagecol .stage .hero-phone{top:50%;width:31%;transform:translateY(-50%)}
+.hero .stagecol .syslog{position:relative;inset:auto;left:auto;right:auto;bottom:auto;width:auto;max-width:440px;min-height:0;margin:12px 0 0;background:none;border:0;border-left:2px solid rgba(127,211,255,.45);border-radius:0;padding:2px 0 2px 12px;font-size:10.5px;line-height:1.7;color:#9fd8ff}
+.hero .stagecol .syslog div:nth-child(-n+1){opacity:.55}
+/* the four stages as a mechanism */
+.sysflow{list-style:none;margin:10px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;counter-reset:none}
+.sysflow li{--a:0;position:relative;border:1px solid rgba(127,211,255,calc(.22 + var(--a) * .6));background:linear-gradient(180deg,rgba(14,30,60,calc(.55 + var(--a) * .3)),rgba(6,12,28,.6));border-radius:8px;padding:7px 9px 8px;min-width:0;box-shadow:0 0 calc(var(--a) * 18px) rgba(127,211,255,calc(var(--a) * .35));transition:box-shadow .2s}
+.sysflow li b{display:block;font:700 10px/1 var(--mono);color:var(--muted);letter-spacing:.08em}
+.sysflow li span{display:block;font:700 12px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#E6F6FF;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sysflow li small{display:block;font:500 10px/1.3 var(--mono);color:#8fb8d6;margin-top:3px}
+.sysflow li.ai{border-color:rgba(58,219,147,calc(.35 + var(--a) * .6));box-shadow:0 0 calc(var(--a) * 22px) rgba(58,219,147,calc(var(--a) * .4))}
+.sysflow li.ai span{color:#BDF5DC}
+.sysflow li+li::before{content:"";position:absolute;left:-15px;top:50%;width:12px;height:12px;margin-top:-6px;background:linear-gradient(90deg,rgba(127,211,255,.15),rgba(127,211,255,.9));clip-path:polygon(0 35%,55% 35%,55% 0,100% 50%,55% 100%,55% 65%,0 65%);animation:sfArrow 1.6s linear infinite}
+@keyframes sfArrow{0%{transform:translateX(-3px);opacity:.3}50%{opacity:1}100%{transform:translateX(3px);opacity:.3}}
+@media (max-width:600px){
+  .hero .stagecol .stage{aspect-ratio:1/0.9}
+  .hero .stagecol .stage .hero-phone{width:33%}
+  .sysflow{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px}
+  .sysflow li:nth-child(3)::before{display:none}
+  .hero .stagecol .syslog{font-size:10px}
+}
+@media (prefers-reduced-motion:reduce){.sysflow li+li::before{animation:none}}
+/* the phone screen, drawn in code — sizes follow the phone width */
+.hero-phone .scr.live{container-type:inline-size;background:radial-gradient(120% 60% at 50% 0,#0f2550,#060c1d 70%);aspect-ratio:600/1300;display:block;overflow:hidden}
+.ph{display:flex;flex-direction:column;height:100%;padding:16cqw 5.5cqw 0;gap:3.4cqw;font-family:var(--body);color:#E6F2FF}
+.ph-top{display:flex;align-items:center;gap:2.4cqw}
+.ph-top .ph-logo{width:8.5cqw;height:8.5cqw;flex:none}
+.ph-top b{font:700 4.6cqw/1 var(--mono);letter-spacing:.04em}
+.ph-mode{margin-left:auto;display:inline-flex;align-items:center;gap:1.4cqw;font:700 3.3cqw/1 var(--mono);color:#3ADB93;border:1px solid rgba(58,219,147,.45);border-radius:99px;padding:1.4cqw 2.2cqw}
+.ph-mode i{width:1.8cqw;height:1.8cqw;border-radius:50%;background:#3ADB93;box-shadow:0 0 6px #3ADB93;animation:livePulse 1.6s ease-in-out infinite}
+@keyframes livePulse{50%{opacity:.35}}
+.ph-card{border:1px solid rgba(127,211,255,.22);border-radius:4.5cqw;padding:4cqw;background:linear-gradient(180deg,rgba(20,44,88,.65),rgba(8,16,36,.7))}
+.ph-k,.ph-k2{font:600 3.4cqw/1.2 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:#8fb8d6}
+.ph-val{font:760 10.5cqw/1.05 var(--mono);letter-spacing:-.03em;margin-top:1.6cqw;transition:color .3s;font-variant-numeric:tabular-nums}
+.ph-val.up{color:#3ADB93}.ph-val.down{color:#FF6E86}
+.ph-val.tick{animation:phTick .7s}
+@keyframes phTick{30%{text-shadow:0 0 14px rgba(127,211,255,.9)}}
+.ph-pnl{font:600 3.6cqw/1.2 var(--mono);margin-top:1cqw}
+.ph-pnl.up{color:#3ADB93}.ph-pnl.down{color:#FF6E86}
+.ph-chart{height:13cqw;margin-top:2cqw}.ph-chart svg{width:100%;height:100%;display:block}
+.ph-sig{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1.8cqw}
+.ph-sig li{display:flex;align-items:center;gap:2cqw;border:1px solid rgba(127,211,255,.14);border-radius:3cqw;padding:2.4cqw 3cqw;background:rgba(8,18,40,.7);font:600 3.6cqw/1 var(--mono)}
+.ph-sig li b{color:#E6F2FF}.ph-sig li span{font-size:3cqw}.ph-sig li em{margin-left:auto;font-style:normal}
+.ph-sig .up{color:#3ADB93}.ph-sig .down{color:#FF6E86}
+.ph-sig li.hit{animation:phHit 1.1s ease-out}
+@keyframes phHit{0%{border-color:rgba(58,219,147,.95);box-shadow:0 0 0 1px rgba(58,219,147,.6),0 0 16px rgba(58,219,147,.45);background:rgba(18,60,48,.8)}100%{border-color:rgba(127,211,255,.14);box-shadow:none;background:rgba(8,18,40,.7)}}
+.ph-tabs{margin:auto -5.5cqw 0;display:flex;justify-content:space-around;align-items:center;padding:3cqw 4cqw 6cqw;border-top:1px solid rgba(127,211,255,.14);background:rgba(4,9,22,.85)}
+.ph-tabs svg{width:5.6cqw;height:5.6cqw;fill:none;stroke:#7d9cc0;stroke-width:1.8;stroke-linejoin:round}
+.ph-tabs svg:first-child{stroke:#7FD3FF}
+.ph-tabs .ph-nova{width:12cqw;height:12cqw;margin-top:-6cqw}
+/* header logo = the NOVA AI sphere */
+.brand canvas.emb{width:30px;height:30px;display:block;flex:none}
+.ph-tiles{display:grid;grid-template-columns:1fr 1fr;gap:2.4cqw}
+.ph-tile{border:1px solid rgba(127,211,255,.18);border-radius:3.6cqw;padding:3cqw;background:rgba(10,22,48,.75)}
+.ph-tile .ph-k{font-size:2.9cqw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph-tile b{display:block;font:760 6cqw/1.1 var(--mono);margin-top:1.4cqw}.ph-tile b.up{color:#3ADB93}.ph-tile b.down{color:#FF6E86}
+.ph-tile small{display:block;font:500 3cqw/1.2 var(--mono);color:#8fb8d6;margin-top:.6cqw}
+/* store buttons: dark glass with a living edge (owner: «слишком чёрное», «пускай переливается») */
+@property --sh{syntax:"<angle>";inherits:false;initial-value:0deg}
+.badge-as{position:relative;isolation:isolate;background:linear-gradient(180deg,#13254a,#0a1430 60%,#081022);border:1px solid transparent;border-radius:12px;overflow:hidden;box-shadow:0 8px 30px -12px rgba(127,211,255,.45),inset 0 1px 0 rgba(255,255,255,.08)}
+.badge-as::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:conic-gradient(from var(--sh),rgba(127,211,255,.25),#7FD3FF,rgba(58,219,147,.9),rgba(127,211,255,.25) 40%,rgba(127,211,255,.25));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:shRot 5s linear infinite;z-index:-1}
+.badge-as::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:30%;background:linear-gradient(100deg,transparent,rgba(190,235,255,.22),transparent);transform:skewX(-18deg);animation:shSweep 4.5s ease-in-out infinite;z-index:-1}
+@keyframes shRot{to{--sh:360deg}}
+@keyframes shSweep{0%,55%{left:-40%}85%,100%{left:120%}}
+.badge-as:hover{box-shadow:0 12px 36px -10px rgba(127,211,255,.7),inset 0 1px 0 rgba(255,255,255,.1)}
+.badge-soon{background:rgba(10,20,44,.55);border:1px dashed rgba(127,211,255,.3)}
+.btn-dl{position:relative;overflow:hidden}
+.btn-dl::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:30%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:shSweep 5s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.badge-as::before,.badge-as::after,.btn-dl::after{animation:none}.badge-as::after,.btn-dl::after{display:none}}
+/* NOVA AI — the brain of the system (#think) */
+.aibrain{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:28px;align-items:center;margin-top:22px;padding:26px}
+.aiorb{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px}
+.aiorb canvas{width:min(100%,340px);aspect-ratio:1;display:block}
+.aiorb span{font:700 13px/1 var(--mono);letter-spacing:.18em;color:#BFEAFF;margin-top:-18px}
+.aitext h3{font:760 clamp(1.3rem,1rem + 1vw,1.75rem)/1.15 var(--display);text-transform:uppercase;letter-spacing:.01em;color:#E9F6FF;margin:4px 0 8px}
+.aitext .lead{margin:0 0 14px}
+.aisteps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.aisteps li{display:flex;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px;background:rgba(8,18,40,.55)}
+.aisteps li b{font:700 12px/1 var(--mono);color:var(--ice);padding-top:3px}
+.aisteps h4{margin:0 0 4px;font:700 13px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:#E6F6FF}
+.aisteps p{margin:0;font-size:.875rem;line-height:1.45;color:var(--soft)}
+.aisteps li:last-child{border-color:rgba(58,219,147,.4)}.aisteps li:last-child h4{color:#BDF5DC}
+@media (max-width:860px){.aibrain{grid-template-columns:1fr;padding:18px}.aiorb canvas{width:min(70%,240px)}.aisteps{grid-template-columns:1fr}}
+/* lab steps in the engine detail */
+.labh{margin:16px 0 8px;font:700 12px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--ice)}
+.labsteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.labsteps li{display:flex;gap:10px;align-items:flex-start;font-size:.875rem;line-height:1.45;color:var(--soft)}
+.labsteps li b{flex:none;width:22px;height:22px;border-radius:6px;border:1px solid rgba(127,211,255,.45);display:grid;place-items:center;font:700 11px/1 var(--mono);color:var(--ice)}
+.labsteps strong{color:#E6F6FF}
+.eitem canvas.eic{width:56px;height:56px;flex:none}
