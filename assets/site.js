@@ -76,7 +76,7 @@
 
   /* ---------- data ---------- */
   var SNAP = window.CN_SNAP || {};
-  var D = { home: {}, liveHome: {}, scorecard: SNAP.scorecard, conveyor: SNAP.conveyor, risk: SNAP.risk, btc: SNAP.btc, markets: SNAP.markets };
+  var D = { home: {}, liveHome: {}, scorecard: SNAP.scorecard, conveyor: SNAP.conveyor, risk: SNAP.risk, btc: SNAP.btc, markets: SNAP.markets, models: SNAP.models, scale: SNAP.scale || {} };
   LANGS.forEach(function (l) { if (SNAP.home && SNAP.home[l]) D.home[l] = SNAP.home[l]; });
   function H() { return D.home[lang] || D.home.en || {}; }
   function E() { return H().engine || {}; }
@@ -92,7 +92,7 @@
   }
   function loadAll() {
     loadHome();
-    get("scorecard.json").then(function (s) { D.scorecard = s; renderEngines(); }).catch(function () {});
+    get("scorecard.json").then(function (s) { D.scorecard = s; renderEngines(); renderThink(); }).catch(function () {});
     get("conveyor.json").then(function (c) { D.conveyor = c; renderEngines(); renderTicker(); }).catch(function () {});
     get("risk.json").then(function (r) { D.risk = r; renderEngines(); renderHeroCards(); renderTicker(); }).catch(function () {});
     get("markets.json").then(function (m) { if (m && m.top) { D.markets = m; renderTicker(); } }).catch(function () {});
@@ -105,7 +105,7 @@
       var m = Math.max(0, Math.round((Date.now() - h.asof) / 60000));
       var ago = m < 1 ? t("ago.now") : m < 90 ? t("ago.min", { n: m }) : t("ago.h", { n: Math.round(m / 60) });
       sp.textContent = t("status.live", { ago: ago }); el.classList.remove("stale");
-    } else { sp.textContent = t("status.snapshot", { date: stamp(SNAP.made || Date.now()) }); el.classList.add("stale"); }
+    } else { sp.textContent = t("status.snapshot", { date: stamp(SNAP.made || Date.now()).replace(/\.$/, "") }); el.classList.add("stale"); }
   }
 
   /* ---------- turbine (the drawn "engine") ---------- */
@@ -143,7 +143,6 @@
   }
 
   /* ---------- hero: turbine, flowing data, floating live cards ---------- */
-  var ht = $("#heroTurbine"); if (ht) ht.innerHTML = turbine(235, 14, 7);
   function initFlow() {
     var cv = $("#flow"); if (!cv || !cv.getContext) return;
     var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, P = [], running = false, visible = true;
@@ -203,6 +202,200 @@
     fr.style.color = st === "OK" ? "" : st === "HALT" ? "var(--down)" : "var(--amber)";
   }
 
+  /* ---------- the NOVA energy core (hero and engine room) ----------
+     A glass sphere with a geodesic «filter» net, plasma filaments inside, the N at the centre. In the hero, coins drift
+     in: the coins the system holds in its spot portfolio pass the filter and are drawn in, others bounce off the shield. */
+  var LOGO = new Image(); LOGO.decoding = "async"; LOGO.src = "assets/img/n-core.webp";
+  var STABLE = { USDT: 1, USDC: 1, DAI: 1, FDUSD: 1, USDE: 1, USDS: 1, PYUSD: 1, TUSD: 1, USD1: 1, XAUT: 1, PAXG: 1, WBTC: 1, WETH: 1, STETH: 1, WSTETH: 1, WEETH: 1, CBBTC: 1, LEO: 1, WBT: 1, BUIDL: 1, USDTB: 1, BSC: 1 };
+  function corePool() {
+    var sp = H().spot || {}, ok = (sp.movers || []).map(function (m) { return m.sym; }).filter(Boolean);
+    if (ok.length < 3) ok = ["BTC", "ETH", "SOL", "LINK", "NEAR"];
+    var no = ((D.markets || {}).top || []).map(function (c) { return c.symbol; }).filter(function (x) { return x && !STABLE[x] && ok.indexOf(x) < 0 && /^[A-Z0-9]{2,6}$/.test(x); }).slice(0, 24);
+    if (no.length < 6) no = ["DOGE", "ADA", "TRX", "XLM", "BCH", "HBAR", "TON", "DOT", "UNI", "SHIB", "ICP", "ETC"].filter(function (x) { return ok.indexOf(x) < 0; });
+    return { ok: ok, no: no };
+  }
+  function makeCore(cv, opt) {
+    if (!cv || !cv.getContext) return null;
+    var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, R = 0, cx = 0, cy = 0, running = false, visible = true, t0 = performance.now(), last = 0;
+    var NP = opt.lattice || 240, PTS = [], LINKS = [], i, j;
+    for (i = 0; i < NP; i++) { var yy = 1 - (i + 0.5) * 2 / NP, rr = Math.sqrt(1 - yy * yy), th = i * 2.399963229728653; PTS.push([Math.cos(th) * rr, yy, Math.sin(th) * rr]); }
+    var thr = 2.3 * Math.sqrt(4 * Math.PI / NP) * 0.62; thr *= thr;
+    for (i = 0; i < NP; i++) for (j = i + 1; j < NP; j++) { var dx = PTS[i][0] - PTS[j][0], dy = PTS[i][1] - PTS[j][1], dz = PTS[i][2] - PTS[j][2]; if (dx * dx + dy * dy + dz * dz < thr) LINKS.push([i, j]); }
+    var K = opt.angles ? opt.angles.length : 7, TEN = [];
+    for (i = 0; i < K; i++) TEN.push({ base: opt.angles ? opt.angles[i] : i * 2 * Math.PI / K + 0.3, phi: 0, lock: null });
+    var A = [], flashes = [], boost = 0, ptr = { on: 0, a: 0, x: 0, y: 0 };
+    function size() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
+      cx = W / 2; cy = Hh / 2; R = Math.min(W, Hh) * (opt.r || 0.29);
+    }
+    function spawn(a) {
+      var pool = corePool(), ok = Math.random() < 0.42, list = ok ? pool.ok : pool.no;
+      a = a || {}; a.sym = list[Math.floor(Math.random() * list.length)]; a.ok = ok;
+      a.ang = Math.random() * Math.PI * 2; a.d = R * (1.75 + Math.random() * 0.55); a.v = R * (0.16 + Math.random() * 0.08);
+      a.sw = (Math.random() < 0.5 ? -1 : 1) * (0.05 + Math.random() * 0.06); a.st = "in"; a.tt = 0; a.al = 0; return a;
+    }
+    if (opt.assets) for (i = 0; i < 8; i++) { var a0 = spawn(); a0.d = R * (1.3 + Math.random() * 1.0); A.push(a0); }
+    function P(p, ay, ax) {
+      var x = p[0] * Math.cos(ay) + p[2] * Math.sin(ay), z = -p[0] * Math.sin(ay) + p[2] * Math.cos(ay), y = p[1];
+      return [cx + x * R, cy + (y * Math.cos(ax) - z * Math.sin(ax)) * R, y * Math.sin(ax) + z * Math.cos(ax)];
+    }
+    function net(pr, front) {
+      ctx.lineWidth = dpr * 0.7;
+      ctx.strokeStyle = front ? "rgba(127,211,255,.20)" : "rgba(127,211,255,.06)";
+      ctx.beginPath();
+      for (var k = 0; k < LINKS.length; k++) { var p = pr[LINKS[k][0]], q = pr[LINKS[k][1]]; if ((p[2] + q[2] > 0) !== front) continue; ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); }
+      ctx.stroke();
+      ctx.fillStyle = front ? "rgba(200,240,255,.75)" : "rgba(127,211,255,.22)";
+      for (var m = 0; m < pr.length; m++) { var o = pr[m]; if ((o[2] > 0) !== front) continue; ctx.fillRect(o[0] - dpr * 0.8, o[1] - dpr * 0.8, dpr * 1.6, dpr * 1.6); }
+    }
+    function bolt(x0, y0, x1, y1, t, seed, w) {
+      var n = 16, dx = x1 - x0, dy = y1 - y0, L = Math.sqrt(dx * dx + dy * dy) || 1, nx = -dy / L, ny = dx / L, pts = [];
+      for (var k = 0; k <= n; k++) {
+        var s2 = k / n, amp = L * 0.09 * Math.sin(Math.PI * s2);
+        var off = amp * (Math.sin(t * 9 + k * 1.9 + seed * 3.1) * 0.6 + Math.sin(t * 17.3 + k * 2.7 + seed) * 0.4);
+        pts.push([x0 + dx * s2 + nx * off, y0 + dy * s2 + ny * off]);
+      }
+      [[7, ".05", "0,180,216"], [3.2, ".20", "127,211,255"], [1.2, ".85", "230,248,255"]].forEach(function (ps) {
+        ctx.lineWidth = ps[0] * dpr * (w || 1); ctx.strokeStyle = "rgba(" + ps[2] + "," + ps[1] + ")";
+        ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (var q = 1; q < pts.length; q++) ctx.lineTo(pts[q][0], pts[q][1]); ctx.stroke();
+      });
+    }
+    function glow(x, y, r, c, a) { var g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, "rgba(" + c + "," + a + ")"); g.addColorStop(1, "rgba(" + c + ",0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); }
+    function chip(a, x, y) {
+      var fs = Math.round(11 * dpr), padX = 7 * dpr, h = 20 * dpr;
+      ctx.font = "500 " + fs + "px 'JetBrains Mono',ui-monospace,monospace";
+      var w = ctx.measureText(a.sym).width + padX * 2, col = a.st === "pull" ? "58,219,147" : a.st === "out" ? "255,110,134" : "127,211,255";
+      ctx.globalAlpha = a.al;
+      ctx.fillStyle = "rgba(8,15,38,.88)"; ctx.strokeStyle = "rgba(" + col + "," + (a.st === "in" ? ".45" : ".95") + ")"; ctx.lineWidth = dpr;
+      var rx = 5 * dpr, x0 = x - w / 2, y0 = y - h / 2;
+      ctx.beginPath(); ctx.moveTo(x0 + rx, y0); ctx.arcTo(x0 + w, y0, x0 + w, y0 + h, rx); ctx.arcTo(x0 + w, y0 + h, x0, y0 + h, rx); ctx.arcTo(x0, y0 + h, x0, y0, rx); ctx.arcTo(x0, y0, x0 + w, y0, rx); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = a.st === "out" ? "rgba(255,170,185,.9)" : a.st === "pull" ? "#B8FFE0" : "#EAF6FF"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(a.sym, x, y + dpr * 0.5);
+      if (a.st === "test") { ctx.strokeStyle = "rgba(127,211,255,.9)"; ctx.lineWidth = 1.2 * dpr; ctx.beginPath(); ctx.arc(x, y, w * 0.72, a.tt * 9, a.tt * 9 + 1.6); ctx.stroke(); }
+      ctx.globalAlpha = 1;
+    }
+    function frame(now) {
+      if (!running && now !== -1) return;
+      var t = ((now === -1 ? t0 + 4000 : now) - t0) / 1000, dt = Math.min(0.05, last ? t - last : 0.016); last = t;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
+      var ay = t * 0.12, ax = 0.42, pr = PTS.map(function (p) { return P(p, ay, ax); });
+      glow(cx, cy, R * 1.75, "0,180,216", 0.16 + boost * 0.08);
+      net(pr, false);
+      // glass and plasma
+      var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+      g.addColorStop(0, "rgba(150,225,255,.30)"); g.addColorStop(0.45, "rgba(0,140,200,.12)"); g.addColorStop(0.9, "rgba(0,120,190,.08)"); g.addColorStop(1, "rgba(127,211,255,.18)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.fill();
+      ctx.globalCompositeOperation = "lighter";
+      // tendrils: drift around their base angle; the pointer and the coin being checked pull the closest one
+      var targets = [];
+      if (ptr.on > 0) { ptr.on -= dt; targets.push(ptr.a); }
+      A.forEach(function (a) { if (a.st === "test" || a.st === "pull") targets.push(a.ang); });
+      TEN.forEach(function (tn, k) { tn.lock = null; tn.phi = tn.base + 0.55 * Math.sin(t * 0.33 + k * 1.7) + 0.25 * Math.sin(t * 0.71 + k); });
+      targets.forEach(function (ang) { var best = null, bd = 9; TEN.forEach(function (tn) { if (tn.lock != null) return; var d = Math.abs(Math.atan2(Math.sin(tn.phi - ang), Math.cos(tn.phi - ang))); if (d < bd) { bd = d; best = tn; } }); if (best) best.lock = ang; });
+      var r0 = R * 0.2;
+      TEN.forEach(function (tn, k) {
+        var ph = tn.lock != null ? tn.lock : tn.phi, ex = cx + Math.cos(ph) * R * 0.985, ey = cy + Math.sin(ph) * R * 0.985;
+        bolt(cx + Math.cos(ph) * r0, cy + Math.sin(ph) * r0, ex, ey, t, k, tn.lock != null ? 1.25 : 1);
+        glow(ex, ey, R * (tn.lock != null ? 0.16 : 0.09), "127,211,255", tn.lock != null ? 0.55 : 0.32);
+      });
+      glow(cx, cy, R * 0.62, boost > 0 ? "120,255,200" : "160,230,255", 0.38 + boost * 0.35);
+      ctx.globalCompositeOperation = "source-over";
+      // the N
+      if (LOGO.complete && LOGO.naturalWidth) {
+        var sz = R * (opt.logo || 0.8) * (1 + 0.025 * Math.sin(t * 2.1)), lw = sz, lh = sz * LOGO.naturalHeight / LOGO.naturalWidth;
+        ctx.drawImage(LOGO, cx - lw / 2, cy - lh / 2, lw, lh);
+      }
+      // shield flashes where a coin was refused
+      flashes = flashes.filter(function (f) { f.t += dt; return f.t < 0.7; });
+      flashes.forEach(function (f) { ctx.strokeStyle = "rgba(255,110,134," + (0.8 * (1 - f.t / 0.7)).toFixed(3) + ")"; ctx.lineWidth = 2.5 * dpr; ctx.beginPath(); ctx.arc(cx, cy, R * 1.02, f.a - 0.28, f.a + 0.28); ctx.stroke(); });
+      net(pr, true);
+      ctx.strokeStyle = "rgba(127,211,255,.42)"; ctx.lineWidth = 1.2 * dpr; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.stroke();
+      // coins
+      boost = Math.max(0, boost - dt * 1.6);
+      A.forEach(function (a) {
+        if (a.st === "in") { a.d -= a.v * dt; a.ang += a.sw * dt; a.al = Math.min(1, a.al + dt * 1.5); if (a.d <= R * 1.2) { a.st = "test"; a.tt = 0; } }
+        else if (a.st === "test") { a.tt += dt; if (a.tt > 0.75) { a.st = a.ok ? "pull" : "out"; if (!a.ok) flashes.push({ a: a.ang, t: 0 }); } }
+        else if (a.st === "pull") { a.d -= R * 1.2 * dt; a.al = Math.max(0, Math.min(1, (a.d - R * 0.15) / (R * 0.5))); if (a.d < R * 0.18) { boost = 1; spawn(a); } }
+        else { a.d += R * 0.55 * dt; a.ang += a.sw * dt * 2; a.al = Math.max(0, a.al - dt * 0.7); if (a.al <= 0 || a.d > R * 2.6) spawn(a); }
+        var x = cx + Math.cos(a.ang) * a.d, y = cy + Math.sin(a.ang) * a.d * 0.94;
+        if (a.st === "test" || a.st === "pull") {
+          ctx.strokeStyle = a.st === "pull" ? "rgba(58,219,147,.75)" : "rgba(127,211,255,.6)"; ctx.lineWidth = 1.2 * dpr; ctx.setLineDash(a.st === "pull" ? [] : [4 * dpr, 4 * dpr]);
+          ctx.beginPath(); ctx.moveTo(cx + Math.cos(a.ang) * R, cy + Math.sin(a.ang) * R); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+        }
+        chip(a, x, y);
+      });
+      if (now !== -1) requestAnimationFrame(frame);
+    }
+    function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; last = 0; requestAnimationFrame(frame); } else if (!want) running = false; }
+    size();
+    window.addEventListener("resize", function () { size(); if (!running) frame(-1); });
+    if (opt.pointer) {
+      var pt = function (ev) { var b = cv.getBoundingClientRect(), x = (ev.clientX - b.left) * dpr, y = (ev.clientY - b.top) * dpr, dx = x - cx, dy = y - cy; if (Math.sqrt(dx * dx + dy * dy) < R * 1.7) { ptr.on = 1.2; ptr.a = Math.atan2(dy, dx); } };
+      cv.addEventListener("pointermove", pt); cv.addEventListener("pointerdown", pt);
+    }
+    doc.addEventListener("visibilitychange", setRun);
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; setRun(); }).observe(cv);
+    LOGO.addEventListener("load", function () { if (!running) frame(-1); });
+    if (reduce) frame(-1); else setRun();
+    return { size: size };
+  }
+
+  /* ---------- boot: a short mission-control start, once per visit ---------- */
+  function boot() {
+    var b = $("#boot"); if (!b) return;
+    var seen = false; try { seen = sessionStorage.getItem("cn.boot") === "1"; } catch (e) {}
+    if (reduce || seen || /[?&]noboot\b/.test(location.search) || navigator.webdriver) { b.parentNode.removeChild(b); return; }
+    try { sessionStorage.setItem("cn.boot", "1"); } catch (e) {}
+    b.hidden = false;
+    var e = E(), sc = D.scale || {}, lines = [t("boot.l1"), t("boot.l2", { n: num(sc.fut_markets || 18) }), t("boot.l3", { n: num(e.lab_tried || 800) }), t("boot.l4"), t("boot.l5")];
+    var log = $("#bootLog"), bar = $("#bootBar"), i = 0, done = false;
+    var cols = Math.max(30, Math.floor(log.clientWidth / (parseFloat(getComputedStyle(log).fontSize) * 0.6)));
+    function close() { if (done) return; done = true; b.classList.add("off"); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 600); }
+    function hh(n) { return ("0" + n).slice(-2); }
+    function step() {
+      if (done) return;
+      if (i < lines.length) {
+        var d = new Date(), ts = "[" + hh(d.getHours()) + ":" + hh(d.getMinutes()) + ":" + hh(d.getSeconds()) + "] ", txt = lines[i], dots = Math.max(2, cols - ts.length - txt.length - 4);
+        log.innerHTML += esc(ts + txt + " " + new Array(dots + 1).join(".") + " ") + '<span class="ok">OK</span>\n';
+        i++; bar.style.width = (i / (lines.length + 1) * 100).toFixed(0) + "%"; setTimeout(step, 230);
+      } else { log.innerHTML += '\n<span class="hi">&gt; ' + esc(t("boot.l6")) + "</span>"; bar.style.width = "100%"; setTimeout(close, 700); }
+    }
+    b.addEventListener("click", close); doc.addEventListener("keydown", close);
+    setTimeout(step, 220);
+  }
+
+  /* ---------- how the system thinks: a stream that narrows stage by stage, real numbers under it ---------- */
+  function renderThink() {
+    var ol = $("#tsteps"); if (!ol) return;
+    var e = E(), sc = D.scale || {}, h = (D.scorecard || {}).headline || {};
+    var rows = [
+      [num(sc.coins || 150), t("think.s1.p", { fut: num(sc.fut_markets || 18) })],
+      [t("think.s2.b", { n: num(e.cycle_sec || 60) }), t("think.s2.p")],
+      [num(e.lab_tried || 0), t("think.s3.p")],
+      [t("think.s4.b", { n: num((sc.candle_checks || 0) / 1e6, 1) }), t("think.s4.p", { m: num(sc.lab_markets || 20), y: sc.since || 1927 })],
+      [t("think.s5.b", { a: num(e.lab_reliable || 0), b: num(e.lab_tried || 0) }), t("think.s5.p")],
+      [num(h.checked || 0), t("think.s6.p")]
+    ];
+    ol.innerHTML = rows.map(function (r, i) { return '<li><div class="ix">0' + (i + 1) + '</div><h3>' + esc(t("think.s" + (i + 1) + ".t")) + '</h3><div class="big">' + esc(r[0]) + "</div><p>" + esc(r[1]) + "</p></li>"; }).join("");
+    var sv = $("#thinkFlow"); if (!sv || sv.getAttribute("data-built")) return;
+    sv.setAttribute("data-built", "1");
+    var W = 1200, Hh = 230, ex = 1120, ey = 112, o = [];
+    o.push('<defs><linearGradient id="tfg" x1="0" x2="1"><stop offset="0" stop-color="#00B4D8" stop-opacity=".02"/><stop offset=".85" stop-color="#00B4D8" stop-opacity=".16"/><stop offset="1" stop-color="#7FD3FF" stop-opacity=".3"/></linearGradient></defs>');
+    o.push('<path d="M0 14 C 420 20, 760 70, ' + ex + ' ' + (ey - 10) + ' L ' + ex + ' ' + (ey + 10) + ' C 760 160, 420 212, 0 218 Z" fill="url(#tfg)"/>');
+    var rnd = function (n) { var x2 = Math.sin(n * 99.17) * 43758.5453; return x2 - Math.floor(x2); };
+    for (var p = 0; p < 34; p++) {
+      var y0 = 18 + rnd(p) * 194, c1 = 300 + rnd(p + 7) * 200, d = "M -10 " + y0.toFixed(1) + " C " + c1.toFixed(0) + " " + y0.toFixed(1) + ", " + (c1 + 380).toFixed(0) + " " + (ey + (y0 - ey) * 0.25).toFixed(1) + ", " + ex + " " + ey;
+      o.push('<path id="tp' + p + '" d="' + d + '" fill="none" stroke="rgba(127,211,255,.05)"/>');
+      if (reduce) continue;
+      var stop = p % 5 === 0 ? 1 : 0.28 + rnd(p + 3) * 0.6, good = stop === 1, dur = (5.5 + rnd(p + 11) * 3).toFixed(2), beg = (-rnd(p + 5) * 8).toFixed(2);
+      o.push('<circle r="' + (good ? 3.6 : 2.6) + '" fill="' + (good ? "#3ADB93" : stop > 0.7 ? "#FF6E86" : "#7FD3FF") + '"><animateMotion dur="' + dur + 's" begin="' + beg + 's" repeatCount="indefinite" calcMode="linear" keyPoints="0;' + stop.toFixed(2) + '" keyTimes="0;1"><mpath href="#tp' + p + '"/></animateMotion>' +
+        '<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.08;.82;1" dur="' + dur + 's" begin="' + beg + 's" repeatCount="indefinite"/></circle>');
+    }
+    o.push('<circle cx="' + ex + '" cy="' + ey + '" r="54" fill="rgba(0,180,216,.12)" stroke="rgba(127,211,255,.4)"/>');
+    o.push('<image href="assets/img/n-core.webp" x="' + (ex - 38) + '" y="' + (ey - 38) + '" width="76" height="76"/>');
+    sv.innerHTML = o.join("");
+  }
+
   /* ---------- ticker: market prices + the engines at work ---------- */
   var GEAR = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2.4"/><path d="M8 1.5v2.2M8 12.3v2.2M1.5 8h2.2M12.3 8h2.2M3.4 3.4 5 5M11 11l1.6 1.6M3.4 12.6 5 11M11 5l1.6-1.6"/></svg>';
   function renderTicker() {
@@ -237,7 +430,7 @@
     { k: "port", x: 930, y: 330, blades: 11, sp: 3.6 },
     { k: "log", x: 870, y: 540, blades: 7, sp: 2.8 }
   ];
-  var engSel = "lab";
+  var engSel = "lab", engCore = null;
   function engTitle(k) { return k === "core" ? t("eng.core") : t("eng." + k + ".t"); }
   function engMetric(k) {
     var e = E(), c = (D.conveyor || {}).counts || {}, s = (D.scorecard || {}).headline || {}, p = H().portfolio || {}, st = (D.risk || {}).state || "OK";
@@ -262,21 +455,25 @@
       var d = "M" + sx + " " + n.y + " C" + (sx + (left ? 120 : -120)) + " " + n.y + " " + (ex + (left ? -110 : 110)) + " " + (CY + (n.y - CY) * 0.25) + " " + ex + " " + (CY + (n.y - CY) * 0.25);
       flows.appendChild(svgEl("path", { d: d, "class": "flow", id: "fl" + i }));
       flows.appendChild(svgEl("path", { d: d, "class": "dash" }));
-      if (!reduce) for (var j = 0; j < 2; j++) {
-        flows.appendChild(svgEl("circle", { r: 4, fill: j ? "#3ADB93" : "#7FD3FF" }, '<animateMotion dur="' + (2.6 + i * 0.3) + 's" begin="' + (-j * 1.3 - i * 0.4) + 's" repeatCount="indefinite"><mpath href="#fl' + i + '"/></animateMotion>'));
+      if (!reduce) for (var j = 0; j < 3; j++) {
+        var du = (2.6 + i * 0.3).toFixed(1);
+        if (j < 2) flows.appendChild(svgEl("circle", { r: 4, fill: j ? "#3ADB93" : "#7FD3FF" }, '<animateMotion dur="' + du + 's" begin="' + (-j * 1.3 - i * 0.4) + 's" repeatCount="indefinite"><mpath href="#fl' + i + '"/></animateMotion>'));
+        // a refused one: red, fades out before it reaches the core — only the best gets in
+        else flows.appendChild(svgEl("circle", { r: 3.5, fill: "#FF6E86" }, '<animateMotion dur="' + du + 's" begin="' + (-0.65 - i * 0.4) + 's" repeatCount="indefinite" calcMode="linear" keyPoints="0;0.62" keyTimes="0;1"><mpath href="#fl' + i + '"/></animateMotion><animate attributeName="opacity" values="1;1;0" keyTimes="0;.7;1" dur="' + du + 's" begin="' + (-0.65 - i * 0.4) + 's" repeatCount="indefinite"/>'));
       }
     });
     map.appendChild(flows);
-    // NOVA core: the app's orb with orbiting electrons
+    if (!map.parentNode.classList.contains("engmapwrap")) {
+      var wr = doc.createElement("div"); wr.className = "engmapwrap"; map.parentNode.insertBefore(wr, map); wr.appendChild(map);
+      var cc = doc.createElement("canvas"); cc.className = "corecv"; cc.setAttribute("aria-hidden", "true");
+      cc.style.left = ((CX - 190) / 1200 * 100) + "%"; cc.style.top = ((CY - 190) / 660 * 100) + "%"; cc.style.width = (380 / 1200 * 100) + "%"; cc.style.height = (380 / 660 * 100) + "%";
+      wr.appendChild(cc);
+      engCore = makeCore(cc, { r: 0.3, lattice: 160, logo: 0.95, angles: ENG.map(function (n) { return Math.atan2(n.y - CY, n.x - CX); }) });
+    }
+    // NOVA core: the energy sphere with the N is drawn on a canvas over this spot (see makeCore); here only the hit area and the label
     var core = svgEl("g", { transform: "translate(" + CX + " " + CY + ")", "class": "node" + (engSel === "core" ? " on" : ""), tabindex: "0", role: "button", "data-k": "core", "aria-label": t("eng.core") });
-    var orbits = "";
-    [[0, "#7FD3FF"], [60, "#3ADB93"], [120, "#FF94B4"]].forEach(function (o, i) {
-      orbits += '<g transform="rotate(' + o[0] + ')"><ellipse class="ring" rx="128" ry="44" fill="none" stroke="rgba(127,211,255,.32)" stroke-width="1.2"/>' +
-        (reduce ? '<circle cx="128" r="7" fill="' + o[1] + '"/>' : '<circle r="7" fill="' + o[1] + '"><animateMotion dur="' + (4 + i) + 's" repeatCount="indefinite" path="M128 0 A128 44 0 1 1 -128 0 A128 44 0 1 1 128 0"/></circle>') + "</g>";
-    });
-    core.innerHTML = '<defs><radialGradient id="coreG" cx=".36" cy=".32" r=".75"><stop offset="0" stop-color="#F2FDFF"/><stop offset=".22" stop-color="#9BE2FF"/><stop offset=".55" stop-color="#14B6DE"/><stop offset="1" stop-color="#0A2058"/></radialGradient><radialGradient id="coreH"><stop offset=".45" stop-color="#00B4D8" stop-opacity=".45"/><stop offset="1" stop-color="#00B4D8" stop-opacity="0"/></radialGradient></defs>' +
-      '<circle r="170" fill="url(#coreH)"/>' + orbits + '<circle r="70" fill="url(#coreG)"/><circle class="halo" r="84" fill="none" stroke="#7FD3FF" stroke-width="1.5" stroke-dasharray="3 6"/>' +
-      '<text y="128" text-anchor="middle" class="lbl">' + esc(t("eng.core")) + "</text>";
+    core.innerHTML = '<circle r="118" fill="rgba(0,0,0,0)"/><circle class="halo" r="132" fill="none" stroke="#7FD3FF" stroke-width="1.5" stroke-dasharray="3 6"/>' +
+      '<text y="166" text-anchor="middle" class="corelbl">' + esc(t("eng.core")) + "</text>";
     map.appendChild(core);
     ENG.forEach(function (n) {
       var left = n.x < CX;
@@ -302,7 +499,7 @@
     if (det0 && det0.parentNode === list) list.insertAdjacentElement("afterend", det0);
     list.innerHTML = ["core"].concat(ENG.map(function (n) { return n.k; })).map(function (k) {
       var n = ENG.filter(function (x) { return x.k === k; })[0] || { blades: 12, sp: 5 };
-      return '<button type="button" class="eitem" data-k="' + k + '" aria-expanded="' + (k === engSel) + '" aria-controls="engDetail"><svg viewBox="-80 -80 160 160" aria-hidden="true">' + turbine(52, n.blades, n.sp) + "</svg><span><b>" + esc(engTitle(k)) + "</b><span>" + esc(engMetric(k)) + "</span></span></button>";
+      return '<button type="button" class="eitem" data-k="' + k + '" aria-expanded="' + (k === engSel) + '" aria-controls="engDetail"><svg viewBox="-80 -80 160 160" aria-hidden="true">' + (k === "core" ? '<circle r="62" fill="rgba(0,180,216,.16)" stroke="rgba(127,211,255,.5)"/><image href="assets/img/n-core.webp" x="-48" y="-48" width="96" height="96"/>' : turbine(52, n.blades, n.sp)) + "</svg><span><b>" + esc(engTitle(k)) + "</b><span>" + esc(engMetric(k)) + "</span></span></button>";
     }).join("");
     $$(".eitem", list).forEach(function (b) {
       b.addEventListener("click", function () {
@@ -355,7 +552,7 @@
     return '<div class="recnums">' + [["recorded", "rec.recorded"], ["checked", "rec.checked"], ["sources", "rec.sources"]].map(function (r) { return "<div><b>" + num(h[r[0]] || 0) + "</b><span>" + esc(t(r[1])) + "</span></div>"; }).join("") +
       '</div><div class="hash">' + (head ? "SHA-256 <code>" + esc(head.slice(0, 16)) + "…</code>" : "") + '<a href="https://cryptonova.vip/scorecard.html">' + esc(t("rec.open")) + "</a></div>";
   }
-  var SLEEVE_COL = { spot: "#00B4D8", active: "#7FD3FF", futures: "#3ADB93", funding: "#FFC562", basis: "#B39DFF", yield: "#5C8DFF", susde: "#FF94B4" };
+  var SLEEVE_COL = { spot: "#00B4D8", active: "#7FD3FF", futures: "#3ADB93", funding: "#FFC562", basis: "#9AA6FF", yield: "#4E7BFF", susde: "#5FE3C8" };
   function portMiniHTML() {
     var p = H().portfolio || {}, sl = (p.sleeves || []).filter(function (s) { return s.share > 0.0005; });
     return '<div class="stack">' + sl.map(function (s) { return '<i style="flex:' + s.share + ";background:" + (SLEEVE_COL[s.key] || "#888") + '"></i>'; }).join("") + '</div><ul class="sleeves one">' +
@@ -391,6 +588,56 @@
       return '<li><i style="background:' + (SLEEVE_COL[s.key] || "#888") + '"></i><span><b>' + esc(t("sl." + s.key + ".t") || s.key) + "</b><small>" + esc(t("sl." + s.key + ".d")) + '</small></span><span class="n">' + usd(s.usd) + "<small><br>" + num(s.share * 100, 1) + "%</small></span></li>";
     }).join("");
   }
+  /* the spot coin portfolio, like the app's Spot screen: allocation ring, shares, the day's moves */
+  var ALLOC_COL = ["#FFB547", "#7FD3FF", "#3ADB93", "#00B4D8", "#5C8DFF", "#8EA2C6", "#B9C7E0"];
+  function plural(n, base) {
+    var f = "many";
+    try { var r = new Intl.PluralRules(LOCALE[lang]).select(n); f = r === "one" ? "one" : r === "few" ? "few" : "many"; } catch (e) {}
+    return t(base + "." + f) || t(base + ".many");
+  }
+  function renderSpot() {
+    var el = $("#spotP"), sp = H().spot; if (!el || !sp || !(sp.alloc || []).length) { if (el) el.hidden = true; return; }
+    el.hidden = false;
+    var al = sp.alloc, tot = al.reduce(function (a, x) { return a + (x.weight || 0); }, 0) || 100, C = 2 * Math.PI * 42, off = 0;
+    var ring = al.map(function (x, i) { var l = (x.weight || 0) / tot * C, seg2 = '<circle r="42" cx="50" cy="50" fill="none" stroke="' + ALLOC_COL[i % ALLOC_COL.length] + '" stroke-width="11" stroke-dasharray="' + Math.max(0, l - 1.2).toFixed(2) + " " + C.toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '"/>'; off += l; return seg2; }).join("");
+    el.innerHTML = '<h4>' + esc(t("sl.spot.t")) + (sp.pct != null ? '<span class="' + (sp.pct >= 0 ? "up" : "down") + '">' + esc(t("spot.since", { p: pct(sp.pct) })) + "</span>" : "") + "</h4>" +
+      '<div class="donut"><svg viewBox="0 0 100 100" aria-hidden="true"><circle r="42" cx="50" cy="50" fill="none" stroke="rgba(127,211,255,.08)" stroke-width="11"/>' + ring + '</svg><div class="c"><b>' + num(sp.n_coins || 0) + "</b><span>" + esc(plural(sp.n_coins || 0, "spot.coin")) + "</span></div></div>" +
+      '<ul class="alloc">' + al.map(function (x, i) { var c = ALLOC_COL[i % ALLOC_COL.length]; return '<li><i style="background:' + c + '"></i><span>' + esc(x.name) + "</span><b>" + num(x.weight, 1) + '%</b><span class="bar"><s style="width:' + Math.min(100, x.weight / Math.max.apply(null, al.map(function (y) { return y.weight; })) * 100).toFixed(1) + "%;background:" + c + '"></s></span></li>'; }).join("") + "</ul>" +
+      ((sp.movers || []).length ? '<div class="movers"><span class="lb">' + esc(t("spot.movers")) + "</span>" + sp.movers.slice(0, 8).map(function (m) { return '<span class="m">' + esc(m.sym) + ' <span class="' + (m.pct >= 0 ? "up" : "down") + '">' + pct(m.pct, 1) + "</span></span>"; }).join("") + "</div>" : "");
+  }
+  /* your own portfolio: the same engine's split for any sum and character (allocation only, no return promised) */
+  var OWN = { amt: 10000, m: "balanced" }, ownBuilt = "", modelsLive = false;
+  var SLEEVE_ORDER = ["spot", "active", "futures", "funding", "basis", "yield", "susde"];
+  function renderOwn() {
+    var box = $("#pfOwn"); if (!box || box.hidden) return;
+    var key = lang;
+    if (ownBuilt !== key) {
+      ownBuilt = key;
+      seg($("#ownAmt"), [1000, 5000, 10000, 50000].map(function (a) { return [a, usd(a)]; }), OWN.amt, function (v) { OWN.amt = +v; }, renderOwn);
+      seg($("#ownModel"), ["calm", "balanced", "bold"].map(function (k) { return [k, t("m." + k)]; }), OWN.m, function (v) { OWN.m = v; }, renderOwn);
+    }
+    var w = ((D.models || {})[OWN.m] || {}).w || {};
+    var sl = SLEEVE_ORDER.map(function (k) { return { key: k, share: w[k] || 0 }; }).filter(function (x) { return x.share > 0.0005; });
+    var sum = sl.reduce(function (a, x) { return a + x.share; }, 0) || 1;
+    $("#ownTotal").textContent = usd(OWN.amt);
+    $("#ownStack").innerHTML = sl.map(function (x) { return '<i style="flex:' + x.share + ";background:" + (SLEEVE_COL[x.key] || "#888") + '"></i>'; }).join("");
+    $("#ownSleeves").innerHTML = sl.map(function (x) {
+      return '<li><i style="background:' + (SLEEVE_COL[x.key] || "#888") + '"></i><span><b>' + esc(t("sl." + x.key + ".t") || x.key) + "</b><small>" + esc(t("sl." + x.key + ".d")) + '</small></span><span class="n">' + usd(OWN.amt * x.share / sum) + "<small><br>" + num(x.share / sum * 100, 1) + "%</small></span></li>";
+    }).join("");
+  }
+  function pfTab(v) {
+    var own = v === "own";
+    $("#pfDemo").hidden = own; $("#pfOwn").hidden = !own;
+    $$("#pfTabs button").forEach(function (b) { var on = b.getAttribute("data-v") === v; b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1; });
+    if (own) {
+      renderOwn();
+      if (!modelsLive && window.fetch) { modelsLive = true; get("capital.json").then(function (c) { if (c && c.models) { var m = {}; for (var k in c.models) m[k] = { w: c.models[k].w }; D.models = m; renderOwn(); } }).catch(function () {}); }
+    }
+  }
+  $$("#pfTabs button").forEach(function (b) {
+    b.addEventListener("click", function () { pfTab(b.getAttribute("data-v")); });
+    b.addEventListener("keydown", function (ev) { if (ev.key === "ArrowRight" || ev.key === "ArrowLeft") { ev.preventDefault(); var v = b.getAttribute("data-v") === "demo" ? "own" : "demo"; pfTab(v); var n = $('#pfTabs [data-v="' + v + '"]'); if (n) n.focus(); } });
+  });
   function drawCurve(box, p) {
     var c = (p.curve || []).filter(function (r) { return r && r[1] != null; }); if (c.length < 2 || !box) return;
     var start = p.start_usd || 10000, W = 640, Hh = 220, padT = 16, padB = 26, t0 = c[0][0], t1 = c[c.length - 1][0];
@@ -468,9 +715,9 @@
 
   /* ---------- Piggy calculator on real BTC closes ---------- */
   var PG = { amt: 10, freq: "w", year: 2021 }, pgBuilt = "";
-  function seg(el, items, cur, on) {
+  function seg(el, items, cur, on, after) {
     el.innerHTML = items.map(function (it) { return '<button type="button" aria-pressed="' + (String(it[0]) === String(cur)) + '" data-v="' + it[0] + '">' + esc(it[1]) + "</button>"; }).join("");
-    $$("button", el).forEach(function (b) { b.addEventListener("click", function () { on(b.getAttribute("data-v")); $$("button", el).forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); calcPiggy(); }); });
+    $$("button", el).forEach(function (b) { b.addEventListener("click", function () { on(b.getAttribute("data-v")); $$("button", el).forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); (after || calcPiggy)(); }); });
   }
   function renderPiggy() {
     var b = D.btc; if (!b || !b.closes || !$("#pgAmt")) return;
@@ -511,12 +758,13 @@
 
   /* ---------- go ---------- */
   function renderData() {   // everything that shows live numbers; safe to call on every refresh
-    renderStatus(); renderHeroCards(); renderTicker(); renderEngines(); renderPortfolio();
+    renderStatus(); renderHeroCards(); renderTicker(); renderThink(); renderEngines(); renderPortfolio(); renderSpot(); renderOwn();
     var since = (H().portfolio || {}).since;
     $$("[data-i-html]").forEach(function (el) { el.innerHTML = t(el.getAttribute("data-i-html"), since ? { since: date(since, true) } : null); });
   }
-  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; renderPiggy(); }   // interactive widgets: load and language change only
-  renderData(); renderStatic(); initFlow();
+  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; ownBuilt = ""; renderPiggy(); renderOwn(); }   // interactive widgets: load and language change only
+  boot(); renderData(); renderStatic(); initFlow();
+  makeCore($("#core"), { assets: true, pointer: true, r: 0.3, lattice: 280, logo: 0.82 });
   var mq = window.matchMedia("(max-width:860px)"); if (mq.addEventListener) mq.addEventListener("change", renderEngines);
   if (window.fetch) { loadAll(); setInterval(function () { if (!doc.hidden) loadAll(); }, 5 * 60000); }
   setInterval(renderStatus, 60000);

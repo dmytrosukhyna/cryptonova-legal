@@ -32,8 +32,10 @@ def home(lang):
     fut = h.get("futures") or {}
     keep = ("sym", "side", "entry", "price", "stop", "target", "pct", "why_title", "why", "checks", "opened")
     opened = [{k: t.get(k) for k in keep} for t in (fut.get("open") or [])[:3]]
+    sp = h.get("spot") or {}
+    spot = {k: sp.get(k) for k in ("usd", "pct", "n_coins", "cash_pct", "alloc", "movers")}
     return {"asof": h.get("asof"), "portfolio": p, "engine": h.get("engine"),
-            "futures": {"open": opened}, "market": h.get("market")}
+            "futures": {"open": opened}, "market": h.get("market"), "spot": spot}
 
 
 def scorecard():
@@ -72,8 +74,25 @@ def btc():
     return {"start_day": b["start_day"], "closes": [round(x, 2) for x in b["closes"]]}
 
 
+def models():
+    c = load("capital.json")
+    return {k: {"w": m.get("w")} for k, m in (c.get("models") or {}).items()}
+
+
+def scale():
+    """Honest size of the work, from the engine's own files: markets in the nightly lab, years of history, candle checks a
+    night (every tried rule walks its market's whole daily history), futures markets the scanner watches every minute."""
+    a = load("autolab.json"); cov = a.get("coverage") or {}
+    days = [v.get("days") or 0 for v in cov.values()]
+    mean = sum(days) / len(days) if days else 0
+    t = load("terminal.json"); m = load("markets.json")
+    since = min((v.get("from") or "9999")[:4] for v in cov.values()) if cov else None
+    return {"lab_markets": len(cov), "since": int(since) if since and since.isdigit() else None,
+            "candle_checks": int((a.get("tried") or 0) * mean), "fut_markets": len(t.get("coins") or []), "coins": len(m.get("top") or [])}
+
+
 snap = {"made": int(time.time() * 1000), "home": {l: home(l) for l in LANG_FILE}, "scorecard": scorecard(),
-        "conveyor": conveyor(), "risk": risk(), "btc": btc(), "markets": markets()}
+        "conveyor": conveyor(), "risk": risk(), "btc": btc(), "markets": markets(), "models": models(), "scale": scale()}
 with open(OUT, "w", encoding="utf-8") as f:
     f.write("/* fallback copy of the live feeds, made by tools/snapshot.py */\nwindow.CN_SNAP=")
     json.dump(snap, f, ensure_ascii=False, separators=(",", ":"))

@@ -18,12 +18,13 @@
 <meta property="og:image" content="https://cryptonova.pro/assets/img/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 {{hreflang}}
-<link rel="preload" href="assets/fonts/unbounded_semibold.woff" as="font" type="font/woff" crossorigin>
-<link rel="preload" href="assets/fonts/manrope_regular.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/intertight_650.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/plex_400.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="assets/site.css?v={{v}}">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"MobileApplication","name":"CRYPTO NOVA AI","operatingSystem":"iOS","applicationCategory":"FinanceApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://cryptonova.pro/","installUrl":"https://apps.apple.com/app/id6754893343"}</script>
 </head>
 <body>
+<div class="boot" id="boot" aria-hidden="true" hidden><div class="bootin"><div class="bootlogo"><img src="assets/img/n-core.webp" alt="" width="48" height="48"><div><b>CRYPTO NOVΛ AI</b><small data-i="boot.sub">{{boot.sub}}</small></div></div><pre id="bootLog"></pre><div class="bootbar"><i id="bootBar"></i></div><button type="button" class="bootskip" id="bootSkip" data-i="boot.skip">{{boot.skip}}</button></div></div>
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="top" id="top">
@@ -61,9 +62,8 @@
       <p class="status" id="status" role="status"><i></i><span></span></p>
     </div>
     <div class="stage" id="stage">
-      <div class="turbine-wrap" aria-hidden="true"><svg class="turbine big" id="heroTurbine" viewBox="-300 -300 600 600"></svg></div>
-      <canvas id="flow" aria-hidden="true"></canvas>
-      <div class="hero-phone"><div class="phone"><div class="island"></div><div class="scr"><img id="heroScr" class="on" src="assets/img/screens/en/intro.webp" alt="CRYPTO NOVA AI" width="600" height="1300"></div></div></div>
+      <canvas id="core" role="img" aria-label="{{core.aria}}" data-i-attr="aria-label:core.aria"></canvas>
+      <div class="corelegend" aria-hidden="true"><span class="ok"><i></i><span data-i="core.in">{{core.in}}</span></span><span class="no"><i></i><span data-i="core.out">{{core.out}}</span></span></div>
       <div class="fcard fc1"><div class="fk" data-i="fc.portfolio">{{fc.portfolio}}</div><div class="fv" id="fcVal">$10,000</div><div class="fs"><b id="fcPct" class="up"></b> <span data-i="fc.demo">{{fc.demo}}</span></div><div class="fspark" id="fcSpark"></div></div>
       <div class="fcard fc2"><div class="fk" data-i="fc.trade">{{fc.trade}}</div><div class="frow"><b id="fcSym">AVAX</b><span id="fcSide" class="up"></span><b id="fcTp" class="up"></b></div><div class="fbar"><i id="fcBar"></i></div></div>
       <div class="fcard fc3"><div class="frow"><span class="orb sm"></span><b data-i="fc.nova.q">{{fc.nova.q}}</b></div><p data-i="fc.nova.a">{{fc.nova.a}}</p></div>
@@ -73,9 +73,24 @@
   <div class="ticker" aria-hidden="true"><div class="track" id="ticker"></div></div>
 </section>
 
+<section class="sec" id="think" aria-labelledby="thinkH">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker" data-i="k.think">{{k.think}}</p>
+      <h2 class="display" id="thinkH" data-i="think.h2">{{think.h2}}</h2>
+      <p class="lead" data-i="think.lead">{{think.lead}}</p>
+    </div>
+    <div class="think hud">
+      <svg class="thinkflow" id="thinkFlow" viewBox="0 0 1200 230" aria-hidden="true"></svg>
+      <ol class="tsteps" id="tsteps"></ol>
+    </div>
+  </div>
+</section>
+
 <section class="sec" id="system" aria-labelledby="sysH">
   <div class="wrap">
     <div class="sec-head">
+      <p class="kicker" data-i="k.system">{{k.system}}</p>
       <h2 class="display" id="sysH" data-i="eng.h2">{{eng.h2}}</h2>
       <p class="lead" data-i="eng.lead">{{eng.lead}}</p>
     </div>
@@ -90,10 +105,12 @@
 <section class="sec" id="live" aria-labelledby="liveH">
   <div class="wrap">
     <div class="sec-head">
-      <h2 class="display" id="liveH" data-i="live.h2">{{live.h2}}</h2>
+      <p class="kicker" data-i="k.live">{{k.live}}</p>
+      <div class="livehead"><h2 class="display" id="liveH" data-i="live.h2">{{live.h2}}</h2><span class="livebadge"><i></i><span data-i="live.badge">{{live.badge}}</span></span></div>
       <p class="lead" data-i="live.lead">{{live.lead}}</p>
     </div>
-    <div class="live">
+    <div class="pftabs" role="tablist" id="pfTabs"><button type="button" role="tab" aria-selected="true" aria-controls="pfDemo" data-v="demo" id="pfTabDemo" data-i="pf.demo">{{pf.demo}}</button><button type="button" role="tab" aria-selected="false" aria-controls="pfOwn" data-v="own" id="pfTabOwn" data-i="pf.own">{{pf.own}}</button></div>
+    <div class="live hud" id="pfDemo" role="tabpanel" aria-labelledby="pfTabDemo">
       <div class="live-top">
         <div>
           <div class="k" data-i="live.value">{{live.value}}</div>
@@ -107,8 +124,20 @@
         <h3 data-i="live.split">{{live.split}}</h3>
         <div class="stack" id="pStack"></div>
         <ul class="sleeves" id="pSleeves"></ul>
+        <div class="spotp" id="spotP"></div>
       </div>
       <p class="live-foot" data-i="live.foot">{{live.foot}}</p>
+    </div>
+    <div class="live hud own" id="pfOwn" role="tabpanel" aria-labelledby="pfTabOwn" hidden>
+      <div class="ctrls">
+        <div class="ctrl"><span class="lb" data-i="pf.amount">{{pf.amount}}</span><div class="seg" id="ownAmt"></div></div>
+        <div class="ctrl"><span class="lb" data-i="pf.model">{{pf.model}}</span><div class="seg" id="ownModel"></div></div>
+      </div>
+      <div class="total"><small data-i="pf.split">{{pf.split}}</small><span id="ownTotal"></span></div>
+      <div class="stack" id="ownStack"></div>
+      <ul class="sleeves" id="ownSleeves"></ul>
+      <p class="note" data-i="pf.note">{{pf.note}}</p>
+      <div class="stores">{{stores}}</div>
     </div>
   </div>
 </section>
@@ -116,6 +145,7 @@
 <section class="sec" id="app" aria-labelledby="appH">
   <div class="wrap">
     <div class="sec-head">
+      <p class="kicker" data-i="k.app">{{k.app}}</p>
       <h2 class="display" id="appH" data-i="app.h2">{{app.h2}}</h2>
       <p class="lead" data-i="app.lead">{{app.lead}}</p>
     </div>
@@ -132,16 +162,17 @@
 
 <section class="sec" id="try" aria-labelledby="tryH">
   <div class="wrap">
+    <p class="kicker" data-i="k.try">{{k.try}}</p>
     <h2 class="display" id="tryH" data-i="try.h2">{{try.h2}}</h2>
     <div class="trygrid">
-      <div class="tool" id="nova">
+      <div class="tool hud" id="nova">
         <div class="orbrow"><span class="orb"></span><h3 data-i="nova.t">{{nova.t}}</h3></div>
         <p data-i="nova.p">{{nova.p}}</p>
         <div class="chat" id="chat" aria-live="polite"></div>
         <div class="qs" id="qs"></div>
         <p class="fine" data-i="nova.note">{{nova.note}}</p>
       </div>
-      <div class="tool" id="piggy">
+      <div class="tool hud" id="piggy">
         <h3 data-i="piggy.t">{{piggy.t}}</h3>
         <p data-i="piggy.p">{{piggy.p}}</p>
         <div class="ctrls">
