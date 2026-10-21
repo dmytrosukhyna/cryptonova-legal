@@ -23,9 +23,9 @@
 <link rel="alternate" hreflang="el" href="https://cryptonova.pro/?lang=el">
 <link rel="alternate" hreflang="es" href="https://cryptonova.pro/?lang=es">
 <link rel="alternate" hreflang="x-default" href="https://cryptonova.pro/">
-<link rel="preload" href="assets/fonts/intertight_650.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="assets/fonts/jbmono_760.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="assets/fonts/plex_400.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="assets/site.css?v=202610211314">
+<link rel="stylesheet" href="assets/site.css?v=202610211337">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"MobileApplication","name":"CRYPTO NOVA AI","operatingSystem":"iOS","applicationCategory":"FinanceApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://cryptonova.pro/","installUrl":"https://apps.apple.com/app/id6754893343"}</script>
 </head>
 <body>
@@ -35,7 +35,7 @@
 <header class="top" id="top">
   <div class="wrap">
     <a class="brand" href="./" aria-label="CRYPTO NOVA AI">
-      <img src="assets/img/logo-128.webp" alt="" width="32" height="32">
+      <svg class="emb" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 10V3h7M22 3h7v7M29 22v7h-7M10 29H3v-7"/><circle cx="16" cy="16" r="7"/><path d="M16 5v5M16 22v5M5 16h5M22 16h5"/><path d="M16 12.6l3.4 3.4-3.4 3.4-3.4-3.4z" fill="currentColor" stroke="none"/></svg>
       <b>CRYPTO NOVΛ<span>AI</span></b>
     </a>
     <nav class="nav" id="nav" aria-label="Main">
@@ -67,7 +67,7 @@
       <p class="status" id="status" role="status"><i></i><span></span></p>
     </div>
     <div class="stage" id="stage">
-      <canvas id="core" role="img" aria-label="The NOVA core: coins fly in, and only those that pass the filters get inside" data-i-attr="aria-label:core.aria"></canvas>
+      <canvas id="core" role="img" aria-label="The NOVA radar: coins appear as contacts; only those that pass the filters are locked and pulled to the core" data-i-attr="aria-label:core.aria"></canvas>
       <div class="corelegend" aria-hidden="true"><span class="ok"><i></i><span data-i="core.in">passed the filter</span></span><span class="no"><i></i><span data-i="core.out">filtered out</span></span></div>
       <div class="fcard fc1"><div class="fk" data-i="fc.portfolio">Public portfolio</div><div class="fv" id="fcVal">$10,000</div><div class="fs"><b id="fcPct" class="up"></b> <span data-i="fc.demo">demo account</span></div><div class="fspark" id="fcSpark"></div></div>
       <div class="fcard fc2"><div class="fk" data-i="fc.trade">Live demo trade</div><div class="frow"><b id="fcSym">AVAX</b><span id="fcSide" class="up"></span><b id="fcTp" class="up"></b></div><div class="fbar"><i id="fcBar"></i></div></div>
@@ -86,7 +86,7 @@
       <p class="lead" data-i="think.lead">Every minute and every night CRYPTO NOVA AI runs the same loop: it collects data, studies the market, invents ideas, tests them on decades of history and keeps only what survives. These are today&#x27;s real numbers from the engine.</p>
     </div>
     <div class="think hud">
-      <svg class="thinkflow" id="thinkFlow" viewBox="0 0 1200 230" aria-hidden="true"></svg>
+      <canvas class="thinkflow" id="thinkCv" aria-hidden="true"></canvas>
       <ol class="tsteps" id="tsteps"></ol>
     </div>
   </div>
@@ -240,7 +240,7 @@
   <div class="wrap">
     <div class="cols">
       <div>
-        <a class="brand" href="./"><img src="assets/img/logo-128.webp" alt="" width="32" height="32"><b>CRYPTO NOVΛ<span>AI</span></b></a>
+        <a class="brand" href="./"><svg class="emb" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 10V3h7M22 3h7v7M29 22v7h-7M10 29H3v-7"/><circle cx="16" cy="16" r="7"/><path d="M16 5v5M16 22v5M5 16h5M22 16h5"/><path d="M16 12.6l3.4 3.4-3.4 3.4-3.4-3.4z" fill="currentColor" stroke="none"/></svg><b>CRYPTO NOVΛ<span>AI</span></b></a>
         <p class="about" data-i="foot.about">Education and demo accounts. CRYPTO NOVA is not an exchange, broker or financial adviser and never holds your money. Crypto trading is high risk.</p>
       </div>
       <div><h4 data-i="foot.docs">Documents</h4><ul><li><a href="privacy" data-i="foot.privacy">Privacy policy</a></li><li><a href="terms" data-i="foot.terms">Terms of use</a></li><li><a href="delete" data-i="foot.delete">Delete account</a></li></ul></div>
@@ -251,8 +251,8 @@
   </div>
 </footer>
 
-<script src="assets/i18n.js?v=202610211314"></script>
-<script src="assets/snapshot.js?v=202610211314"></script>
-<script src="assets/site.js?v=202610211314"></script>
+<script src="assets/i18n.js?v=202610211337"></script>
+<script src="assets/snapshot.js?v=202610211337"></script>
+<script src="assets/site.js?v=202610211337"></script>
 </body>
 </html>

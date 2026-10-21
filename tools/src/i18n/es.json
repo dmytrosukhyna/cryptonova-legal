@@ -232,7 +232,7 @@
  "boot.l4": "Escudo de riesgo · 6 límites",
  "boot.l5": "Registro de pronósticos · SHA-256",
  "boot.l6": "NÚCLEO NOVA ACTIVO",
- "core.aria": "El núcleo NOVA: las monedas se acercan y solo entran las que pasan los filtros",
+ "core.aria": "Radar NOVA: las monedas aparecen como objetivos; solo se fijan las que pasan los filtros",
  "core.in": "pasó el filtro",
  "core.out": "descartado",
  "k.think": "01 · Inteligencia",
@@ -271,5 +271,7 @@
  "spot.movers": "Últimas 24 h",
  "spot.coin.one": "moneda",
  "spot.coin.few": "monedas",
- "spot.coin.many": "monedas"
+ "spot.coin.many": "monedas",
+ "radar.scan": "ESCANEO · {n} MONEDAS",
+ "radar.cycle": "CICLO {n} S"
 }

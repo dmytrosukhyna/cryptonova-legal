@@ -101,7 +101,7 @@ def footer(prefix=""):
   <div class="wrap">
     <div class="cols">
       <div>
-        <a class="brand" href="{prefix or './'}"><img src="{prefix}assets/img/logo-128.webp" alt="" width="32" height="32"><b>CRYPTO NOVΛ<span>AI</span></b></a>
+        <a class="brand" href="{prefix or './'}"><svg class="emb" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 10V3h7M22 3h7v7M29 22v7h-7M10 29H3v-7"/><circle cx="16" cy="16" r="7"/><path d="M16 5v5M16 22v5M5 16h5M22 16h5"/><path d="M16 12.6l3.4 3.4-3.4 3.4-3.4-3.4z" fill="currentColor" stroke="none"/></svg><b>CRYPTO NOVΛ<span>AI</span></b></a>
         <p class="about" data-i="foot.about">{e("foot.about")}</p>
       </div>
       <div><h4 data-i="foot.docs">{e("foot.docs")}</h4><ul>{li(prefix + "privacy", "foot.privacy")}{li(prefix + "terms", "foot.terms")}{li(prefix + "delete", "foot.delete")}</ul></div>
@@ -123,7 +123,7 @@ def header(back=False):
     nav = (f'<a class="backlink" href="./" data-i="legal.back">{e("legal.back")}</a>' if back else "")
     return f"""<header class="top" id="top">
   <div class="wrap">
-    <a class="brand" href="./" aria-label="CRYPTO NOVA AI"><img src="assets/img/logo-128.webp" alt="" width="32" height="32"><b>CRYPTO NOVΛ<span>AI</span></b></a>
+    <a class="brand" href="./" aria-label="CRYPTO NOVA AI"><svg class="emb" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 10V3h7M22 3h7v7M29 22v7h-7M10 29H3v-7"/><circle cx="16" cy="16" r="7"/><path d="M16 5v5M16 22v5M5 16h5M22 16h5"/><path d="M16 12.6l3.4 3.4-3.4 3.4-3.4-3.4z" fill="currentColor" stroke="none"/></svg><b>CRYPTO NOVΛ<span>AI</span></b></a>
     <nav class="nav nav-doc" aria-label="Main">{nav}</nav>
     <div class="langsel"><label class="sr" for="lang" data-i="nav.lang">{e("nav.lang")}</label><select id="lang">{''.join(f'<option value="{l}">{l.upper()}</option>' for l in LANGS)}</select></div>
     <a class="btn-dl" href="{APPSTORE}" data-i="nav.download">{e("nav.download")}</a>

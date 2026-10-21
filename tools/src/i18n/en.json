@@ -232,7 +232,7 @@
  "boot.l4": "Risk shield · 6 limits",
  "boot.l5": "Forecast ledger · SHA-256",
  "boot.l6": "NOVA CORE ONLINE",
- "core.aria": "The NOVA core: coins fly in, and only those that pass the filters get inside",
+ "core.aria": "The NOVA radar: coins appear as contacts; only those that pass the filters are locked and pulled to the core",
  "core.in": "passed the filter",
  "core.out": "filtered out",
  "k.think": "01 · Intelligence",
@@ -271,5 +271,7 @@
  "spot.movers": "Last 24 h",
  "spot.coin.one": "coin",
  "spot.coin.few": "coins",
- "spot.coin.many": "coins"
+ "spot.coin.many": "coins",
+ "radar.scan": "SCAN · {n} COINS",
+ "radar.cycle": "CYCLE {n} S"
 }
