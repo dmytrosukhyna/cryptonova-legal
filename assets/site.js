@@ -76,9 +76,14 @@
 
   /* ---------- data ---------- */
   var SNAP = window.CN_SNAP || {};
-  var D = { home: {}, liveHome: {}, scorecard: SNAP.scorecard, conveyor: SNAP.conveyor, risk: SNAP.risk, btc: SNAP.btc, markets: SNAP.markets, models: SNAP.models, scale: SNAP.scale || {} };
+  var D = { home: {}, liveHome: {}, scorecard: SNAP.scorecard, conveyor: SNAP.conveyor, risk: SNAP.risk, btc: SNAP.btc, markets: SNAP.markets, scale: SNAP.scale || {} };
   LANGS.forEach(function (l) { if (SNAP.home && SNAP.home[l]) D.home[l] = SNAP.home[l]; });
   function H() { return D.home[lang] || D.home.en || {}; }
+  /* v8 (owner 22.10): the public portfolio is the closed system's header — futures «отобранные сигналы» + spot «CRYPTO NOVA портфель»,
+     two $10 000 demo accounts from 17.10 (feed key "public"). The old capital allocator ("portfolio") is not shown anywhere. */
+  function P() { var p = H().public; return p && p.total_usd != null ? p : null; }
+  function earnedPct(p) { return p.total_usd / (p.base_usd || 20000) * 100; }
+  function sgnUsd(v, dec) { return signed(v, usd(Math.abs(v), dec)); }
   function E() { return H().engine || {}; }
   function get(name) {
     var ctl = window.AbortController ? new AbortController() : null;
@@ -88,7 +93,7 @@
   }
   function loadHome() {
     var l = lang;
-    return get(HOME_FILE[l]).then(function (h) { if (h && h.portfolio) { D.home[l] = h; D.liveHome[l] = true; if (l === lang) renderData(); } }).catch(function () { renderStatus(); });
+    return get(HOME_FILE[l]).then(function (h) { if (h && (h.public || h.portfolio)) { D.home[l] = h; D.liveHome[l] = true; if (l === lang) renderData(); } }).catch(function () { renderStatus(); });
   }
   function loadAll() {
     loadHome();
@@ -182,11 +187,12 @@
     box.innerHTML = '<svg viewBox="0 0 ' + W + " " + Hh + '" preserveAspectRatio="none"><polyline points="' + pts.join(" ") + '" fill="none" stroke="' + (v[v.length - 1] >= start ? "#3ADB93" : "#FF6E86") + '" stroke-width="1.8" vector-effect="non-scaling-stroke"/></svg>';
   }
   function renderHeroCards() {
-    var p = H().portfolio || {};
-    if (p.value_usd != null) {
-      $("#fcVal").textContent = usd(p.value_usd);
-      var pc = $("#fcPct"); pc.textContent = pct(p.pnl_pct); pc.className = p.pnl_pct >= 0 ? "up" : "down";
-      spark($("#fcSpark"), p.curve, p.start_usd || 10000);
+    var p = P();
+    if (p) {
+      $("#fcVal").textContent = sgnUsd(p.total_usd);
+      var pv = earnedPct(p), pc = $("#fcPct"); pc.textContent = pct(pv); pc.className = pv >= 0 ? "up" : "down";
+      var fs = $("#fcSince"); if (fs && p.since) fs.textContent = t("fc.since", { date: date(p.since) });
+      spark($("#fcSpark"), p.curve, 0);
     }
     var o = ((H().futures || {}).open || [])[0];
     if (o) {
@@ -461,7 +467,7 @@
   function makeSystem(cv) {
     if (!cv || !cv.getContext) return null;
     var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, running = false, visible = true, t0 = performance.now(), last = 0;
-    var SRC = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPERLIQUID", "NEWS", "ON-CHAIN", "1927–2026"], SRC_S = ["BINANCE", "BYBIT", "BINGX", "OKX", "HYPER", "NEWS", "CHAIN", "1927+"];
+    var SRC = ["BINANCE", "BYBIT", "COINGECKO", "OKX", "HYPERLIQUID", "NEWS", "ON-CHAIN", "1927–2026"], SRC_S = ["BINANCE", "BYBIT", "GECKO", "OKX", "HYPER", "NEWS", "CHAIN", "1927+"];
     var L = [], P = [], phoneX = 0, phoneY = 0, phoneT = 0, phoneB = 0, FAN = 15, glowIn = 0, sx = 0, narrow = false, AI = { x: 0, y: 0, r: 0, hit: 0 }, act = [0, 0, 0, 0];
     var chips = $$("#sysflow li");
     function size() {
@@ -561,32 +567,32 @@
   }
 
   /* ---------- the phone in the hero: drawn in code, the new app home ----------
-     Real numbers only: the public portfolio from the feed (and its live value from #live via "cn:pflive"),
-     the open trades of CRYPTO NOVA. When a selected signal flies in, the balance moves to the latest value. */
-  var PH = { shown: null, target: null, pnl: null, pct: null, row: 0, anim: 0 };
+     Real numbers only: «Заработано всего» of the public portfolio from the feed (and its live value from #live via "cn:pflive"),
+     the open trades of CRYPTO NOVA. When a selected signal flies in, the number moves to the latest value. */
+  var PH = { shown: null, target: null, pct: null, row: 0, anim: 0 };
   function renderPhone() {
     var el = $("#heroScr"); if (!el) return;
-    var p = H().portfolio || {}, open = ((H().futures || {}).open || []).slice(0, 5);
-    if (PH.target == null && p.value_usd != null) { PH.target = p.value_usd; PH.pnl = p.pnl_usd; PH.pct = p.pnl_pct; }
+    var p = P() || {}, open = ((H().futures || {}).open || []).slice(0, 5);
+    if (PH.target == null && p.total_usd != null) { PH.target = p.total_usd; PH.pct = earnedPct(p); }
     if (PH.shown == null) PH.shown = PH.target;
     var tabs = ["M3 11l9-7 9 7v9H3z", "M3 17l6-6 4 4 8-8", "", "M12 3a9 9 0 1 0 9 9h-9z", "M4 5h16v14H4zM8 9h8M8 13h5"];
     el.innerHTML = '<div class="ph"><div class="ph-top"><canvas class="ph-logo" data-sphere aria-hidden="true"></canvas><b>CRYPTO NOVA</b><span class="ph-mode"><i></i>PUBLIC · LIVE</span></div>' +
-      '<div class="ph-card"><div class="ph-k">' + esc(t("ph.portfolio")) + '</div><div class="ph-val" id="phVal">' + (PH.shown != null ? usd(PH.shown) : "—") + '</div>' +
+      '<div class="ph-card"><div class="ph-k">' + esc(t("live.total")) + '</div><div class="ph-val" id="phVal">' + (PH.shown != null ? sgnUsd(PH.shown, 2) : "—") + '</div>' +
       '<div class="ph-pnl" id="phPnl"></div><div class="ph-chart" id="phChart"></div></div>' +
-      (function () { var sp = H().spot || {}, fu = H().futures || {};
-        function tile(k, o) { var v = o.pct; return '<div class="ph-tile"><div class="ph-k">' + esc(k) + '</div><b class="' + ((v || 0) >= 0 ? "up" : "down") + '">' + (v != null ? pct(v) : "—") + "</b><small>" + (o.usd != null ? signed(o.usd, usd(Math.abs(o.usd))) : "") + "</small></div>"; }
-        return '<div class="ph-tiles">' + tile(t("ph.spot", { n: num(sp.n_coins || 0) }), sp) + tile(t("ph.fut"), fu) + "</div>"; })() +
+      (function () { var sp = p.spot || {}, fu = p.futures || {};
+        function tile(k, o) { var v = o.pct; return '<div class="ph-tile"><div class="ph-k">' + esc(k) + '</div><b class="' + ((v || 0) >= 0 ? "up" : "down") + '">' + (v != null ? pct(v) : "—") + "</b><small>" + (o.usd != null ? sgnUsd(o.usd) : "") + "</small></div>"; }
+        return '<div class="ph-tiles">' + tile(t("ph.spot", { n: num((sp.coins || []).length) }), sp) + tile(t("ph.fut"), fu) + "</div>"; })() +
       '<div class="ph-k2">' + esc(t("ph.signals")) + '</div><ul class="ph-sig" id="phSig">' +
       open.map(function (o, i) { var long = String(o.side).toUpperCase() !== "SHORT", v = o.pct || 0;
         return '<li data-i="' + i + '"><b>' + esc(o.sym) + '</b><span class="' + (long ? "up" : "down") + '">' + esc(t(long ? "tc.long" : "tc.short")) + '</span><em class="' + (v >= 0 ? "up" : "down") + '">' + pct(v) + "</em></li>"; }).join("") +
       (open.length ? "" : '<li class="none">' + esc(t("ph.none")) + "</li>") + "</ul>" +
       '<div class="ph-tabs">' + tabs.map(function (d, i) { return i === 2 ? '<canvas class="ph-nova" data-sphere aria-hidden="true"></canvas>' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + d + '"/></svg>'; }).join("") + "</div></div>";
-    phPnl(); spark($("#phChart"), p.curve, p.start_usd || 10000);
+    phPnl(); spark($("#phChart"), p.curve, 0);
     if (window.NovaSphere) NovaSphere.auto();
   }
   function phPnl() {
-    var e = $("#phPnl"); if (!e || PH.pnl == null) return;
-    e.className = "ph-pnl " + (PH.pnl >= 0 ? "up" : "down"); e.textContent = signed(PH.pnl, usd(Math.abs(PH.pnl))) + " · " + pct(PH.pct || 0);
+    var e = $("#phPnl"), p = P(); if (!e || PH.pct == null) return;
+    e.className = "ph-pnl " + (PH.pct >= 0 ? "up" : "down"); e.textContent = pct(PH.pct) + (p && p.since ? " · " + t("fc.since", { date: date(p.since) }) : "");
   }
   function phoneArrive() {
     var v = $("#phVal"), rows = $$("#phSig li[data-i]");
@@ -596,13 +602,13 @@
     var from = PH.shown, to = PH.target, st = performance.now(), dir = to > from ? "up" : "down";
     v.classList.remove("up", "down"); v.classList.add(dir);
     cancelAnimationFrame(PH.anim);
-    (function step(n) { var k = Math.min(1, (n - st) / 700), e = 1 - Math.pow(1 - k, 3); PH.shown = from + (to - from) * e; v.textContent = usd(PH.shown, 2); if (k < 1) PH.anim = requestAnimationFrame(step); else setTimeout(function () { v.classList.remove("up", "down"); }, 600); })(st);
+    (function step(n) { var k = Math.min(1, (n - st) / 700), e = 1 - Math.pow(1 - k, 3); PH.shown = from + (to - from) * e; v.textContent = sgnUsd(PH.shown, 2); if (k < 1) PH.anim = requestAnimationFrame(step); else setTimeout(function () { v.classList.remove("up", "down"); }, 600); })(st);
     phPnl();
   }
   doc.addEventListener("cn:pflive", function (ev) {
     var d = ev.detail || {}; if (typeof d.value !== "number") return;
-    PH.target = d.value; if (typeof d.pnl === "number") PH.pnl = d.pnl; if (typeof d.pct === "number") PH.pct = d.pct;
-    if (PH.shown == null) { PH.shown = d.value; var v = $("#phVal"); if (v) v.textContent = usd(d.value, 2); phPnl(); }
+    PH.target = d.value; if (typeof d.pct === "number") PH.pct = d.pct;
+    if (PH.shown == null) { PH.shown = d.value; var v = $("#phVal"); if (v) v.textContent = sgnUsd(d.value, 2); phPnl(); }
     if (reduce) phoneArrive();
   });
   function renderFlowChips() {
@@ -819,13 +825,13 @@
   var engSel = "lab", engCore = null;
   function engTitle(k) { return k === "core" ? t("eng.core") : t("eng." + k + ".t"); }
   function engMetric(k) {
-    var e = E(), c = (D.conveyor || {}).counts || {}, s = (D.scorecard || {}).headline || {}, p = H().portfolio || {}, st = (D.risk || {}).state || "OK";
+    var e = E(), c = (D.conveyor || {}).counts || {}, s = (D.scorecard || {}).headline || {}, cc = (P() || {}).calc, st = (D.risk || {}).state || "OK";
     switch (k) {
       case "scan": return t("eng.scan.m", { n: num(e.cycle_sec || 60) });
       case "lab": return t("eng.lab.m", { n: num(e.lab_tried || 0) });
       case "conv": return t("eng.conv.m", { n: num(c.paper || 0) });
       case "risk": return st === "OK" ? t("eng.risk.m") : t("risk." + st);
-      case "port": return p.value_usd != null ? usd(p.value_usd) : "";
+      case "port": return cc ? [cc.spot, cc.futures, cc.active].map(function (x) { return num(x || 0); }).join(" / ") : "";
       case "log": return t("eng.log.m", { n: num(s.recorded || 0) });
       default: return "24/7";
     }
@@ -883,7 +889,7 @@
       case "lab": big = num(e.lab_tried || 0); desc = t("sys.s1.p", { m: num(e.lab_markets || 20) }); viz = funnelHTML() + labStepsHTML(); break;
       case "conv": big = num(((D.conveyor || {}).counts || {}).paper || 0); desc = t("sys.s2.p"); viz = stagesHTML(); break;
       case "risk": big = t("risk." + ((D.risk || {}).state || "OK")); desc = t("sys.s3.p"); viz = riskHTML(); break;
-      case "port": var p = H().portfolio || {}; big = p.value_usd != null ? usd(p.value_usd) : ""; desc = t("eng.port.d"); viz = portMiniHTML(); break;
+      case "port": big = engMetric("port"); desc = t("eng.port.d"); viz = portMiniHTML(); break;
       case "log": big = num(((D.scorecard || {}).headline || {}).recorded || 0); desc = t("eng.log.d"); viz = logHTML(); break;
       default: big = "NOVA"; desc = t("eng.core.d"); viz = '<div class="orbrow"><span class="orb"></span><b>' + esc(t("nova.t")) + '</b></div><p class="small" style="margin-top:10px">' + esc(t("nova.p")) + '</p><p style="margin-top:14px"><a href="#ai">' + esc(t("nav.ai")) + "</a></p>";
     }
@@ -922,11 +928,14 @@
     return '<div class="recnums">' + [["recorded", "rec.recorded"], ["checked", "rec.checked"], ["sources", "rec.sources"]].map(function (r) { return "<div><b>" + num(h[r[0]] || 0) + "</b><span>" + esc(t(r[1])) + "</span></div>"; }).join("") +
       '</div>' + (head ? '<div class="hash">SHA-256 <code>' + esc(head.slice(0, 16)) + "…</code></div>" : "");
   }
-  var SLEEVE_COL = { spot: "#00B4D8", active: "#7FD3FF", futures: "#3ADB93", funding: "#FFC562", basis: "#9AA6FF", yield: "#4E7BFF", susde: "#5FE3C8" };
+  /* v8: how CRYPTO NOVA splits any sum (feed public.calc: spot / futures / active spot, %) — no DeFi, no other sources */
+  var SLEEVE_COL = { spot: "#00B4D8", futures: "#7FD3FF", active: "#5C8DFF" };
+  var PORT_T = { spot: "pub.spot.t", futures: "pub.fut.t", active: "sl.active.t" };
   function portMiniHTML() {
-    var p = H().portfolio || {}, sl = (p.sleeves || []).filter(function (s) { return s.share > 0.0005; });
-    return '<div class="stack">' + sl.map(function (s) { return '<i style="flex:' + s.share + ";background:" + (SLEEVE_COL[s.key] || "#888") + '"></i>'; }).join("") + '</div><ul class="sleeves one">' +
-      sl.slice().sort(function (a, b) { return b.share - a.share; }).slice(0, 4).map(function (s) { return '<li><i style="background:' + (SLEEVE_COL[s.key] || "#888") + '"></i><span><b>' + esc(t("sl." + s.key + ".t")) + '</b></span><span class="n">' + num(s.share * 100, 1) + "%</span></li>"; }).join("") +
+    var c = (P() || {}).calc; if (!c) return "";
+    var sl = ["spot", "futures", "active"].map(function (k) { return { key: k, share: +c[k] || 0 }; }).filter(function (x) { return x.share > 0; });
+    return '<p class="small" style="margin-bottom:10px">' + esc(t("eng.port.calc")) + '</p><div class="stack">' + sl.map(function (s) { return '<i style="flex:' + s.share + ";background:" + SLEEVE_COL[s.key] + '"></i>'; }).join("") + '</div><ul class="sleeves one">' +
+      sl.map(function (s) { return '<li><i style="background:' + SLEEVE_COL[s.key] + '"></i><span><b>' + esc(t(PORT_T[s.key])) + '</b></span><span class="n">' + num(s.share) + "%</span></li>"; }).join("") +
       '</ul><p style="margin-top:12px"><a href="#live">' + esc(t("live.h2")) + "</a></p>";
   }
   function px(v) { if (v == null) return "–"; var a = Math.abs(v), d = a >= 1000 ? 0 : a >= 100 ? 1 : a >= 1 ? 3 : 5; return nf({ maximumFractionDigits: d, minimumFractionDigits: Math.min(d, 2) }).format(v); }
@@ -944,88 +953,7 @@
       '<div class="why"><h4>' + esc(t("tc.why")) + "</h4><p>" + esc(o.why_title || "") + '</p><ul class="checks">' + (o.checks || []).slice(0, 4).map(function (c) { return "<li>" + (c.ok === false ? NOI : OKI) + "<span><b>" + esc(c.t) + "</b>" + esc(c.v) + "</span></li>"; }).join("") + "</ul></div></div>";
   }
 
-  /* ---------- public portfolio ---------- */
-  function renderPortfolio() {
-    var p = H().portfolio; if (!p || p.value_usd == null) return;
-    $("#pVal").textContent = usd(p.value_usd);
-    var pnl = $("#pPnl"); pnl.className = "pnl " + (p.pnl_usd >= 0 ? "up" : "down");
-    pnl.textContent = signed(p.pnl_usd, usd(Math.abs(p.pnl_usd))) + "  (" + pct(p.pnl_pct) + ")";
-    $("#pSince").textContent = t("live.pnl", { date: date(p.since, true) }) + ", " + usd(p.start_usd || 10000) + " → " + usd(p.value_usd);
-    drawCurve($("#pCurve"), p);
-    var sl = (p.sleeves || []).filter(function (s) { return s.share > 0.0005; });
-    $("#pStack").innerHTML = sl.map(function (s) { return '<i style="flex:' + s.share + ";background:" + (SLEEVE_COL[s.key] || "#888") + '" title="' + esc(t("sl." + s.key + ".t")) + '"></i>'; }).join("");
-    $("#pSleeves").innerHTML = sl.map(function (s) {
-      return '<li><i style="background:' + (SLEEVE_COL[s.key] || "#888") + '"></i><span><b>' + esc(t("sl." + s.key + ".t") || s.key) + "</b><small>" + esc(t("sl." + s.key + ".d")) + '</small></span><span class="n">' + usd(s.usd) + "<small><br>" + num(s.share * 100, 1) + "%</small></span></li>";
-    }).join("");
-  }
-  /* the spot coin portfolio, like the app's Spot screen: allocation ring, shares, the day's moves */
-  var ALLOC_COL = ["#FFB547", "#7FD3FF", "#3ADB93", "#00B4D8", "#5C8DFF", "#8EA2C6", "#B9C7E0"];
-  function plural(n, base) {
-    var f = "many";
-    try { var r = new Intl.PluralRules(LOCALE[lang]).select(n); f = r === "one" ? "one" : r === "few" ? "few" : "many"; } catch (e) {}
-    return t(base + "." + f) || t(base + ".many");
-  }
-  function renderSpot() {
-    var el = $("#spotP"), sp = H().spot; if (!el || !sp || !(sp.alloc || []).length) { if (el) el.hidden = true; return; }
-    el.hidden = false;
-    var al = sp.alloc, tot = al.reduce(function (a, x) { return a + (x.weight || 0); }, 0) || 100, C = 2 * Math.PI * 42, off = 0;
-    var ring = al.map(function (x, i) { var l = (x.weight || 0) / tot * C, seg2 = '<circle r="42" cx="50" cy="50" fill="none" stroke="' + ALLOC_COL[i % ALLOC_COL.length] + '" stroke-width="11" stroke-dasharray="' + Math.max(0, l - 1.2).toFixed(2) + " " + C.toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '"/>'; off += l; return seg2; }).join("");
-    el.innerHTML = '<h4>' + esc(t("sl.spot.t")) + (sp.pct != null ? '<span class="' + (sp.pct >= 0 ? "up" : "down") + '">' + esc(t("spot.since", { p: pct(sp.pct) })) + "</span>" : "") + "</h4>" +
-      '<div class="donut"><svg viewBox="0 0 100 100" aria-hidden="true"><circle r="42" cx="50" cy="50" fill="none" stroke="rgba(127,211,255,.08)" stroke-width="11"/>' + ring + '</svg><div class="c"><b>' + num(sp.n_coins || 0) + "</b><span>" + esc(plural(sp.n_coins || 0, "spot.coin")) + "</span></div></div>" +
-      '<ul class="alloc">' + al.map(function (x, i) { var c = ALLOC_COL[i % ALLOC_COL.length]; return '<li><i style="background:' + c + '"></i><span>' + esc(x.name) + "</span><b>" + num(x.weight, 1) + '%</b><span class="bar"><s style="width:' + Math.min(100, x.weight / Math.max.apply(null, al.map(function (y) { return y.weight; })) * 100).toFixed(1) + "%;background:" + c + '"></s></span></li>'; }).join("") + "</ul>" +
-      ((sp.movers || []).length ? '<div class="movers"><span class="lb">' + esc(t("spot.movers")) + "</span>" + sp.movers.slice(0, 8).map(function (m) { return '<span class="m">' + esc(m.sym) + ' <span class="' + (m.pct >= 0 ? "up" : "down") + '">' + pct(m.pct, 1) + "</span></span>"; }).join("") + "</div>" : "");
-  }
-  /* your own portfolio: the same engine's split for any sum and character (allocation only, no return promised) */
-  var OWN = { amt: 10000, m: "balanced" }, ownBuilt = "", modelsLive = false;
-  var SLEEVE_ORDER = ["spot", "active", "futures", "funding", "basis", "yield", "susde"];
-  function renderOwn() {
-    var box = $("#pfOwn"); if (!box || box.hidden) return;
-    var key = lang;
-    if (ownBuilt !== key) {
-      ownBuilt = key;
-      seg($("#ownAmt"), [1000, 5000, 10000, 50000].map(function (a) { return [a, usd(a)]; }), OWN.amt, function (v) { OWN.amt = +v; }, renderOwn);
-      seg($("#ownModel"), ["calm", "balanced", "bold"].map(function (k) { return [k, t("m." + k)]; }), OWN.m, function (v) { OWN.m = v; }, renderOwn);
-    }
-    var w = ((D.models || {})[OWN.m] || {}).w || {};
-    var sl = SLEEVE_ORDER.map(function (k) { return { key: k, share: w[k] || 0 }; }).filter(function (x) { return x.share > 0.0005; });
-    var sum = sl.reduce(function (a, x) { return a + x.share; }, 0) || 1;
-    $("#ownTotal").textContent = usd(OWN.amt);
-    $("#ownStack").innerHTML = sl.map(function (x) { return '<i style="flex:' + x.share + ";background:" + (SLEEVE_COL[x.key] || "#888") + '"></i>'; }).join("");
-    $("#ownSleeves").innerHTML = sl.map(function (x) {
-      return '<li><i style="background:' + (SLEEVE_COL[x.key] || "#888") + '"></i><span><b>' + esc(t("sl." + x.key + ".t") || x.key) + "</b><small>" + esc(t("sl." + x.key + ".d")) + '</small></span><span class="n">' + usd(OWN.amt * x.share / sum) + "<small><br>" + num(x.share / sum * 100, 1) + "%</small></span></li>";
-    }).join("");
-  }
-  function pfTab(v) {
-    var own = v === "own";
-    $("#pfDemo").hidden = own; $("#pfOwn").hidden = !own;
-    $$("#pfTabs button").forEach(function (b) { var on = b.getAttribute("data-v") === v; b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1; });
-    if (own) {
-      renderOwn();
-      if (!modelsLive && window.fetch) { modelsLive = true; get("capital.json").then(function (c) { if (c && c.models) { var m = {}; for (var k in c.models) m[k] = { w: c.models[k].w }; D.models = m; renderOwn(); } }).catch(function () {}); }
-    }
-  }
-  $$("#pfTabs button").forEach(function (b) {
-    b.addEventListener("click", function () { pfTab(b.getAttribute("data-v")); });
-    b.addEventListener("keydown", function (ev) { if (ev.key === "ArrowRight" || ev.key === "ArrowLeft") { ev.preventDefault(); var v = b.getAttribute("data-v") === "demo" ? "own" : "demo"; pfTab(v); var n = $('#pfTabs [data-v="' + v + '"]'); if (n) n.focus(); } });
-  });
-  function drawCurve(box, p) {
-    var c = (p.curve || []).filter(function (r) { return r && r[1] != null; }); if (c.length < 2 || !box) return;
-    var start = p.start_usd || 10000, W = 640, Hh = 220, padT = 16, padB = 26, t0 = c[0][0], t1 = c[c.length - 1][0];
-    var vals = c.map(function (r) { return start + r[1]; }); vals.push(start);
-    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals), pad = Math.max((hi - lo) * 0.12, start * 0.002); lo -= pad; hi += pad;
-    function X(tm) { return (tm - t0) / Math.max(1, t1 - t0) * W; }
-    function Y(v) { return padT + (1 - (v - lo) / (hi - lo)) * (Hh - padT - padB); }
-    var pts = c.map(function (r) { return X(r[0]).toFixed(1) + "," + Y(start + r[1]).toFixed(1); });
-    var col = c[c.length - 1][1] >= 0 ? "#3ADB93" : "#FF6E86", last = pts[pts.length - 1].split(",");
-    box.innerHTML = '<svg viewBox="0 0 ' + W + " " + Hh + '" preserveAspectRatio="none" role="img" aria-label="' + esc(t("live.h2")) + '">' +
-      '<defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".28"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></linearGradient></defs>' +
-      '<line x1="0" x2="' + W + '" y1="' + Y(start).toFixed(1) + '" y2="' + Y(start).toFixed(1) + '" stroke="rgba(127,211,255,.35)" stroke-dasharray="4 5" vector-effect="non-scaling-stroke"/>' +
-      '<polygon points="0,' + (Hh - padB) + " " + pts.join(" ") + " " + W + "," + (Hh - padB) + '" fill="url(#cg)"/>' +
-      '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + col + '" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>' +
-      '<span class="cv-dot" style="left:' + (last[0] / W * 100).toFixed(2) + "%;top:" + (last[1] / Hh * 100).toFixed(2) + "%;background:" + col + '"></span>' +
-      '<span class="cv-base" style="top:' + (Y(start) / Hh * 100).toFixed(2) + '%">' + usd(start) + "</span>" +
-      '<span class="cv-x cv-l">' + esc(date(t0)) + '</span><span class="cv-x cv-r">' + esc(date(t1)) + "</span>";
-  }
+  /* ---------- public portfolio: rendered by assets/sections.js (live value, the two lines, the spot coins) ---------- */
 
   /* ---------- app screens (v7, owner 21.10 21:48): swipe right on the phone; the tabs and dots follow ---------- */
   var tabKey = "home", TABS = ["home", "trade", "nova", "piggy", "learn", "spot"], scrLoaded = false;
@@ -1175,12 +1103,12 @@
   }
   function emit(n) { try { doc.dispatchEvent(new CustomEvent(n)); } catch (e) { /* old browsers */ } }
   function renderData() {   // everything that shows live numbers; safe to call on every refresh
-    renderStatus(); renderHeroCards(); renderHeroStats(); renderTicker(); renderThink(); renderEngines(); renderPortfolio(); renderSpot(); renderOwn(); renderPhone(); renderFlowChips();
+    renderStatus(); renderHeroCards(); renderHeroStats(); renderTicker(); renderThink(); renderEngines(); renderPhone(); renderFlowChips();
     emit("cn:data");
-    var since = (H().portfolio || {}).since;
+    var since = (P() || {}).since;
     $$("[data-i-html]").forEach(function (el) { el.innerHTML = t(el.getAttribute("data-i-html"), since ? { since: date(since, true) } : null); });
   }
-  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; ownBuilt = ""; renderPiggy(); renderOwn(); if (logTimer) startLog(); emit("cn:static"); }
+  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; renderPiggy(); if (logTimer) startLog(); emit("cn:static"); }
   /* a small read-only API for the section scripts (assets/sections.js): texts, data and formatters */
   window.CN = { t: function (k, v) { return t(k, v); }, $: $, $$: $$, esc: esc, usd: usd, num: num, lang: function () { return lang; },
     home: function () { return H(); }, engine: function () { return E(); }, data: function () { return D; }, reduce: reduce, feed: FEED };   // interactive widgets: load and language change only
