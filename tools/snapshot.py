@@ -26,15 +26,18 @@ def thin(curve, n=160):
 
 def home(lang):
     h = load(LANG_FILE[lang])
-    p = dict(h.get("portfolio") or {})
-    if p.get("curve"):
-        p["curve"] = thin(p["curve"])
+    # v8 (22.10): the public portfolio is the "public" block (futures + spot of the closed system's header); the old capital
+    # allocator ("portfolio") is no longer shown, so it is not copied
+    pub = dict(h.get("public") or {})
+    if pub.get("curve"):
+        pub["curve"] = thin(pub["curve"])
     fut = h.get("futures") or {}
     keep = ("sym", "side", "entry", "price", "stop", "target", "pct", "why_title", "why", "checks", "opened")
     opened = [{k: t.get(k) for k in keep} for t in (fut.get("open") or [])[:5]]
     sp = h.get("spot") or {}
-    spot = {k: sp.get(k) for k in ("usd", "pct", "n_coins", "cash_pct", "alloc", "movers")}
-    return {"asof": h.get("asof"), "portfolio": p, "engine": h.get("engine"),
+    spot = {k: sp.get(k) for k in ("usd", "pct", "n_coins", "cash_pct", "movers")}
+    spot["coins"] = [{k: c.get(k) for k in ("sym", "price", "weight")} for c in sp.get("coins") or []]   # reference prices for the live repricing
+    return {"asof": h.get("asof"), "public": pub or None, "engine": h.get("engine"),
             "futures": {"open": opened, **{k: fut.get(k) for k in ("usd", "pct", "trades", "wins", "closed_n") if k in fut}}, "market": h.get("market"), "spot": spot}
 
 
@@ -74,11 +77,6 @@ def btc():
     return {"start_day": b["start_day"], "closes": [round(x, 2) for x in b["closes"]]}
 
 
-def models():
-    c = load("capital.json")
-    return {k: {"w": m.get("w")} for k, m in (c.get("models") or {}).items()}
-
-
 def scale():
     """Honest size of the work, from the engine's own files: markets in the nightly lab, years of history, candle checks a
     night (every tried rule walks its market's whole daily history), futures markets the scanner watches every minute."""
@@ -92,7 +90,7 @@ def scale():
 
 
 snap = {"made": int(time.time() * 1000), "home": {l: home(l) for l in LANG_FILE}, "scorecard": scorecard(),
-        "conveyor": conveyor(), "risk": risk(), "btc": btc(), "markets": markets(), "models": models(), "scale": scale()}
+        "conveyor": conveyor(), "risk": risk(), "btc": btc(), "markets": markets(), "scale": scale()}
 with open(OUT, "w", encoding="utf-8") as f:
     f.write("/* fallback copy of the live feeds, made by tools/snapshot.py */\nwindow.CN_SNAP=")
     json.dump(snap, f, ensure_ascii=False, separators=(",", ":"))

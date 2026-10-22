@@ -40,6 +40,7 @@
       <a href="#system" data-i="nav.system">{{nav.system}}</a>
       <a href="#live" data-i="nav.live">{{nav.live}}</a>
       <a href="#app" data-i="nav.app">{{nav.app}}</a>
+      <a href="#connect" data-i="nav.connect">{{nav.connect}}</a>
       <a href="#faq" data-i="nav.faq">{{nav.faq}}</a>
     </nav>
     <div class="langsel">
@@ -72,7 +73,7 @@
     <div class="stage" id="stage">
       <canvas id="core" role="img" aria-label="{{sys.aria}}" data-i-attr="aria-label:sys.aria"></canvas>
       <div class="hero-phone"><div class="phone"><div class="island"></div><div class="scr live" id="heroScr"></div></div></div>
-      <div class="fcard fc1"><div class="fk" data-i="fc.portfolio">{{fc.portfolio}}</div><div class="fv" id="fcVal">$10,000</div><div class="fs"><b id="fcPct" class="up"></b> <span data-i="fc.demo">{{fc.demo}}</span></div><div class="fspark" id="fcSpark"></div></div>
+      <div class="fcard fc1"><div class="fk" data-i="fc.portfolio">{{fc.portfolio}}</div><div class="fv" id="fcVal">—</div><div class="fs"><b id="fcPct" class="up"></b> <span id="fcSince"></span></div><div class="fspark" id="fcSpark"></div></div>
       <div class="fcard fc2"><div class="fk" data-i="fc.trade">{{fc.trade}}</div><div class="frow"><b id="fcSym">AVAX</b><span id="fcSide" class="up"></span><b id="fcTp" class="up"></b></div><div class="fbar"><i id="fcBar"></i></div></div>
       <div class="fcard fc3"><div class="frow"><span class="orb sm"></span><b data-i="fc.nova.q">{{fc.nova.q}}</b></div><p data-i="fc.nova.a">{{fc.nova.a}}</p></div>
       <div class="fcard fc4"><div class="frow"><svg class="shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 4.5 5.6v5.7c0 4.6 3.1 8.4 7.5 9.9 4.4-1.5 7.5-5.3 7.5-9.9V5.6Z" fill="rgba(58,219,147,.14)" stroke="#3ADB93" stroke-width="1.5"/><path d="m8.6 12.2 2.4 2.4 4.4-4.6" fill="none" stroke="#3ADB93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div class="fk" data-i="fc.risk">{{fc.risk}}</div><b id="fcRisk" data-i="fc.risk.ok">{{fc.risk.ok}}</b></div></div></div>
@@ -160,20 +161,18 @@
     <div class="live hud" id="pfDemo">
       <div class="live-top">
         <div>
-          <div class="k" data-i="live.value">{{live.value}}</div>
-          <div class="big" id="pVal">$10 000</div>
+          <div class="k" data-i="live.total">{{live.total}}</div>
+          <div class="big" id="pVal">—</div>
           <div class="pnl" id="pPnl"></div>
           <div class="since" id="pSince"></div>
-          <div class="livesplit" id="pSplit"></div>
           <div class="livenote" id="pLive" aria-live="off"></div>
         </div>
         <div class="curve" id="pCurve"></div>
       </div>
       <div class="live-split">
         <h3 data-i="live.split">{{live.split}}</h3>
-        <div class="stack" id="pStack"></div>
-        <ul class="sleeves" id="pSleeves"></ul>
-        <div class="spotp" id="spotP"></div>
+        <div class="pubparts" id="pParts"></div>
+        <p class="pubtap" data-i="pub.tap">{{pub.tap}}</p>
       </div>
       <p class="live-foot" data-i="live.foot">{{live.foot}}</p>
     </div>
@@ -261,6 +260,21 @@
         <li class="us"><span class="ei"><canvas class="earnsph" data-sphere aria-hidden="true"></canvas></span><span data-i="earn.f3">{{earn.f3}}</span></li>
       </ol>
       <p class="small earnrisk" data-i="start.risk">{{start.risk}}</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="connect" aria-labelledby="connectH">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker" data-i="k.connect">{{k.connect}}</p>
+      <h2 class="display" id="connectH" data-i="cn.h2">{{cn.h2}}</h2>
+      <p class="lead" data-i="cn.lead">{{cn.lead}}</p>
+    </div>
+    <ol class="cnsteps"><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M12 7v6.2M9.6 10.9 12 13.3l2.4-2.4M10.6 18h2.8"/></svg></span><span class="cnn">01</span><h3 data-i="cn.s1.t">{{cn.s1.t}}</h3><p data-i="cn.s1.p">{{cn.s1.p}}</p></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.2 4.2 0 0 0 6 0l3-3a4.2 4.2 0 0 0-6-6l-1.2 1.2"/><path d="M14 10a4.2 4.2 0 0 0-6 0l-3 3a4.2 4.2 0 0 0 6 6l1.2-1.2"/></svg></span><span class="cnn">02</span><h3 data-i="cn.s2.t">{{cn.s2.t}}</h3><p data-i="cn.s2.p">{{cn.s2.p}}</p></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.4"/><circle cx="9" cy="11" r="2.4"/><path d="M5.6 16.4c.6-1.6 1.9-2.5 3.4-2.5s2.8.9 3.4 2.5M14.5 10h4M14.5 13.5h3"/></svg></span><span class="cnn">03</span><h3 data-i="cn.s3.t">{{cn.s3.t}}</h3><p data-i="cn.s3.p">{{cn.s3.p}}</p></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h16v10.5H4z"/><path d="M4 8.5 6.5 5h11L20 8.5"/><path d="M12 11v5M9.8 13.8 12 16l2.2-2.2"/></svg></span><span class="cnn">04</span><h3 data-i="cn.s4.t">{{cn.s4.t}}</h3><p data-i="cn.s4.p">{{cn.s4.p}}</p></li><li class="cs key"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8"/></svg></span><span class="cnn">05</span><h3 data-i="cn.s5.t">{{cn.s5.t}}</h3><p data-i="cn.s5.p">{{cn.s5.p}}</p><ol class="cnpath" aria-label="{{cn.s5.t}}"><li class="app" data-i="cn.b1">{{cn.b1}}</li><li data-i="cn.b2">{{cn.b2}}</li><li class="amt" data-i="cn.b3">{{cn.b3}}</li><li class="ok" data-i="cn.b4">{{cn.b4}}</li></ol></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg></span><span class="cnn">06</span><h3 data-i="cn.s6.t">{{cn.s6.t}}</h3><p data-i="cn.s6.p">{{cn.s6.p}}</p></li></ol>
+    <div class="cnsafe hud">
+      <ul class="cnsafel"><li><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="3.6"/><path d="M10.6 12.4 19 4M16 7l2.4 2.4M13.6 9.4l1.8 1.8"/><path d="M4 4l16 16"/></svg></span><div><b data-i="cn.safe1.t">{{cn.safe1.t}}</b><span data-i="cn.safe1.p">{{cn.safe1.p}}</span></div></li><li><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5h14.5a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 18V7.5z"/><path d="M4 7.5 15.5 4.2v3.3"/><circle cx="16" cy="13.5" r="1.2"/></svg></span><div><b data-i="cn.safe2.t">{{cn.safe2.t}}</b><span data-i="cn.safe2.p">{{cn.safe2.p}}</span></div></li><li><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1.6"/><path d="M3 9h18M12 9v11M12 9c-1.6-3.4-5.4-4-5.4-1.6C6.6 9 12 9 12 9zM12 9c1.6-3.4 5.4-4 5.4-1.6C17.4 9 12 9 12 9z"/></svg></span><div><b data-i="cn.safe3.t">{{cn.safe3.t}}</b><span data-i="cn.safe3.p">{{cn.safe3.p}}</span></div></li></ul>
+      <div class="cnfoot"><p class="small" data-i="cn.risk">{{cn.risk}}</p><div class="stores">{{stores}}</div></div>
     </div>
   </div>
 </section>

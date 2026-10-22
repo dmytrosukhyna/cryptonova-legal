@@ -25,9 +25,9 @@
 <link rel="alternate" hreflang="x-default" href="https://cryptonova.pro/">
 <link rel="preload" href="assets/fonts/jbmono_760.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="assets/fonts/plex_400.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="assets/site.css?v=202610220759">
-<link rel="stylesheet" href="assets/sections.css?v=202610220759">
-<link rel="stylesheet" href="assets/v7.css?v=202610220759">
+<link rel="stylesheet" href="assets/site.css?v=202610221305">
+<link rel="stylesheet" href="assets/sections.css?v=202610221305">
+<link rel="stylesheet" href="assets/v7.css?v=202610221305">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"MobileApplication","name":"CRYPTO NOVA AI","operatingSystem":"iOS","applicationCategory":"FinanceApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://cryptonova.pro/","installUrl":"https://apps.apple.com/app/id6754893343"}</script>
 </head>
 <body>
@@ -45,6 +45,7 @@
       <a href="#system" data-i="nav.system">How it works</a>
       <a href="#live" data-i="nav.live">Portfolio</a>
       <a href="#app" data-i="nav.app">App</a>
+      <a href="#connect" data-i="nav.connect">Connect</a>
       <a href="#faq" data-i="nav.faq">FAQ</a>
     </nav>
     <div class="langsel">
@@ -77,7 +78,7 @@
     <div class="stage" id="stage">
       <canvas id="core" role="img" aria-label="The CRYPTO NOVA AI system: data from exchanges, news and history runs through layers of analysis; the weak is dropped, the best reaches the app" data-i-attr="aria-label:sys.aria"></canvas>
       <div class="hero-phone"><div class="phone"><div class="island"></div><div class="scr live" id="heroScr"></div></div></div>
-      <div class="fcard fc1"><div class="fk" data-i="fc.portfolio">Public portfolio</div><div class="fv" id="fcVal">$10,000</div><div class="fs"><b id="fcPct" class="up"></b> <span data-i="fc.demo">demo account</span></div><div class="fspark" id="fcSpark"></div></div>
+      <div class="fcard fc1"><div class="fk" data-i="fc.portfolio">Public portfolio</div><div class="fv" id="fcVal">—</div><div class="fs"><b id="fcPct" class="up"></b> <span id="fcSince"></span></div><div class="fspark" id="fcSpark"></div></div>
       <div class="fcard fc2"><div class="fk" data-i="fc.trade">Live demo trade</div><div class="frow"><b id="fcSym">AVAX</b><span id="fcSide" class="up"></span><b id="fcTp" class="up"></b></div><div class="fbar"><i id="fcBar"></i></div></div>
       <div class="fcard fc3"><div class="frow"><span class="orb sm"></span><b data-i="fc.nova.q">Where is my money?</b></div><p data-i="fc.nova.a">Always in your own exchange account. We never hold it.</p></div>
       <div class="fcard fc4"><div class="frow"><svg class="shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 4.5 5.6v5.7c0 4.6 3.1 8.4 7.5 9.9 4.4-1.5 7.5-5.3 7.5-9.9V5.6Z" fill="rgba(58,219,147,.14)" stroke="#3ADB93" stroke-width="1.5"/><path d="m8.6 12.2 2.4 2.4 4.4-4.6" fill="none" stroke="#3ADB93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div class="fk" data-i="fc.risk">Risk shield</div><b id="fcRisk" data-i="fc.risk.ok">6 of 6 limits OK</b></div></div></div>
@@ -165,22 +166,20 @@
     <div class="live hud" id="pfDemo">
       <div class="live-top">
         <div>
-          <div class="k" data-i="live.value">Value now</div>
-          <div class="big" id="pVal">$10 000</div>
+          <div class="k" data-i="live.total">Total earned</div>
+          <div class="big" id="pVal">—</div>
           <div class="pnl" id="pPnl"></div>
           <div class="since" id="pSince"></div>
-          <div class="livesplit" id="pSplit"></div>
           <div class="livenote" id="pLive" aria-live="off"></div>
         </div>
         <div class="curve" id="pCurve"></div>
       </div>
       <div class="live-split">
-        <h3 data-i="live.split">Where the money is</h3>
-        <div class="stack" id="pStack"></div>
-        <ul class="sleeves" id="pSleeves"></ul>
-        <div class="spotp" id="spotP"></div>
+        <h3 data-i="live.split">What it&#x27;s made of</h3>
+        <div class="pubparts" id="pParts"></div>
+        <p class="pubtap" data-i="pub.tap">Tap a line or a coin and the system explains why.</p>
       </div>
-      <p class="live-foot" data-i="live.foot">Virtual account, real market prices. Past results don&#x27;t guarantee future ones. Not financial advice.</p>
+      <p class="live-foot" data-i="live.foot">The system&#x27;s demo accounts, $10,000 each since 17 Oct, real prices, not financial advice.</p>
     </div>
     <div class="livecta hud">
       <div class="lcico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6"/><path d="M9.5 15.5l2-2.2 1.6 1.4 2.4-3"/><path d="M10.5 18.6h3"/></svg></div>
@@ -253,7 +252,7 @@
       <h2 class="display" id="startH" data-i="start.h2">How it&#x27;s set up</h2>
       <p class="lead" data-i="how.lead">No subscriptions, no hassle: you watch and learn, you decide, and we earn from the exchange — not from you.</p>
     </div>
-    <ol class="howflow"><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M12 7v6.2M9.6 10.9 12 13.3l2.4-2.4M10.6 18h2.8"/></svg></span><span class="hn">01</span><h3 data-i="how.s1.t">Download the app</h3><p data-i="how.s1.p">Completely free on iPhone and iPad. No subscriptions, no purchases.</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5c2.8-.9 5.5-.6 8 1 2.5-1.6 5.2-1.9 8-1V18c-2.8-.9-5.5-.6-8 1-2.5-1.6-5.2-1.9-8-1z"/><path d="M12 6.5V19"/></svg></span><span class="hn">02</span><h3 data-i="how.s2.t">Watch and learn</h3><p data-i="how.s2.p">The public portfolio live, your own demo portfolio, 52 lessons and NOVA AI, which answers any question. Demo money is virtual — nothing to lose.</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2 19 6v5.2c0 4.4-3 8.2-7 9.6-4-1.4-7-5.2-7-9.6V6z"/><path d="m9 12.2 2.1 2.1 4-4.2"/></svg></span><span class="hn">03</span><h3 data-i="how.s3.t">You decide</h3><p data-i="how.s3.p">If you want, you trade on your own account on an exchange that works in your country. The money always stays with you: CRYPTO NOVA has no access to it.</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="9" cy="7" rx="5" ry="2.2"/><path d="M4 7v4c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2V7"/><path d="M10 15.5c.9 1 3 1.7 5 1.7 2.8 0 5-1 5-2.2v-4c0-1.1-1.9-2-4.4-2.2"/><path d="M14.4 12.3c2.7.1 5.6-.9 5.6-2.1"/></svg></span><span class="hn">04</span><h3 data-i="how.s4.t">We earn from the exchange, not from you</h3><p data-i="how.s4.p">The exchange shares part of its usual fee with CRYPTO NOVA. It costs you nothing: same fees, same terms.</p></li></ol>
+    <ol class="howflow"><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M12 7v6.2M9.6 10.9 12 13.3l2.4-2.4M10.6 18h2.8"/></svg></span><span class="hn">01</span><h3 data-i="how.s1.t">Download the app</h3><p data-i="how.s1.p">Completely free on iPhone and iPad. No subscriptions, no purchases.</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5c2.8-.9 5.5-.6 8 1 2.5-1.6 5.2-1.9 8-1V18c-2.8-.9-5.5-.6-8 1-2.5-1.6-5.2-1.9-8-1z"/><path d="M12 6.5V19"/></svg></span><span class="hn">02</span><h3 data-i="how.s2.t">Watch and learn</h3><p data-i="how.s2.p">The public portfolio live, your own demo portfolio, 52 lessons and NOVA AI, which answers any question. Demo money is virtual — nothing to lose.</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2 19 6v5.2c0 4.4-3 8.2-7 9.6-4-1.4-7-5.2-7-9.6V6z"/><path d="m9 12.2 2.1 2.1 4-4.2"/></svg></span><span class="hn">03</span><h3 data-i="how.s3.t">You decide</h3><p data-i="how.s3.p">If you want, turn on copying of CRYPTO NOVA in your own exchange account. The money always stays with you: CRYPTO NOVA has no access to it.</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="9" cy="7" rx="5" ry="2.2"/><path d="M4 7v4c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2V7"/><path d="M10 15.5c.9 1 3 1.7 5 1.7 2.8 0 5-1 5-2.2v-4c0-1.1-1.9-2-4.4-2.2"/><path d="M14.4 12.3c2.7.1 5.6-.9 5.6-2.1"/></svg></span><span class="hn">04</span><h3 data-i="how.s4.t">We earn from the exchange, not from you</h3><p data-i="how.s4.p">The exchange shares part of its usual fee with CRYPTO NOVA. It costs you nothing: same fees, same terms.</p></li></ol>
     <div class="earn2">
       <div class="earntext">
         <p class="kicker" data-i="start.money.t">How we earn</p>
@@ -270,10 +269,25 @@
   </div>
 </section>
 
+<section class="sec" id="connect" aria-labelledby="connectH">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="kicker" data-i="k.connect">Copy trading</p>
+      <h2 class="display" id="connectH" data-i="cn.h2">How to connect</h2>
+      <p class="lead" data-i="cn.lead">Through the exchange&#x27;s copy trading, with no API keys. The exchange itself repeats CRYPTO NOVA&#x27;s trades — in your account, with the amount you choose.</p>
+    </div>
+    <ol class="cnsteps"><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M12 7v6.2M9.6 10.9 12 13.3l2.4-2.4M10.6 18h2.8"/></svg></span><span class="cnn">01</span><h3 data-i="cn.s1.t">Download the exchange app</h3><p data-i="cn.s1.p">It&#x27;s a partner exchange that suits your country. The CRYPTO NOVA app shows you which one.</p></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.2 4.2 0 0 0 6 0l3-3a4.2 4.2 0 0 0-6-6l-1.2 1.2"/><path d="M14 10a4.2 4.2 0 0 0-6 0l-3 3a4.2 4.2 0 0 0 6 6l1.2-1.2"/></svg></span><span class="cnn">02</span><h3 data-i="cn.s2.t">Sign up with our link</h3><p data-i="cn.s2.p">The link is in the CRYPTO NOVA app. Your terms on the exchange stay the same, and the exchange shares part of its fee with us.</p></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.4"/><circle cx="9" cy="11" r="2.4"/><path d="M5.6 16.4c.6-1.6 1.9-2.5 3.4-2.5s2.8.9 3.4 2.5M14.5 10h4M14.5 13.5h3"/></svg></span><span class="cnn">03</span><h3 data-i="cn.s3.t">Pass the identity check</h3><p data-i="cn.s3.p">The exchange&#x27;s usual check: an ID document and a photo of your face.</p></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h16v10.5H4z"/><path d="M4 8.5 6.5 5h11L20 8.5"/><path d="M12 11v5M9.8 13.8 12 16l2.2-2.2"/></svg></span><span class="cnn">04</span><h3 data-i="cn.s4.t">Fund your account</h3><p data-i="cn.s4.p">Add USDT to your own exchange account. The money stays yours: CRYPTO NOVA can&#x27;t withdraw it.</p></li><li class="cs key"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8"/></svg></span><span class="cnn">05</span><h3 data-i="cn.s5.t">Tap “Copy”</h3><p data-i="cn.s5.p">First in the CRYPTO NOVA app, then on the exchange:</p><ol class="cnpath" aria-label="Tap “Copy”"><li class="app" data-i="cn.b1">Copy CRYPTO NOVA</li><li data-i="cn.b2">Copy</li><li class="amt" data-i="cn.b3">Amount</li><li class="ok" data-i="cn.b4">Confirm</li></ol></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg></span><span class="cnn">06</span><h3 data-i="cn.s6.t">Stop whenever you like</h3><p data-i="cn.s6.p">On the exchange, open copy trading, choose CRYPTO NOVA and tap “Stop”. No new trades will open, and the money stays in your account.</p></li></ol>
+    <div class="cnsafe hud">
+      <ul class="cnsafel"><li><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="3.6"/><path d="M10.6 12.4 19 4M16 7l2.4 2.4M13.6 9.4l1.8 1.8"/><path d="M4 4l16 16"/></svg></span><div><b data-i="cn.safe1.t">No API keys</b><span data-i="cn.safe1.p">We never ask for keys, passwords, SMS codes or seed phrases.</span></div></li><li><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5h14.5a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 18V7.5z"/><path d="M4 7.5 15.5 4.2v3.3"/><circle cx="16" cy="13.5" r="1.2"/></svg></span><div><b data-i="cn.safe2.t">The money is in your account</b><span data-i="cn.safe2.p">The exchange keeps it in your name. CRYPTO NOVA can&#x27;t withdraw it.</span></div></li><li><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1.6"/><path d="M3 9h18M12 9v11M12 9c-1.6-3.4-5.4-4-5.4-1.6C6.6 9 12 9 12 9zM12 9c1.6-3.4 5.4-4 5.4-1.6C17.4 9 12 9 12 9z"/></svg></span><div><b data-i="cn.safe3.t">The app is free</b><span data-i="cn.safe3.p">No subscriptions and no in-app purchases.</span></div></li></ul>
+      <div class="cnfoot"><p class="small" data-i="cn.risk">Copying is real trading: you can lose the money you put in. Before “Confirm”, the exchange shows the copy terms — read them. Past results don&#x27;t guarantee future ones. Not financial advice.</p><div class="stores"><a class="badge-as" href="https://apps.apple.com/app/id6754893343" aria-label="App Store"><svg class="apl" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 1.43c0 1.14-.49 2.27-1.18 3.08-.74.9-1.99 1.57-2.99 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.57-2.27 1.21-2.98.8-.94 2.14-1.64 3.25-1.68.03.13.05.28.05.43zm4.56 15.71c-.03.07-.46 1.58-1.52 3.12-.94 1.34-1.94 2.71-3.43 2.71-1.52 0-1.9-.88-3.63-.88-1.7 0-2.3.91-3.67.91-1.38 0-2.33-1.26-3.43-2.8-1.29-1.82-2.32-4.63-2.32-7.28 0-4.28 2.8-6.55 5.55-6.55 1.45 0 2.68.95 3.6.95.87 0 2.22-1.01 3.9-1.01.61 0 2.89.06 4.37 2.19-.13.09-2.38 1.37-2.38 4.19 0 3.26 2.85 4.42 2.96 4.45z"/></svg><span><small data-i="cta.appstore.small">Download on the</small><strong>App Store</strong></span></a><span class="badge-soon" aria-disabled="true"><svg class="drd" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg><span><small data-i="cta.play.small">Android version</small><strong data-i="cta.play.soon">soon</strong></span></span></div></div>
+    </div>
+  </div>
+</section>
+
 <section class="sec" id="faq" aria-labelledby="faqH">
   <div class="wrap faqgrid">
     <h2 class="display" id="faqH" data-i="faq.h2">Questions</h2>
-    <div class="faq"><details><summary data-i="faq.q1">How much does the app cost?</summary><p data-i-html="faq.a1">Demo accounts, the Piggy bank, 52 lessons and NOVA come with no subscriptions or purchases inside the app. NOVA answers 5 questions a day, or 100 a day with a connected real account.</p></details><details><summary data-i="faq.q2">How does CRYPTO NOVA make money?</summary><p data-i-html="faq.a2">Through the exchange's partner program. If you open an exchange account through our link, the exchange pays us part of its own fee. Your fees don't change, and we take no share of your profit.</p></details><details><summary data-i="faq.q3">Does the app trade for me?</summary><p data-i-html="faq.a3">No. There is no automated trading. You see every trade of the system and decide yourself whether to repeat it on your own exchange account.</p></details><details><summary data-i="faq.q4">Where is my money?</summary><p data-i-html="faq.a4">In demo there is no real money. If you trade for real, the money stays in your own exchange account: we can't see, move or withdraw it. We never ask for passwords, SMS codes, seed phrases or exchange keys.</p></details><details><summary data-i="faq.q5">Are the results real?</summary><p data-i-html="faq.a5">The public portfolio is a demo account: virtual money at real prices, running since 18 October 2026. Tests on history are not a promise about the future. Losing trades and losing forecasts are published next to the winners.</p></details><details><summary data-i="faq.q6">Is this financial advice?</summary><p data-i-html="faq.a6">No. CRYPTO NOVA is education and demo accounts. The decisions are yours, and crypto trading is high risk.</p></details><details><summary data-i="faq.q7">Who is behind CRYPTO NOVA?</summary><p data-i-html="faq.a7">The app's founder and developer is Dmytro Sukhyna. Write to <a href="mailto:cryptonova.app@gmail.com">cryptonova.app@gmail.com</a> or to <a href="https://t.me/crypto_nova_support">@crypto_nova_support</a> on Telegram.</p></details><details><summary data-i="faq.q8">I have an old Pro or VIP subscription</summary><p data-i-html="faq.a8">Version 2.0 doesn't need it. Cancel it in iPhone Settings → your name → Subscriptions, or in Google Play → Payments & subscriptions.</p></details></div>
+    <div class="faq"><details><summary data-i="faq.q1">How much does the app cost?</summary><p data-i-html="faq.a1">Demo accounts, the Piggy bank, 52 lessons and NOVA come with no subscriptions or purchases inside the app. NOVA answers 5 questions a day, or 100 a day with a connected real account.</p></details><details><summary data-i="faq.q2">How does CRYPTO NOVA make money?</summary><p data-i-html="faq.a2">Through the exchange's partner program. If you open an exchange account through our link, the exchange pays us part of its own fee. Your fees don't change, and we take no share of your profit.</p></details><details><summary data-i="faq.q3">Does the app trade for me?</summary><p data-i-html="faq.a3">The app itself doesn't trade and has no access to your money. If you want, turn on copying of CRYPTO NOVA on the exchange: the exchange repeats the trades in your account. You can stop copying at any time.</p></details><details><summary data-i="faq.q4">Where is my money?</summary><p data-i-html="faq.a4">In demo there is no real money. If you trade for real, the money stays in your own exchange account: we can't see, move or withdraw it. We never ask for passwords, SMS codes, seed phrases or exchange keys.</p></details><details><summary data-i="faq.q5">Are the results real?</summary><p data-i-html="faq.a5">The public portfolio is the system's demo accounts: futures and spot, $10,000 each, real prices, since 17 October 2026. Tests on history are not a promise about the future. Losing trades are published next to the winners.</p></details><details><summary data-i="faq.q6">Is this financial advice?</summary><p data-i-html="faq.a6">No. CRYPTO NOVA is education and demo accounts. The decisions are yours, and crypto trading is high risk.</p></details><details><summary data-i="faq.q7">Who is behind CRYPTO NOVA?</summary><p data-i-html="faq.a7">The app's founder and developer is Dmytro Sukhyna. Write to <a href="mailto:cryptonova.app@gmail.com">cryptonova.app@gmail.com</a> or to <a href="https://t.me/crypto_nova_support">@crypto_nova_support</a> on Telegram.</p></details><details><summary data-i="faq.q8">I have an old Pro or VIP subscription</summary><p data-i-html="faq.a8">Version 2.0 doesn't need it. Cancel it in iPhone Settings → your name → Subscriptions, or in Google Play → Payments & subscriptions.</p></details></div>
   </div>
 </section>
 
@@ -304,10 +318,10 @@
   </div>
 </footer>
 
-<script src="assets/i18n.js?v=202610220759"></script>
-<script src="assets/snapshot.js?v=202610220759"></script>
-<script src="assets/sphere.js?v=202610220759"></script>
-<script src="assets/site.js?v=202610220759"></script>
-<script src="assets/sections.js?v=202610220759"></script>
+<script src="assets/i18n.js?v=202610221305"></script>
+<script src="assets/snapshot.js?v=202610221305"></script>
+<script src="assets/sphere.js?v=202610221305"></script>
+<script src="assets/site.js?v=202610221305"></script>
+<script src="assets/sections.js?v=202610221305"></script>
 </body>
 </html>

@@ -32,10 +32,5 @@
  "pg.i2": "Cada cuánto el exchange compra bitcoin según el calendario: una vez a la semana o al mes. Cuanto más regulares las compras, más uniforme el precio medio.",
  "pg.i3": "Desde qué año empieza el cálculo. Usamos los precios diarios reales de bitcoin desde ese año hasta hoy, para ver cómo habría ido la hucha.",
  "foot.op": "Fundador y desarrollador: Dmytro Sukhyna",
- "faq.a7": "El fundador y desarrollador de la app es Dmytro Sukhyna. Escribe a <a href=\"mailto:cryptonova.app@gmail.com\">cryptonova.app@gmail.com</a> o a <a href=\"https://t.me/crypto_nova_support\">@crypto_nova_support</a> en Telegram.",
- "live.in.t": "Dentro:",
- "live.in.spot": "spot",
- "live.in.fut": "futuros",
- "live.in.other": "otras fuentes",
- "live.desk.t": "Cuentas demo propias de los motores, de {n} cada una:"
+ "faq.a7": "El fundador y desarrollador de la app es Dmytro Sukhyna. Escribe a <a href=\"mailto:cryptonova.app@gmail.com\">cryptonova.app@gmail.com</a> o a <a href=\"https://t.me/crypto_nova_support\">@crypto_nova_support</a> en Telegram."
 }

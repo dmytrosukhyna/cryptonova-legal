@@ -12,7 +12,10 @@ SRC = os.path.join(ROOT, "tools", "src")
 COCKPIT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "..", "cryptonova-cockpit")
 LANGS = ["en", "ru", "uk", "el", "es"]
 APPSTORE = "https://apps.apple.com/app/id6754893343"
-NOVA_IDS = ["how_works", "where_money", "copy", "testing", "mistake", "passwords"]
+# v8 (22.10): «copy» («в приложении копирования нет») is gone — the site now shows the exchange copy-trading path; «withdraw» instead
+NOVA_IDS = ["how_works", "where_money", "withdraw", "testing", "mistake", "passwords"]
+# the site can't know the visitor's country: no exchange is named in NOVA's answers here (the app names the right one)
+NO_EXCH = re.compile(r"\s*\((?:[^()]*\b(?:OKX|BingX)\b[^()]*)\)")
 PAGES = {"privacy": "foot.privacy", "terms": "foot.terms", "support": "foot.support", "delete": "foot.delete"}
 V = time.strftime("%Y%m%d%H%M")
 
@@ -54,7 +57,7 @@ def nova():
             continue
         sent = re.split(r"(?<=[.!?])\s+", greet)
         hello = " ".join(sent[:2])
-        strip = lambda a: re.sub(r"\s+2\.0\b", "", a)
+        strip = lambda a: NO_EXCH.sub("", re.sub(r"\s+2\.0\b", "", a))
         items = [{"q": faq[i]["q"], "a": strip(faq[i]["a"])} for i in NOVA_IDS if i in faq]
         out[l] = {"hello": hello, "items": items}
     return out
@@ -101,7 +104,7 @@ def tabs():
 def faq():
     out = []
     for i in range(1, 9):
-        a = e(f"faq.a{i}", since="18 October 2026")
+        a = e(f"faq.a{i}", since="17 October 2026")
         out.append(f'<details><summary data-i="faq.q{i}">{e(f"faq.q{i}")}</summary><p data-i-html="faq.a{i}">{a}</p></details>')
     return "".join(out)
 

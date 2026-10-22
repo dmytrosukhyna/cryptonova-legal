@@ -19,6 +19,12 @@ Static files, served by GitHub Pages. No cookies, no trackers, fonts self-hosted
 
 Refresh the fallback numbers: `python3 tools/snapshot.py ../cryptonova-cockpit/web`.
 
-## When the public portfolio becomes real money
-The site says "demo" in `live.lead`, `live.foot`, `ro.portfolio.sub` and `faq.a5` (all languages). Change those
-the same day as the app caption (`web/app_config.json` → `portfolio` in the cockpit), never before.
+## The public portfolio (v8, 22.10)
+It is the `public` block of the feed (`web/app_home*.json` in the cockpit): «Заработано всего», futures «отобранные сигналы»,
+spot «CRYPTO NOVA портфель» with its coins and «почему», two $10 000 demo accounts from 17.10. The old capital allocator
+(`portfolio`, capital.json) is not shown. The one footnote is `live.foot`; `faq.a5` also says «демо». Change both the same day
+as the app caption, never before.
+
+## How to connect (`#connect`)
+Exchange copy trading, no API keys. The site can't know the visitor's country: it never names or links an exchange
+(«партнёрская биржа, подходящая для вашей страны — приложение покажет её»), never mentions VPN, never asks for keys.

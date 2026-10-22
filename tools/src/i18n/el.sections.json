@@ -32,10 +32,5 @@
  "pg.i2": "Πόσο συχνά το ανταλλακτήριο αγοράζει bitcoin με πρόγραμμα: μία φορά την εβδομάδα ή τον μήνα. Όσο πιο τακτικές οι αγορές, τόσο πιο ομαλή η μέση τιμή.",
  "pg.i3": "Από ποιο έτος ξεκινά ο υπολογισμός. Παίρνουμε τις πραγματικές ημερήσιες τιμές του bitcoin από εκείνο το έτος ως σήμερα, για να δείτε πώς θα τα πήγαινε ο κουμπαράς.",
  "foot.op": "Ιδρυτής και προγραμματιστής: Dmytro Sukhyna",
- "faq.a7": "Ιδρυτής και προγραμματιστής της εφαρμογής είναι ο Dmytro Sukhyna. Γράψτε στο <a href=\"mailto:cryptonova.app@gmail.com\">cryptonova.app@gmail.com</a> ή στο <a href=\"https://t.me/crypto_nova_support\">@crypto_nova_support</a> στο Telegram.",
- "live.in.t": "Μέσα:",
- "live.in.spot": "spot",
- "live.in.fut": "futures",
- "live.in.other": "άλλες πηγές",
- "live.desk.t": "Οι δικοί λογαριασμοί demo των μηχανών, {n} ο καθένας:"
+ "faq.a7": "Ιδρυτής και προγραμματιστής της εφαρμογής είναι ο Dmytro Sukhyna. Γράψτε στο <a href=\"mailto:cryptonova.app@gmail.com\">cryptonova.app@gmail.com</a> ή στο <a href=\"https://t.me/crypto_nova_support\">@crypto_nova_support</a> στο Telegram."
 }
