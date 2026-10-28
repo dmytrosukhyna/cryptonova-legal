@@ -16,281 +16,266 @@
 <meta property="og:title" content="{{meta.title}}">
 <meta property="og:description" content="{{meta.desc}}">
 <meta property="og:image" content="https://cryptonova.pro/assets/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 {{hreflang}}
 <link rel="preload" href="assets/fonts/jbmono_760.woff" as="font" type="font/woff" crossorigin>
 <link rel="preload" href="assets/fonts/plex_400.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="assets/site.css?v={{v}}">
-<link rel="stylesheet" href="assets/sections.css?v={{v}}">
-<link rel="stylesheet" href="assets/v7.css?v={{v}}">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"MobileApplication","name":"CRYPTO NOVA AI","operatingSystem":"iOS","applicationCategory":"FinanceApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://cryptonova.pro/","installUrl":"https://apps.apple.com/app/id6754893343"}</script>
+<noscript><style>.status,.ticker,.pf,#nova,.piggybox .pigR{display:none}</style></noscript>
+<script>/* the loading screen: shown before the first paint, once per visit; it never stays longer than 4.5 s, even if a script fails */
+(function(){try{var d=document.documentElement,s=window.sessionStorage,rm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(!rm&&!navigator.webdriver&&!/[?&]noboot\b/.test(location.search)&&s.getItem("cn.boot")!=="1"){d.classList.add("booting");s.setItem("cn.boot","1");setTimeout(function(){d.classList.remove("booting")},4500)}}catch(e){}})();</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"MobileApplication","name":"CRYPTO NOVA AI","operatingSystem":"iOS","applicationCategory":"FinanceApplication","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://cryptonova.pro/","installUrl":"{{appstore}}"}</script>
 </head>
 <body>
-<div class="boot" id="boot" aria-hidden="true" hidden><div class="bootin"><div class="bootlogo"><canvas class="emb" data-sphere aria-hidden="true"></canvas><div><b>CRYPTO NOVΛ AI</b><small data-i="boot.sub">{{boot.sub}}</small></div></div><pre id="bootLog"></pre><div class="bootbar"><i id="bootBar"></i></div><button type="button" class="bootskip" id="bootSkip" data-i="boot.skip">{{boot.skip}}</button></div></div>
+<div class="boot" id="boot" aria-hidden="true"><div class="bootin"><div class="bootlogo"><canvas class="emb" data-sphere aria-hidden="true"></canvas><div><b>CRYPTO NOVΛ AI</b><small data-i="boot.sub">{{boot.sub}}</small></div></div><pre id="bootLog"></pre><div class="bootbar"><i id="bootBar"></i></div><button type="button" class="bootskip" id="bootSkip" data-i="boot.skip">{{boot.skip}}</button></div></div>
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="top" id="top">
   <div class="wrap">
-    <a class="brand" href="./" aria-label="CRYPTO NOVA AI">
-      <canvas class="emb" data-sphere aria-hidden="true"></canvas>
-      <b>CRYPTO NOVΛ<span>AI</span></b>
-    </a>
+    <a class="brand" href="./" aria-label="CRYPTO NOVA AI"><canvas class="emb" data-sphere aria-hidden="true"></canvas><b>CRYPTO NOVΛ<span>AI</span></b></a>
     <nav class="nav" id="nav" aria-label="Main">
-      <a href="#ai" data-i="nav.ai">{{nav.ai}}</a>
-      <a href="#system" data-i="nav.system">{{nav.system}}</a>
-      <a href="#live" data-i="nav.live">{{nav.live}}</a>
+      <a href="#what" data-i="nav.what">{{nav.what}}</a>
+      <a href="#how" data-i="nav.how">{{nav.how}}</a>
+      <a href="#portfolio" data-i="nav.portfolio">{{nav.portfolio}}</a>
+      <a href="#start" data-i="nav.start">{{nav.start}}</a>
       <a href="#app" data-i="nav.app">{{nav.app}}</a>
-      <a href="#connect" data-i="nav.connect">{{nav.connect}}</a>
       <a href="#faq" data-i="nav.faq">{{nav.faq}}</a>
     </nav>
-    <div class="langsel">
-      <label class="sr" for="lang" data-i="nav.lang">{{nav.lang}}</label>
-      <select id="lang">
-        <option value="en">EN</option><option value="ru">RU</option><option value="uk">UK</option><option value="el">EL</option><option value="es">ES</option>
-      </select>
-    </div>
-    <a class="btn-dl" href="https://apps.apple.com/app/id6754893343" data-i="nav.download">{{nav.download}}</a>
-    <button class="menu-btn" id="menuBtn" aria-controls="nav" aria-expanded="false"><span class="sr" data-i="nav.menu">{{nav.menu}}</span><i></i><i></i><i></i></button>
+    <div class="langsel"><label class="sr" for="lang" data-i="nav.lang">{{nav.lang}}</label><select id="lang"><option value="en">EN</option><option value="ru">RU</option><option value="uk">UK</option><option value="el">EL</option><option value="es">ES</option></select></div>
+    <a class="btn-dl" href="{{appstore}}" data-i="nav.download">{{nav.download}}</a>
+    <button type="button" class="menu-btn" id="menuBtn" aria-controls="nav" aria-expanded="false"><span class="sr" data-i="nav.menu">{{nav.menu}}</span><i></i><i></i><i></i></button>
   </div>
 </header>
 
 <main id="main">
 <section class="hero" aria-labelledby="h1">
   <div class="wrap">
-    <div class="herotop">
-      <h1 id="h1"><span data-i="hero.h1a">{{hero.h1a}}</span> <span data-i="hero.h1b">{{hero.h1b}}</span></h1>
-      <div class="herorow">
-        <div class="herolead">
-          <p class="sub" data-i="hero.sub">{{hero.sub}}</p>
-          <div class="stores">{{stores}}</div>
-          <p class="note" data-i="hero.note">{{hero.note}}</p>
-          <p class="status" id="status" role="status"><i></i><span></span></p>
+    <p class="status" id="status" role="status"><i></i><span data-i="status.wait">{{status.wait}}</span></p>
+    <h1 id="h1" data-i="hero.h1">{{hero.h1}}</h1>
+    <div class="herorow">
+      <p class="sub" data-i="hero.sub">{{hero.sub}}</p>
+      <div class="heroside">
+        <p class="line" data-i="hero.line">{{hero.line}}</p>
+        <div class="cta">
+          <a class="btn primary" href="#portfolio" data-i="hero.b2">{{hero.b2}}</a>
+          <a class="btn" href="#what" data-i="hero.b1">{{hero.b1}}</a>
+          <a class="btn" href="#app" data-i="hero.b3">{{hero.b3}}</a>
         </div>
-        <div class="hstats" aria-label="{{hero.k1}}"><div><b id="hs1">150</b><span data-i="hero.k1">{{hero.k1}}</span></div><div><b>52</b><span data-i="hero.k2">{{hero.k2}}</span></div><div><b>24/7</b><span data-i="hero.k3">{{hero.k3}}</span></div></div>
       </div>
     </div>
-    <div class="stagecol">
     <div class="stage" id="stage">
       <canvas id="core" role="img" aria-label="{{sys.aria}}" data-i-attr="aria-label:sys.aria"></canvas>
-      <div class="hero-phone"><div class="phone"><div class="island"></div><div class="scr live" id="heroScr"></div></div></div>
-      <div class="fcard fc1"><div class="fk" data-i="fc.portfolio">{{fc.portfolio}}</div><div class="fv" id="fcVal">—</div><div class="fs"><b id="fcPct" class="up"></b> <span id="fcSince"></span></div><div class="fspark" id="fcSpark"></div></div>
-      <div class="fcard fc2"><div class="fk" data-i="fc.trade">{{fc.trade}}</div><div class="frow"><b id="fcSym">AVAX</b><span id="fcSide" class="up"></span><b id="fcTp" class="up"></b></div><div class="fbar"><i id="fcBar"></i></div></div>
-      <div class="fcard fc3"><div class="frow"><span class="orb sm"></span><b data-i="fc.nova.q">{{fc.nova.q}}</b></div><p data-i="fc.nova.a">{{fc.nova.a}}</p></div>
-      <div class="fcard fc4"><div class="frow"><svg class="shield" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 4.5 5.6v5.7c0 4.6 3.1 8.4 7.5 9.9 4.4-1.5 7.5-5.3 7.5-9.9V5.6Z" fill="rgba(58,219,147,.14)" stroke="#3ADB93" stroke-width="1.5"/><path d="m8.6 12.2 2.4 2.4 4.4-4.6" fill="none" stroke="#3ADB93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div class="fk" data-i="fc.risk">{{fc.risk}}</div><b id="fcRisk" data-i="fc.risk.ok">{{fc.risk.ok}}</b></div></div></div>
+      <div class="hero-phone"><div class="phone"><span class="island" aria-hidden="true"></span><div class="scr"><img data-scr="home" src="assets/img/screens/en/home.webp" alt="{{hero.phone}}" data-i-attr="alt:hero.phone" width="720" height="1560" decoding="async" fetchpriority="high"></div></div><p class="phcap" data-i="hero.phcap">{{hero.phcap}}</p></div>
     </div>
-    <div class="sysrow">
-    <ol class="sysflow" id="sysflow" aria-label="{{sys.aria}}">
-      <li data-s="0"><b>01</b><span data-i="sys.l1">{{sys.l1}}</span><small id="sf1"></small></li>
-      <li data-s="1"><b>02</b><span data-i="sys.l2">{{sys.l2}}</span><small id="sf2"></small></li>
-      <li data-s="2"><b>03</b><span data-i="sys.l3">{{sys.l3}}</span><small id="sf3"></small></li>
-      <li data-s="3" class="ai"><b>04</b><span data-i="sys.l4">{{sys.l4}}</span><small id="sf4"></small></li>
+    <ol class="sysflow" id="sysflow">
+      <li><b>01</b><span data-i="sys.l1">{{sys.l1}}</span><small id="sf1">{{sys.f1}}</small></li>
+      <li><b>02</b><span data-i="sys.l2">{{sys.l2}}</span><small data-i="sys.f2">{{sys.f2}}</small></li>
+      <li><b>03</b><span data-i="sys.l3">{{sys.l3}}</span><small data-i="sys.f3">{{sys.f3}}</small></li>
+      <li class="ai"><b>04</b><span data-i="sys.l4">{{sys.l4}}</span><small data-i="sys.f4">{{sys.f4}}</small></li>
     </ol>
-    <div class="syslog" id="syslog" aria-hidden="true"></div>
+  </div>
+  <div class="ticker"><p class="sr" data-i="tick.phrase">{{tick.phrase}}</p><div class="track" id="ticker" aria-hidden="true"></div></div>
+</section>
+
+<section class="sec path" id="path" aria-labelledby="pathH">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="pathH" data-i="path.h2">{{path.h2}}</h2><p class="lead" data-i="path.lead">{{path.lead}}</p></div>
+    {{path}}
+  </div>
+</section>
+
+<section class="sec what" id="what" aria-labelledby="whatH">
+  <div class="wrap">
+    <div class="sec-head"><p class="qnum">1 / 6</p><h2 id="whatH" data-i="what.h2">{{what.h2}}</h2><p class="lead" data-i="what.sub">{{what.sub}}</p></div>
+    <div class="whatgrid">
+      <div class="whattext"><p data-i="what.p1">{{what.p1}}</p><p data-i="what.p2">{{what.p2}}</p></div>
+      <figure class="flowfig"><canvas class="thinkflow" id="thinkCv" aria-hidden="true"></canvas><figcaption data-i="what.flow.cap">{{what.flow.cap}}</figcaption></figure>
     </div>
+    <ol class="layers">
+      <li><span class="lic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1.6"/><rect x="4" y="14" width="16" height="6" rx="1.6"/><path d="M7.5 7h.01M7.5 17h.01M11 7h5M11 17h5"/></svg></span><h3 data-i="what.l1.t">{{what.l1.t}}</h3><p data-i="what.l1.p">{{what.l1.p}}</p></li>
+      <li><span class="lic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="m7 15 4-4 3 3 5-6"/></svg></span><h3 data-i="what.l2.t">{{what.l2.t}}</h3><p data-i="what.l2.p">{{what.l2.p}}</p></li>
+      <li><span class="lic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M10.6 18h2.8"/></svg></span><h3 data-i="what.l3.t">{{what.l3.t}}</h3><p data-i="what.l3.p">{{what.l3.p}}</p></li>
+      <li class="ext"><span class="lic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5M5 10v8M9.7 10v8M14.3 10v8M19 10v8M3 20h18"/></svg></span><h3 data-i="what.l4.t">{{what.l4.t}}</h3><p data-i="what.l4.p">{{what.l4.p}}</p></li>
+    </ol>
+    <div class="whatnot">
+      <h3 data-i="what.not.h">{{what.not.h}}</h3>
+      <ul><li data-i="what.not.1">{{what.not.1}}</li><li data-i="what.not.2">{{what.not.2}}</li><li data-i="what.not.3">{{what.not.3}}</li><li data-i="what.not.4">{{what.not.4}}</li></ul>
     </div>
   </div>
-  <div class="ticker" aria-hidden="true"><div class="track" id="ticker"></div></div>
+</section>
+
+<section class="sec how" id="how" aria-labelledby="howH">
+  <div class="wrap">
+    <div class="sec-head"><p class="qnum">2 / 6</p><h2 id="howH" data-i="how.h2">{{how.h2}}</h2><p class="lead" data-i="how.lead">{{how.lead}}</p></div>
+    <ol class="steps">
+      <li class="step" data-s="1"><span class="sn">01</span><div class="sbody"><h3 data-i="how.s1.t">{{how.s1.t}}</h3><p data-i="how.s1.p">{{how.s1.p}}</p><details class="more"><summary data-i="how.more">{{how.more}}</summary><p id="howD1">{{how.s1.d}}</p></details></div><div class="sviz" id="viz1"></div></li>
+      <li class="step" data-s="2"><span class="sn">02</span><div class="sbody"><h3 data-i="how.s2.t">{{how.s2.t}}</h3><p data-i="how.s2.p">{{how.s2.p}}</p><details class="more"><summary data-i="how.more">{{how.more}}</summary><p data-i="how.s2.d">{{how.s2.d}}</p></details></div><div class="sviz" id="viz2"></div></li>
+      <li class="step" data-s="3"><span class="sn">03</span><div class="sbody"><h3 data-i="how.s3.t">{{how.s3.t}}</h3><p data-i="how.s3.p">{{how.s3.p}}</p><details class="more"><summary data-i="how.more">{{how.more}}</summary><p id="howD3">{{how.s3.d}}</p></details></div><div class="sviz" id="viz3"></div></li>
+      <li class="step" data-s="4"><span class="sn">04</span><div class="sbody"><h3 data-i="how.s4.t">{{how.s4.t}}</h3><p data-i="how.s4.p">{{how.s4.p}}</p><details class="more"><summary data-i="how.more">{{how.more}}</summary><p data-i="how.s4.d">{{how.s4.d}}</p></details></div><div class="sviz" id="viz4"></div></li>
+    </ol>
+  </div>
 </section>
 
 <section class="sec why" id="why" aria-labelledby="whyH">
   <div class="wrap">
-    <div class="whybox">
-      <div class="sec-head">
-        <p class="kicker" data-i="why.k">{{why.k}}</p>
-        <h2 class="display" id="whyH" data-i="why.h2">{{why.h2}}</h2>
-        <p class="lead" data-i="why.lead">{{why.lead}}</p>
+    <div class="sec-head"><p class="qnum">3 / 6</p><h2 id="whyH" data-i="why.h2">{{why.h2}}</h2><p class="lead" data-i="why.lead">{{why.lead}}</p></div>
+    {{why}}
+    <p class="whynote" data-i="why.note">{{why.note}}</p>
+  </div>
+</section>
+
+<section class="sec portfolio" id="portfolio" aria-labelledby="pfH">
+  <div class="wrap">
+    <div class="sec-head"><p class="qnum">4 / 6</p><h2 id="pfH" data-i="pf.h2">{{pf.h2}}</h2><p class="lead" id="pfLead">{{pf.lead}}</p></div>
+    <noscript><p class="lead">{{pf.none}}</p></noscript>
+    <div class="pf" id="pf">
+      <div class="pftop">
+        <div class="pfnum">
+          <p class="pfk"><span data-i="pf.value">{{pf.value}}</span><span class="pfbadge"><i></i><span data-i="pf.badge">{{pf.badge}}</span></span></p>
+          <p class="pfval" id="pfVal">—</p>
+          <p class="pfres" id="pfRes"></p>
+          <p class="pfnote" id="pfNote" aria-live="polite"></p>
+        </div>
+        <div class="pfchart">
+          <div class="seg pfper" id="pfPer" role="group" aria-label="{{pf.per.label}}" data-i-attr="aria-label:pf.per.label"></div>
+          <p class="pfperv" id="pfPerV"></p>
+          <div class="curve" id="pfCurve"></div>
+        </div>
       </div>
-      <ul class="whygrid">
-        <li><span class="wi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 17.5 9 12l3.5 3.5 8-8"/><path d="M15 7.5h5.5V13"/></svg></span><div><h3 data-i="why.1.t">{{why.1.t}}</h3><p data-i="why.1.p">{{why.1.p}}</p></div></li>
-        <li><span class="wi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg></span><div><h3 data-i="why.2.t">{{why.2.t}}</h3><p data-i="why.2.p">{{why.2.p}}</p></div></li>
-        <li><span class="wi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 6.5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-6l-4 3.5v-3.5a2 2 0 0 1-2-2z"/><path d="M8.6 9.4h6.8M8.6 12.2h4.2"/></svg></span><div><h3 data-i="why.3.t">{{why.3.t}}</h3><p data-i="why.3.p">{{why.3.p}}</p></div></li>
-        <li><span class="wi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v8.5h8.5A8.5 8.5 0 1 1 12 3.5z"/><path d="M15 3.8A8.5 8.5 0 0 1 20.2 9H15z"/></svg></span><div><h3 data-i="why.4.t">{{why.4.t}}</h3><p data-i="why.4.p">{{why.4.p}}</p></div></li>
-        <li><span class="wi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5c2.8-.9 5.5-.6 8 1 2.5-1.6 5.2-1.9 8-1V18c-2.8-.9-5.5-.6-8 1-2.5-1.6-5.2-1.9-8-1z"/><path d="M12 6.5V19"/></svg></span><div><h3 data-i="why.5.t">{{why.5.t}}</h3><p data-i="why.5.p">{{why.5.p}}</p></div></li>
-        <li><span class="wi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="17.5" rx="6.5" ry="2.3"/><path d="M5.5 17.5v-3.2c0 1.3 2.9 2.3 6.5 2.3s6.5-1 6.5-2.3v3.2"/><ellipse cx="12" cy="10.8" rx="6.5" ry="2.3"/><path d="M5.5 10.8V7.6c0 1.3 2.9 2.3 6.5 2.3s6.5-1 6.5-2.3v3.2"/><ellipse cx="12" cy="7.6" rx="6.5" ry="2.3"/></svg></span><div><h3 data-i="why.6.t">{{why.6.t}}</h3><p data-i="why.6.p">{{why.6.p}}</p></div></li>
-      </ul>
-      <div class="whyfoot"><p class="whyfree"><i aria-hidden="true"></i><span data-i="why.free">{{why.free}}</span></p><a class="btn-why" href="https://apps.apple.com/app/id6754893343" data-i="why.cta">{{why.cta}}</a></div>
+      <div class="pfgrid">
+        <div class="pfcell"><h3 data-i="pf.rules.h">{{pf.rules.h}}</h3><div id="pfRules"></div></div>
+        <div class="pfcell"><h3 data-i="pf.where.h">{{pf.where.h}}</h3><div id="pfWhere"></div></div>
+        <div class="pfcell"><h3 data-i="pf.hold.h">{{pf.hold.h}}</h3><div id="pfHold"></div></div>
+        <div class="pfcell"><h3 data-i="pf.trades.h">{{pf.trades.h}}</h3><div id="pfTrades"></div><h3 class="h3b" data-i="pf.acts.h">{{pf.acts.h}}</h3><ul class="acts" id="pfActs"></ul></div>
+      </div>
+      <div class="pffoot">
+        <p data-i="pf.foot">{{pf.foot}}</p>
+        <div class="pflinks"><a class="btn" href="{{copy_url}}" target="_blank" rel="noopener" data-i="pf.okx">{{pf.okx}}</a><a class="btn" href="{{appstore}}" data-i="pf.app">{{pf.app}}</a></div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="sec" id="ai" aria-labelledby="aiH">
+<section class="sec try" id="try" aria-labelledby="tryH">
   <div class="wrap">
-    <div class="sec-head">
-      <p class="kicker" data-i="k.ai">{{k.ai}}</p>
-      <h2 class="display" id="aiH" data-i="ai.h2">{{ai.h2}}</h2>
-      <p class="lead" data-i="ai.lead">{{ai.lead}}</p>
-    </div>
-    <div class="aigrid">
-      <div class="aibrain hud">
-        <div class="aiorb"><canvas data-sphere="coins" aria-hidden="true"></canvas><span>NOVA AI</span></div>
-        <ol class="aisteps" id="aiSteps"></ol>
-      </div>
-      <div class="tool hud novabox" id="nova">
-        <div class="novahead"><canvas class="novasph" id="novaSph" aria-hidden="true"></canvas><div><p class="novatag" data-i="nova.tag">{{nova.tag}}</p><h3 data-i="nova.t">{{nova.t}}</h3></div></div>
-        <p class="novap" data-i="nova.p">{{nova.p}}</p>
+    <div class="sec-head"><p class="qnum">5 / 6</p><h2 id="tryH" data-i="try.h2">{{try.h2}}</h2><p class="lead" data-i="try.lead">{{try.lead}}</p></div>
+    <div class="panel novabox" id="nova">
+      <div class="novahead"><canvas class="novasph" id="novaSph" aria-hidden="true"></canvas><div><h3 data-i="nova.t">{{nova.t}}</h3><p class="novatag" data-i="nova.tag">{{nova.tag}}</p></div></div>
+      <p class="novap" data-i="nova.p">{{nova.p}}</p>
+      <div class="novabody">
         <div class="chat" id="chat" aria-live="polite"></div>
         <div class="qs" id="qs"></div>
-        <p class="fine" data-i="nova.note">{{nova.note}}</p>
       </div>
+      <p class="fine" data-i="nova.note">{{nova.note}}</p>
     </div>
-  </div>
-</section>
-
-<section class="sec" id="system" aria-labelledby="sysH">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="kicker" data-i="k.system">{{k.system}}</p>
-      <h2 class="display" id="sysH" data-i="eng.h2">{{eng.h2}}</h2>
-      <p class="lead" data-i="eng.lead">{{eng.lead}}</p>
-    </div>
-    <figure class="think hud flowfig">
-      <canvas class="thinkflow" id="thinkCv" aria-hidden="true"></canvas>
-      <figcaption data-i="eng.flow.cap">{{eng.flow.cap}}</figcaption>
-    </figure>
-    <div class="pipe" id="engPipe"></div>
-  </div>
-</section>
-
-<section class="sec" id="live" aria-labelledby="liveH">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="kicker" data-i="k.live">{{k.live}}</p>
-      <div class="livehead"><h2 class="display" id="liveH" data-i="live.h2">{{live.h2}}</h2><span class="livebadge"><i></i><span data-i="live.badge">{{live.badge}}</span></span></div>
-      <p class="lead" data-i="live.lead">{{live.lead}}</p>
-    </div>
-    <div class="live hud" id="pfDemo">
-      <div class="live-top">
-        <div>
-          <div class="k" data-i="live.total">{{live.total}}</div>
-          <div class="big" id="pVal">—</div>
-          <div class="pnl" id="pPnl"></div>
-          <div class="since" id="pSince"></div>
-          <div class="livenote" id="pLive" aria-live="off"></div>
-        </div>
-        <div class="curve" id="pCurve"></div>
-      </div>
-      <div class="live-split">
-        <h3 data-i="live.split">{{live.split}}</h3>
-        <div class="pubparts" id="pParts"></div>
-        <p class="pubtap" data-i="pub.tap">{{pub.tap}}</p>
-      </div>
-      <p class="live-foot" data-i="live.foot">{{live.foot}}</p>
-    </div>
-    <div class="livecta hud">
-      <div class="lcico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6"/><path d="M9.5 15.5l2-2.2 1.6 1.4 2.4-3"/><path d="M10.5 18.6h3"/></svg></div>
-      <div class="lctext"><h3 data-i="live.cta.t">{{live.cta.t}}</h3><p data-i="live.cta.p">{{live.cta.p}}</p></div>
-      <div class="stores">{{stores}}</div>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="app" aria-labelledby="appH">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="kicker" data-i="k.app">{{k.app}}</p>
-      <h2 class="display" id="appH" data-i="app.h2">{{app.h2}}</h2>
-      <p class="lead" data-i="app.lead">{{app.lead}}</p>
-    </div>
-    <div class="appgrid">
-      <div class="appphone">
-        <div class="phone"><div class="island"></div><div class="scr swipe" id="scr" tabindex="0"></div></div>
-        <div class="scrdots" id="scrDots"></div>
-        <p class="tabdesc" id="tabdesc" aria-live="polite"></p>
-        <p class="appcap small" data-i="app.caption">{{app.caption}}</p>
-      </div>
-      <ul class="tabs" role="tablist" id="tabs">{{tabs}}</ul>
-    </div>
-  </div>
-</section>
-
-<section class="sec" id="save" aria-labelledby="saveH">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="kicker" data-i="k.piggy">{{k.piggy}}</p>
-      <h2 class="display" id="saveH" data-i="piggy.h2">{{piggy.h2}}</h2>
-    </div>
-      <div class="tool hud piggybox" id="piggy">
-        <div class="pigL">
+    <div class="panel piggybox" id="save">
+      <div class="pigL">
         <div class="pighead">
-          <div class="pigart" id="pigArt"><div class="npig" aria-hidden="true"><i class="npig-flash"></i><img class="npig-coin" src="assets/img/coin.webp" alt="" width="127" height="152" decoding="async"><img class="npig-body" src="assets/img/pig.webp" alt="" width="656" height="424" decoding="async"></div></div>
-          <div><p class="pigp" data-i="piggy.p">{{piggy.p}}</p></div>
+          <div class="npig" aria-hidden="true"><i class="npig-flash"></i><img class="npig-coin" src="assets/img/coin.webp" alt="" width="127" height="152" decoding="async"><img class="npig-body" src="assets/img/pig.webp" alt="" width="656" height="424" decoding="async"></div>
+          <div><h3 data-i="piggy.h2">{{piggy.h2}}</h3><p data-i="piggy.p">{{piggy.p}}</p></div>
         </div>
-        <div class="pighow">
-          <h4 data-i="pg.how">{{pg.how}}</h4>
-          <ol class="pigsteps"><li><b>1</b><span data-i="pg.s1">{{pg.s1}}</span></li><li><b>2</b><span data-i="pg.s2">{{pg.s2}}</span></li><li><b>3</b><span data-i="pg.s3">{{pg.s3}}</span></li></ol>
-        </div>
-        </div>
-        <div class="pigR">
-        <h4 class="pigcalc" data-i="pg.calc">{{pg.calc}}</h4>
+        <h4 data-i="pg.how">{{pg.how}}</h4>
+        <ol class="pigsteps"><li data-i="pg.s1">{{pg.s1}}</li><li data-i="pg.s2">{{pg.s2}}</li><li data-i="pg.s3">{{pg.s3}}</li></ol>
+      </div>
+      <div class="pigR">
+        <h4 data-i="pg.calc">{{pg.calc}}</h4>
         <div class="ctrls">
-          <div class="ctrl"><span class="lb"><span data-i="piggy.amount">{{piggy.amount}}</span><button type="button" class="ii" aria-expanded="false" aria-controls="pgTip1" aria-label="{{pg.i.lbl}}" data-i-attr="aria-label:pg.i.lbl">i</button></span><p class="iitip" id="pgTip1" role="note" hidden data-i="pg.i1">{{pg.i1}}</p><div class="seg" id="pgAmt"></div></div>
-          <div class="ctrl"><span class="lb"><span data-i="piggy.every">{{piggy.every}}</span><button type="button" class="ii" aria-expanded="false" aria-controls="pgTip2" aria-label="{{pg.i.lbl}}" data-i-attr="aria-label:pg.i.lbl">i</button></span><p class="iitip" id="pgTip2" role="note" hidden data-i="pg.i2">{{pg.i2}}</p><div class="seg" id="pgFreq"></div></div>
-          <div class="ctrl"><span class="lb"><span data-i="piggy.since">{{piggy.since}}</span><button type="button" class="ii" aria-expanded="false" aria-controls="pgTip3" aria-label="{{pg.i.lbl}}" data-i-attr="aria-label:pg.i.lbl">i</button></span><p class="iitip" id="pgTip3" role="note" hidden data-i="pg.i3">{{pg.i3}}</p><div class="seg" id="pgYear"></div></div>
+          <div class="ctrl"><span class="lb" id="pgL1" data-i="piggy.amount">{{piggy.amount}}</span><div class="seg" id="pgAmt" role="group" aria-labelledby="pgL1"></div></div>
+          <div class="ctrl"><span class="lb" id="pgL2" data-i="piggy.every">{{piggy.every}}</span><div class="seg" id="pgFreq" role="group" aria-labelledby="pgL2"></div></div>
+          <div class="ctrl"><span class="lb" id="pgL3" data-i="piggy.since">{{piggy.since}}</span><div class="seg" id="pgYear" role="group" aria-labelledby="pgL3"></div></div>
         </div>
         <div class="res">
-          <div><span data-i="piggy.put">{{piggy.put}}</span><b id="pgPut">$0</b></div>
-          <div><span data-i="piggy.worth">{{piggy.worth}}</span><b id="pgWorth">$0</b></div>
-          <div><span data-i="piggy.btc">{{piggy.btc}}</span><b id="pgBtc">0</b></div>
+          <div><span data-i="piggy.put">{{piggy.put}}</span><b id="pgPut">—</b></div>
+          <div><span data-i="piggy.worth">{{piggy.worth}}</span><b id="pgWorth">—</b></div>
+          <div><span data-i="piggy.btc">{{piggy.btc}}</span><b id="pgBtc">—</b></div>
         </div>
         <div class="pchart" id="pgChart"></div>
-        <div class="legend"><span><i style="background:var(--muted)"></i><span data-i="piggy.chart.put">{{piggy.chart.put}}</span></span><span><i style="background:var(--ice)"></i><span data-i="piggy.chart.worth">{{piggy.chart.worth}}</span></span></div>
+        <div class="legend"><span><i class="lg-put"></i><span data-i="piggy.chart.put">{{piggy.chart.put}}</span></span><span><i class="lg-worth"></i><span data-i="piggy.chart.worth">{{piggy.chart.worth}}</span></span></div>
         <p class="fine" data-i="piggy.note">{{piggy.note}}</p>
-        </div>
       </div>
-  </div>
-</section>
-
-<section class="sec" id="start" aria-labelledby="startH">
-  <div class="wrap">
-    <div class="sec-head">
-      <p class="kicker" data-i="k.how">{{k.how}}</p>
-      <h2 class="display" id="startH" data-i="start.h2">{{start.h2}}</h2>
-      <p class="lead" data-i="how.lead">{{how.lead}}</p>
-    </div>
-    <ol class="howflow"><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M12 7v6.2M9.6 10.9 12 13.3l2.4-2.4M10.6 18h2.8"/></svg></span><span class="hn">01</span><h3 data-i="how.s1.t">{{how.s1.t}}</h3><p data-i="how.s1.p">{{how.s1.p}}</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5c2.8-.9 5.5-.6 8 1 2.5-1.6 5.2-1.9 8-1V18c-2.8-.9-5.5-.6-8 1-2.5-1.6-5.2-1.9-8-1z"/><path d="M12 6.5V19"/></svg></span><span class="hn">02</span><h3 data-i="how.s2.t">{{how.s2.t}}</h3><p data-i="how.s2.p">{{how.s2.p}}</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2 19 6v5.2c0 4.4-3 8.2-7 9.6-4-1.4-7-5.2-7-9.6V6z"/><path d="m9 12.2 2.1 2.1 4-4.2"/></svg></span><span class="hn">03</span><h3 data-i="how.s3.t">{{how.s3.t}}</h3><p data-i="how.s3.p">{{how.s3.p}}</p></li><li class="hw"><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="9" cy="7" rx="5" ry="2.2"/><path d="M4 7v4c0 1.2 2.2 2.2 5 2.2s5-1 5-2.2V7"/><path d="M10 15.5c.9 1 3 1.7 5 1.7 2.8 0 5-1 5-2.2v-4c0-1.1-1.9-2-4.4-2.2"/><path d="M14.4 12.3c2.7.1 5.6-.9 5.6-2.1"/></svg></span><span class="hn">04</span><h3 data-i="how.s4.t">{{how.s4.t}}</h3><p data-i="how.s4.p">{{how.s4.p}}</p></li></ol>
-    <div class="earn2">
-      <div class="earntext">
-        <p class="kicker" data-i="start.money.t">{{start.money.t}}</p>
-        <p class="earnbig" data-i="earn.big">{{earn.big}}</p>
-        <p data-i="start.money.p">{{start.money.p}}</p>
-      </div>
-      <ol class="earnflow" aria-label="{{start.money.t}}">
-        <li><span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/></svg></span><span data-i="earn.f1">{{earn.f1}}</span><span class="ef-run" aria-hidden="true"><i></i><i></i><i></i></span></li>
-        <li><span class="ei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5M5 10v8M9.7 10v8M14.3 10v8M19 10v8M3 20h18"/></svg></span><span data-i="earn.f2">{{earn.f2}}</span><span class="ef-run gold" aria-hidden="true"><i></i><i></i><i></i></span></li>
-        <li class="us"><span class="ei"><canvas class="earnsph" data-sphere aria-hidden="true"></canvas></span><span data-i="earn.f3">{{earn.f3}}</span></li>
-      </ol>
-      <p class="small earnrisk" data-i="start.risk">{{start.risk}}</p>
     </div>
   </div>
 </section>
 
-<section class="sec" id="connect" aria-labelledby="connectH">
+<section class="sec start" id="start" aria-labelledby="startH">
   <div class="wrap">
-    <div class="sec-head">
-      <p class="kicker" data-i="k.connect">{{k.connect}}</p>
-      <h2 class="display" id="connectH" data-i="cn.h2">{{cn.h2}}</h2>
-      <p class="lead" data-i="cn.lead">{{cn.lead}}</p>
+    <div class="sec-head"><p class="qnum">6 / 6</p><h2 id="startH" data-i="start.h2">{{start.h2}}</h2><p class="lead" data-i="start.lead">{{start.lead}}</p></div>
+    {{start}}
+  </div>
+</section>
+
+<section class="sec connect" id="connect" aria-labelledby="cnH">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="cnH" data-i="cn.h2">{{cn.h2}}</h2><p class="lead" data-i="cn.lead">{{cn.lead}}</p></div>
+    <ol class="cnthree">
+      <li><h3 data-i="cn.c1.t">{{cn.c1.t}}</h3><p data-i="cn.c1.p">{{cn.c1.p}}</p><span class="cntag free" data-i="cn.free">{{cn.free}}</span></li>
+      <li><h3 data-i="cn.c2.t">{{cn.c2.t}}</h3><p data-i="cn.c2.p">{{cn.c2.p}}</p><span class="cntag free" data-i="cn.free">{{cn.free}}</span></li>
+      <li><h3 data-i="cn.c3.t">{{cn.c3.t}}</h3><p data-i="cn.c3.p">{{cn.c3.p}}</p><span class="cntag ext" data-i="cn.ext">{{cn.ext}}</span></li>
+    </ol>
+    <div class="cngrid">
+      <div class="panel cnsteps">
+        <h3 data-i="cn.steps.h">{{cn.steps.h}}</h3>
+        <ol><li data-i="cn.s1">{{cn.s1}}</li><li data-i="cn.s2">{{cn.s2}}</li><li data-i="cn.s3">{{cn.s3}}</li><li data-i="cn.s4">{{cn.s4}}</li><li data-i="cn.s5">{{cn.s5}}</li><li data-i="cn.s6">{{cn.s6}}</li></ol>
+        <p class="cnguide" data-i="cn.guide">{{cn.guide}}</p>
+        <div class="cnlinks"><a class="btn" href="{{okx_ref}}" target="_blank" rel="noopener sponsored" data-i="cn.reg">{{cn.reg}}</a><a class="btn" href="{{copy_url}}" target="_blank" rel="noopener" data-i="cn.profile">{{cn.profile}}</a></div>
+        <p class="fine" data-i="cn.partner">{{cn.partner}}</p>
+      </div>
+      <div class="cnside">
+        <div class="cnnote"><h3 data-i="cn.fee.t">{{cn.fee.t}}</h3><p data-i="cn.fee.p">{{cn.fee.p}}</p></div>
+        <div class="cnnote"><h3 data-i="cn.region.t">{{cn.region.t}}</h3><p data-i="cn.region.p">{{cn.region.p}}</p></div>
+        <ul class="cnsafe"><li><b data-i="cn.safe1.t">{{cn.safe1.t}}</b><span data-i="cn.safe1.p">{{cn.safe1.p}}</span></li><li><b data-i="cn.safe2.t">{{cn.safe2.t}}</b><span data-i="cn.safe2.p">{{cn.safe2.p}}</span></li><li><b data-i="cn.safe3.t">{{cn.safe3.t}}</b><span data-i="cn.safe3.p">{{cn.safe3.p}}</span></li></ul>
+      </div>
     </div>
-    <ol class="cnsteps"><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M12 7v6.2M9.6 10.9 12 13.3l2.4-2.4M10.6 18h2.8"/></svg></span><span class="cnn">01</span><h3 data-i="cn.s1.t">{{cn.s1.t}}</h3><p data-i="cn.s1.p">{{cn.s1.p}}</p></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4.2 4.2 0 0 0 6 0l3-3a4.2 4.2 0 0 0-6-6l-1.2 1.2"/><path d="M14 10a4.2 4.2 0 0 0-6 0l-3 3a4.2 4.2 0 0 0 6 6l1.2-1.2"/></svg></span><span class="cnn">02</span><h3 data-i="cn.s2.t">{{cn.s2.t}}</h3><p data-i="cn.s2.p">{{cn.s2.p}}</p></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.4"/><circle cx="9" cy="11" r="2.4"/><path d="M5.6 16.4c.6-1.6 1.9-2.5 3.4-2.5s2.8.9 3.4 2.5M14.5 10h4M14.5 13.5h3"/></svg></span><span class="cnn">03</span><h3 data-i="cn.s3.t">{{cn.s3.t}}</h3><p data-i="cn.s3.p">{{cn.s3.p}}</p></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5h16v10.5H4z"/><path d="M4 8.5 6.5 5h11L20 8.5"/><path d="M12 11v5M9.8 13.8 12 16l2.2-2.2"/></svg></span><span class="cnn">04</span><h3 data-i="cn.s4.t">{{cn.s4.t}}</h3><p data-i="cn.s4.p">{{cn.s4.p}}</p></li><li class="cs key"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8"/></svg></span><span class="cnn">05</span><h3 data-i="cn.s5.t">{{cn.s5.t}}</h3><p data-i="cn.s5.p">{{cn.s5.p}}</p><ol class="cnpath" aria-label="{{cn.s5.t}}"><li class="app" data-i="cn.b1">{{cn.b1}}</li><li data-i="cn.b2">{{cn.b2}}</li><li class="amt" data-i="cn.b3">{{cn.b3}}</li><li class="ok" data-i="cn.b4">{{cn.b4}}</li></ol></li><li class="cs"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg></span><span class="cnn">06</span><h3 data-i="cn.s6.t">{{cn.s6.t}}</h3><p data-i="cn.s6.p">{{cn.s6.p}}</p></li></ol>
-    <div class="cnsafe hud">
-      <ul class="cnsafel"><li><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="3.6"/><path d="M10.6 12.4 19 4M16 7l2.4 2.4M13.6 9.4l1.8 1.8"/><path d="M4 4l16 16"/></svg></span><div><b data-i="cn.safe1.t">{{cn.safe1.t}}</b><span data-i="cn.safe1.p">{{cn.safe1.p}}</span></div></li><li><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5h14.5a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 18V7.5z"/><path d="M4 7.5 15.5 4.2v3.3"/><circle cx="16" cy="13.5" r="1.2"/></svg></span><div><b data-i="cn.safe2.t">{{cn.safe2.t}}</b><span data-i="cn.safe2.p">{{cn.safe2.p}}</span></div></li><li><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1.6"/><path d="M3 9h18M12 9v11M12 9c-1.6-3.4-5.4-4-5.4-1.6C6.6 9 12 9 12 9zM12 9c1.6-3.4 5.4-4 5.4-1.6C17.4 9 12 9 12 9z"/></svg></span><div><b data-i="cn.safe3.t">{{cn.safe3.t}}</b><span data-i="cn.safe3.p">{{cn.safe3.p}}</span></div></li></ul>
-      <div class="cnfoot"><p class="small" data-i="cn.risk">{{cn.risk}}</p><div class="stores">{{stores}}</div></div>
+    <p class="risk" data-i="cn.risk">{{cn.risk}}</p>
+  </div>
+</section>
+
+<section class="sec app" id="app" aria-labelledby="appH">
+  <div class="wrap">
+    <div class="sec-head"><h2 id="appH" data-i="app.h2">{{app.h2}}</h2><p class="lead" data-i="app.lead">{{app.lead}}</p></div>
+    <div class="appgrid">
+      <div class="appphone">
+        <div class="phone tilt"><span class="island" aria-hidden="true"></span><div class="scr swipe" id="scr" tabindex="0"></div></div>
+        <div class="scrnav"><button type="button" class="scrbtn" id="scrPrev" aria-label="{{app.prev}}" data-i-attr="aria-label:app.prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg></button><div class="scrdots" id="scrDots"></div><button type="button" class="scrbtn" id="scrNext" aria-label="{{app.next}}" data-i-attr="aria-label:app.next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></button></div>
+        <p class="tabdesc" id="tabdesc" aria-live="polite"></p>
+        <p class="appcap" data-i="app.caption">{{app.caption}}</p>
+      </div>
+      <div class="appside">
+        <ul class="tabs" role="tablist" id="tabs" aria-label="{{app.h2}}">{{tabs}}</ul>
+        <div class="appstores"><div class="stores">{{stores}}</div><p class="small" data-i="app.android">{{app.android}}</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec earn" id="earn" aria-labelledby="earnH">
+  <div class="wrap">
+    <div class="earnbox">
+      <h2 id="earnH" data-i="earn.h2">{{earn.h2}}</h2>
+      <ul>
+        <li><b data-i="earn.t0">{{earn.t0}}</b><span data-i="earn.p0">{{earn.p0}}</span></li>
+        <li><b data-i="earn.t1">{{earn.t1}}</b><span data-i="earn.p1">{{earn.p1}}</span></li>
+        <li><b data-i="earn.t2">{{earn.t2}}</b><span data-i="earn.p2">{{earn.p2}}</span></li>
+      </ul>
     </div>
   </div>
 </section>
 
 <section class="sec" id="faq" aria-labelledby="faqH">
   <div class="wrap faqgrid">
-    <h2 class="display" id="faqH" data-i="faq.h2">{{faq.h2}}</h2>
+    <h2 id="faqH" data-i="faq.h2">{{faq.h2}}</h2>
     <div class="faq">{{faq}}</div>
   </div>
 </section>
 
 <section class="final" aria-labelledby="finalH">
   <div class="wrap">
-    <canvas class="finalsph" data-sphere="coins" role="img" aria-label="NOVA AI"></canvas>
+    <canvas class="finalsph" data-sphere="coins" aria-hidden="true"></canvas>
     <div>
-      <h2 class="display" id="finalH" data-i="final.h2">{{final.h2}}</h2>
+      <h2 id="finalH" data-i="final.h2">{{final.h2}}</h2>
       <p data-i="final.p">{{final.p}}</p>
       <div class="stores">{{stores}}</div>
     </div>
@@ -304,6 +289,5 @@
 <script src="assets/snapshot.js?v={{v}}"></script>
 <script src="assets/sphere.js?v={{v}}"></script>
 <script src="assets/site.js?v={{v}}"></script>
-<script src="assets/sections.js?v={{v}}"></script>
 </body>
 </html>

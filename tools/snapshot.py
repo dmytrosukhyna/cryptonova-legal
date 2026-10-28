@@ -1,7 +1,9 @@
-"""Bake a fallback copy of the live feeds into assets/snapshot.js.
+"""Bake a dated fallback copy of the live feeds into assets/snapshot.js.
 
-The page always tries the live feeds on cryptonova.vip first (see assets/site.js → FEEDS). This snapshot is only
-what it shows when those don't load (offline, blocked, previews). Same field names as the feeds, fewer fields.
+The page always tries the live feeds on cryptonova.vip first (assets/site.js → FEED). This snapshot is only what it shows when those
+don't load (offline, blocked, a preview on another site) — and it says so, with the snapshot's own date. Same field names as the
+feeds, fewer fields. v9 (28.10.2026): the public portfolio is app_home "public_portfolio" — the REAL CRYPTO NOVA account on OKX since
+22.10.2026 (web/public_real.json); the old $20 000 demo header ("public") and the allocator ("portfolio") are not copied.
 
   python3 tools/snapshot.py /path/to/cryptonova-cockpit/web
 """
@@ -10,6 +12,8 @@ import json, os, sys, time
 WEB = sys.argv[1] if len(sys.argv) > 1 else "../cryptonova-cockpit/web"
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets", "snapshot.js")
 LANG_FILE = {"ru": "app_home.json", "en": "app_home.en.json", "uk": "app_home.uk.json", "el": "app_home.el.json", "es": "app_home.es.json"}
+PP_KEYS = ("kind", "exchange", "since", "start_usd", "value_usd", "pnl_usd", "pnl_pct", "today_usd", "today_pct", "asof", "stale",
+           "note", "stale_note", "copy_url", "periods", "curve", "alloc", "spot", "futures", "actions", "flows", "capital_usd")
 
 
 def load(name):
@@ -17,37 +21,31 @@ def load(name):
         return json.load(f)
 
 
-def thin(curve, n=160):
+def thin(curve, n=200):
+    """every point when short; else n evenly spaced points that always keep the first and the last"""
     if not curve or len(curve) <= n:
         return curve
     step = (len(curve) - 1) / (n - 1)
     return [curve[round(i * step)] for i in range(n)]
 
 
+def public_portfolio(h):
+    pp = h.get("public_portfolio")
+    if not isinstance(pp, dict) or pp.get("value_usd") is None:
+        return None
+    out = {k: pp.get(k) for k in PP_KEYS}
+    out["curve"] = thin(pp.get("curve") or [])
+    for part in ("spot", "futures"):
+        p = dict(out.get(part) or {})
+        p.pop("curve", None)
+        out[part] = p
+    out["actions"] = (out.get("actions") or [])[:8]
+    return out
+
+
 def home(lang):
     h = load(LANG_FILE[lang])
-    # v8 (22.10): the public portfolio is the "public" block (futures + spot of the closed system's header); the old capital
-    # allocator ("portfolio") is no longer shown, so it is not copied
-    pub = dict(h.get("public") or {})
-    if pub.get("curve"):
-        pub["curve"] = thin(pub["curve"])
-    fut = h.get("futures") or {}
-    keep = ("sym", "side", "entry", "price", "stop", "target", "pct", "why_title", "why", "checks", "opened")
-    opened = [{k: t.get(k) for k in keep} for t in (fut.get("open") or [])[:5]]
-    sp = h.get("spot") or {}
-    spot = {k: sp.get(k) for k in ("usd", "pct", "n_coins", "cash_pct", "movers")}
-    spot["coins"] = [{k: c.get(k) for k in ("sym", "price", "weight")} for c in sp.get("coins") or []]   # reference prices for the live repricing
-    return {"asof": h.get("asof"), "public": pub or None, "engine": h.get("engine"),
-            "futures": {"open": opened, **{k: fut.get(k) for k in ("usd", "pct", "trades", "wins", "closed_n") if k in fut}}, "market": h.get("market"), "spot": spot}
-
-
-def scorecard():
-    s = load("scorecard.json")
-    src = [{k: x.get(k) for k in ("key", "kind", "checked", "verdict")} for x in s.get("sources", [])]
-    rec = [{k: x.get(k) for k in ("src", "sym", "t", "ok", "ru", "en")} for x in s.get("recent", []) if x.get("ok") is not None][:24]
-    ch = s.get("chain", {}).get("ledger", {})
-    return {"asof": s.get("asof"), "headline": s.get("headline"), "sources": src, "recent": rec,
-            "chain": {"ledger": {"head": ch.get("head"), "ok": ch.get("ok"), "lines": ch.get("lines")}}}
+    return {"asof": h.get("asof"), "public_portfolio": public_portfolio(h), "engine": h.get("engine")}
 
 
 def conveyor():
@@ -55,21 +53,16 @@ def conveyor():
     return {"asof": c.get("asof"), "counts": c.get("counts")}
 
 
-def risk():
-    r = load("risk.json")
-    lim = [{k: x.get(k) for k in ("key", "value", "limit", "unit", "pct_of_limit", "status")} for x in r.get("limits", [])]
-    return {"asof": r.get("asof"), "state": r.get("state"), "limits": lim, "kill_switch": r.get("kill_switch")}
-
-
-TICK = ["BTC", "ETH", "SOL", "BNB", "XRP", "HYPE", "DOGE", "LINK", "ADA", "AVAX", "SUI", "TON", "NEAR", "LTC", "DOT", "TRX"]
+STABLE = {"USDT", "USDC", "DAI", "FDUSD", "USDE", "USDS", "PYUSD", "TUSD", "USD1", "XAUT", "PAXG", "WBTC", "WETH", "STETH", "WSTETH",
+          "WEETH", "CBBTC", "LEO", "WBT", "BUIDL", "USDTB", "BSC"}
 
 
 def markets():
+    """only what the animations need (the coin tickers in the flow) and the count of coins watched — no prices: a stale price must
+    never look current, so prices are shown only from the live feed"""
     m = load("markets.json")
-    top = [{"symbol": c["symbol"], "price": c.get("price"), "chg24": c.get("chg24")} for c in m.get("top", []) if c.get("symbol") in TICK]
-    g = m.get("global") or {}
-    return {"asof": m.get("asof"), "global": {"total_mcap": g.get("total_mcap"), "mcap_chg24": g.get("mcap_chg24")},
-            "fng": {"value": (m.get("fng") or {}).get("value")}, "top": top}
+    syms = [c.get("symbol") for c in m.get("top") or [] if c.get("symbol") and c.get("symbol") not in STABLE]
+    return {"asof": m.get("asof"), "n": len(m.get("top") or []), "symbols": syms[:60]}
 
 
 def btc():
@@ -77,22 +70,11 @@ def btc():
     return {"start_day": b["start_day"], "closes": [round(x, 2) for x in b["closes"]]}
 
 
-def scale():
-    """Honest size of the work, from the engine's own files: markets in the nightly lab, years of history, candle checks a
-    night (every tried rule walks its market's whole daily history), futures markets the scanner watches every minute."""
-    a = load("autolab.json"); cov = a.get("coverage") or {}
-    days = [v.get("days") or 0 for v in cov.values()]
-    mean = sum(days) / len(days) if days else 0
-    t = load("terminal.json"); m = load("markets.json")
-    since = min((v.get("from") or "9999")[:4] for v in cov.values()) if cov else None
-    return {"lab_markets": len(cov), "since": int(since) if since and since.isdigit() else None,
-            "candle_checks": int((a.get("tried") or 0) * mean), "fut_markets": len(t.get("coins") or []), "coins": len(m.get("top") or [])}
-
-
-snap = {"made": int(time.time() * 1000), "home": {l: home(l) for l in LANG_FILE}, "scorecard": scorecard(),
-        "conveyor": conveyor(), "risk": risk(), "btc": btc(), "markets": markets(), "scale": scale()}
+snap = {"made": int(time.time() * 1000), "home": {l: home(l) for l in LANG_FILE}, "conveyor": conveyor(), "markets": markets(),
+        "btc": btc()}
 with open(OUT, "w", encoding="utf-8") as f:
-    f.write("/* fallback copy of the live feeds, made by tools/snapshot.py */\nwindow.CN_SNAP=")
+    f.write("/* dated fallback copy of the live feeds, made by tools/snapshot.py — shown only when the live feeds don't load */\nwindow.CN_SNAP=")
     json.dump(snap, f, ensure_ascii=False, separators=(",", ":"))
     f.write(";\n")
-print("snapshot", os.path.getsize(OUT) // 1024, "KB")
+print("snapshot", os.path.getsize(OUT) // 1024, "KB · public portfolio asof",
+      time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime((snap["home"]["en"]["public_portfolio"] or {}).get("asof", 0) / 1000)))
