@@ -16,4 +16,9 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - run: python3 tools/linkcheck.py index.html
+      - name: links on the page
+        run: python3 tools/linkcheck.py index.html links
+      - name: App Store and Google Play
+        run: python3 tools/linkcheck.py index.html stores
+      - name: live feeds and CORS
+        run: python3 tools/linkcheck.py index.html feeds
