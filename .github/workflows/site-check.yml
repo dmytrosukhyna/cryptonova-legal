@@ -22,3 +22,9 @@ jobs:
         run: python3 tools/linkcheck.py index.html stores
       - name: live feeds and CORS
         run: python3 tools/linkcheck.py index.html feeds
+      - name: production (cryptonova.pro) after a deploy — pages, title, assets
+        run: python3 tools/linkcheck.py index.html live
+      - name: production in a real browser — the live public portfolio loads
+        run: |
+          pip install -q playwright==1.47.0 && python3 -m playwright install --with-deps chromium >/dev/null
+          python3 tools/livecheck.py

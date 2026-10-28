@@ -70,3 +70,28 @@ if part == "feeds":
         except ValueError:
             extra = "not JSON"
         note("feed", f"{f} → HTTP {code} · Access-Control-Allow-Origin: {acao} · {extra}")
+
+if part == "live":
+    # production after a deploy: wait for GitHub Pages to serve the new build, then every page and every asset it loads
+    want = re.search(r'<title[^>]*>(.*?)</title>', page).group(1)
+    for i in range(24):
+        code, final, hd, body = get("https://cryptonova.pro/")
+        if title(body) == want:
+            break
+        time.sleep(15)
+    note("live title", f"after {i * 15} s: HTTP {code} · «{title(body)}» · expected «{want}» · {'OK' if title(body) == want else 'NOT YET'}")
+    for path in ("", "privacy.html", "terms.html", "support.html", "delete.html", "privacy", "no-such-page"):
+        c, f, h, b = get("https://cryptonova.pro/" + path)
+        note("page", f"/{path} → HTTP {c} · «{title(b)}»")
+    assets = sorted(set(re.findall(r'(?:href|src)="(assets/[^"]+)"', body)))
+    bad = []
+    for a in assets:
+        c, f, h, b = get("https://cryptonova.pro/" + a, n=50)
+        if c != 200:
+            bad.append(f"{a} {c}")
+    shots = [f"assets/img/screens/{l}/{k}.webp" for l in ("en", "ru", "uk", "el", "es") for k in ("home", "demo", "fut", "spot", "nova", "review", "buy", "learn", "piggy", "connect")]
+    for a in shots:
+        c, f, h, b = get("https://cryptonova.pro/" + a, n=50)
+        if c != 200:
+            bad.append(f"{a} {c}")
+    note("assets", f"{len(assets)} assets of the page + {len(shots)} app screens · not 200: {bad or 'none'}")
