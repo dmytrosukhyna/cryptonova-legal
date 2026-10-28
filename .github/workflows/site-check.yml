@@ -1,0 +1,19 @@
+name: site-check
+# v9 (28.10.2026): every outside address of the preview branch opened from a runner — the App Store listing, Google Play
+# (closed testing: a 404 is expected), OKX partner link and lead-trader profile, Telegram, and the live feeds on cryptonova.vip
+# with their CORS header. Read-only; it runs only on pushes to site-v9 (production is never touched).
+on:
+  push:
+    branches: [site-v9]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/linkcheck.py index.html
