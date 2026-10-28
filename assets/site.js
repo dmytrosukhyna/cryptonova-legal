@@ -1,16 +1,22 @@
-/* CRYPTO NOVA AI — cryptonova.pro. No cookies, no trackers. Live figures come from the public feeds on cryptonova.vip. */
+/* CRYPTO NOVA AI — cryptonova.pro v9. No cookies, no trackers. Live figures come from the public feeds on cryptonova.vip
+   (GitHub Pages of the cockpit). When they don't load, the page shows the dated snapshot (assets/snapshot.js) and says so —
+   never invented numbers. The public portfolio is app_home "public_portfolio": the REAL CRYPTO NOVA account on OKX since 22.10.2026. */
 (function () {
   "use strict";
   var LANGS = ["en", "ru", "uk", "el", "es"];
   var LOCALE = { en: "en-US", ru: "ru-RU", uk: "uk-UA", el: "el-GR", es: "es-ES" };
+  var DLOCALE = { en: "en-GB", ru: "ru-RU", uk: "uk-UA", el: "el-GR", es: "es-ES" };
   var FEED = "https://cryptonova.vip/";
   var HOME_FILE = { ru: "app_home.json", en: "app_home.en.json", uk: "app_home.uk.json", el: "app_home.el.json", es: "app_home.es.json" };
+  // the account's own start (web/public_real.json) — used only if no feed and no snapshot is there to say it
+  var START = { since: 1792669322166, start_usd: 10024.4 };
+  // the public account's split, the owner's rule (cockpit okx_alloc.SHARES)
+  var RULES = [["spot", 65, "#7FD3FF"], ["fut", 25, "#5C8DFF"], ["active", 10, "#B9C6E6"]];
   var I18N = window.CN_I18N || {};
   var doc = document, $ = function (s, r) { return (r || doc).querySelector(s); }, $$ = function (s, r) { return Array.prototype.slice.call((r || doc).querySelectorAll(s)); };
-  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   var page = doc.body.getAttribute("data-page") || "home";
   var isDoc = page !== "home";
-  var SVGNS = "http://www.w3.org/2000/svg";
 
   /* ---------- language ---------- */
   function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
@@ -18,12 +24,8 @@
     var q = (location.search.match(/[?&]lang=([a-z]{2})/) || [])[1];
     if (q && I18N[q]) { store("cn.lang", q); return q; }
     var s = store("cn.lang"); if (s && I18N[s]) return s;
-    var nav = (navigator.languages || [navigator.language || "en"]);
-    for (var i = 0; i < nav.length; i++) {
-      var c = String(nav[i]).slice(0, 2).toLowerCase();
-      if (c === "be") c = "ru";
-      if (I18N[c]) return c;
-    }
+    var nav = navigator.languages || [navigator.language || "en"];
+    for (var i = 0; i < nav.length; i++) { var c = String(nav[i]).slice(0, 2).toLowerCase(); if (c === "be") c = "ru"; if (I18N[c]) return c; }
     return "en";
   }
   var lang = page === "404" ? "en" : pickLang();
@@ -34,17 +36,25 @@
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function nf(opts) { return new Intl.NumberFormat(LOCALE[lang], opts); }
-  function usd(v, dec) { return nf({ style: "currency", currency: "USD", currencyDisplay: "narrowSymbol", maximumFractionDigits: dec || 0, minimumFractionDigits: dec || 0 }).format(v); }
-  function num(v, dec) { return nf({ maximumFractionDigits: dec || 0 }).format(v); }
-  function signed(v, txt) { return (v > 0 ? "+" : v < 0 ? "−" : "") + txt; }
-  function pct(v, d) { d = d == null ? 2 : d; return signed(v, nf({ maximumFractionDigits: d, minimumFractionDigits: d }).format(Math.abs(v)) + "%"); }
-  function date(ms, long) { return new Intl.DateTimeFormat(LOCALE[lang], long ? { day: "numeric", month: "long", year: "numeric" } : { day: "numeric", month: "long" }).format(new Date(ms)); }
-  function stamp(ms) { return new Intl.DateTimeFormat(LOCALE[lang], { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(ms)); }
+  function num(v, dec) { return nf({ maximumFractionDigits: dec || 0, minimumFractionDigits: dec || 0 }).format(v); }
+  /* money like the app: $9 882,12 (ru, uk) · $9,882.12 (en) · $9.882,12 (el, es) */
+  function money(v, dec) { dec = dec == null ? 2 : dec; var s = "$" + num(Math.abs(v), dec); return v < 0 ? "−" + s : s; }
+  function smoney(v, dec) { return (v > 0 ? "+" : v < 0 ? "−" : "") + "$" + num(Math.abs(v), dec == null ? 2 : dec); }
+  function pct(v, d) { d = d == null ? 2 : d; return (v > 0 ? "+" : v < 0 ? "−" : "") + num(Math.abs(v), d) + "%"; }
+  function cls(v) { return v > 0 ? "up" : v < 0 ? "down" : ""; }
+  function date(ms, long) { return new Intl.DateTimeFormat(DLOCALE[lang], long ? { day: "numeric", month: "long", year: "numeric" } : { day: "numeric", month: "long" }).format(new Date(ms)); }
+  function dshort(ms) { return new Intl.DateTimeFormat(DLOCALE[lang], { day: "2-digit", month: "2-digit" }).format(new Date(ms)); }
+  function stamp(ms) { return new Intl.DateTimeFormat(DLOCALE[lang], { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(ms)); }
+  function ago(ms) {
+    var s = Math.max(0, Math.round((Date.now() - ms) / 1000));
+    if (s < 10) return t("ago.now"); if (s < 90) return t("ago.sec", { n: s });
+    var m = Math.round(s / 60); return m < 90 ? t("ago.min", { n: m }) : t("ago.h", { n: Math.round(m / 60) });
+  }
 
   function applyI18n() {
     doc.documentElement.lang = lang;
     $$("[data-i]").forEach(function (el) { var v = t(el.getAttribute("data-i")); if (v) el.textContent = v; });
-    $$("[data-i-attr]").forEach(function (el) { var p = el.getAttribute("data-i-attr").split(":"); var v = t(p[1]); if (v) el.setAttribute(p[0], v); });
+    $$("[data-i-attr]").forEach(function (el) { el.getAttribute("data-i-attr").split(";").forEach(function (pair) { var p = pair.split(":"); var v = t(p[1]); if (v) el.setAttribute(p[0], v); }); });
     var sel = $("#lang"); if (sel) sel.value = lang;
     if (isDoc) {
       var shown = null;
@@ -58,7 +68,7 @@
     lang = l; store("cn.lang", l);
     if (history.replaceState && /[?&]lang=/.test(location.search)) history.replaceState(null, "", location.pathname + location.hash);
     applyI18n();
-    if (!isDoc) { renderData(); renderStatic(); loadHome(); }
+    if (!isDoc) { renderAll(); renderStatic(); loadHome(); }
   }
 
   /* ---------- header ---------- */
@@ -66,916 +76,443 @@
   function onScroll() { if (top) top.classList.toggle("scrolled", window.scrollY > 8); }
   window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
   var mb = $("#menuBtn"), nav = $("#nav");
+  function menu(open) { if (!mb || !nav) return; nav.classList.toggle("open", open); mb.setAttribute("aria-expanded", open ? "true" : "false"); }
   if (mb && nav) {
-    mb.addEventListener("click", function () { var o = nav.classList.toggle("open"); mb.setAttribute("aria-expanded", o ? "true" : "false"); });
-    $$("a", nav).forEach(function (a) { a.addEventListener("click", function () { nav.classList.remove("open"); mb.setAttribute("aria-expanded", "false"); }); });
+    mb.addEventListener("click", function () { menu(!nav.classList.contains("open")); });
+    $$("a", nav).forEach(function (a) { a.addEventListener("click", function () { menu(false); }); });
+    doc.addEventListener("keydown", function (ev) { if (ev.key === "Escape" && nav.classList.contains("open")) { menu(false); mb.focus(); } });
   }
   var sel = $("#lang"); if (sel) sel.addEventListener("change", function () { setLang(sel.value); });
   applyI18n();
   if (isDoc) return;
 
-  /* ---------- data ---------- */
+  /* ---------- data: live feeds first, the dated snapshot otherwise ---------- */
   var SNAP = window.CN_SNAP || {};
-  var D = { home: {}, liveHome: {}, scorecard: SNAP.scorecard, conveyor: SNAP.conveyor, risk: SNAP.risk, btc: SNAP.btc, markets: SNAP.markets, scale: SNAP.scale || {} };
+  var D = { home: {}, live: {}, failed: {}, conveyor: SNAP.conveyor || {}, markets: SNAP.markets || {}, marketsLive: false, btc: SNAP.btc };
   LANGS.forEach(function (l) { if (SNAP.home && SNAP.home[l]) D.home[l] = SNAP.home[l]; });
   function H() { return D.home[lang] || D.home.en || {}; }
-  /* v8 (owner 22.10): the public portfolio is the closed system's header — futures «отобранные сигналы» + spot «CRYPTO NOVA портфель»,
-     two $10 000 demo accounts from 17.10 (feed key "public"). The old capital allocator ("portfolio") is not shown anywhere. */
-  function P() { var p = H().public; return p && p.total_usd != null ? p : null; }
-  function earnedPct(p) { return p.total_usd / (p.base_usd || 20000) * 100; }
-  function sgnUsd(v, dec) { return signed(v, usd(Math.abs(v), dec)); }
+  function PP() { var p = H().public_portfolio; return p && typeof p.value_usd === "number" ? p : null; }
   function E() { return H().engine || {}; }
+  function nCoins() { var m = D.markets || {}; return m.n || (m.top || []).length || 150; }
+  function nDesks() { return ((D.conveyor || {}).counts || {}).paper || 14; }
   function get(name) {
     var ctl = window.AbortController ? new AbortController() : null;
     var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 9000);
     return fetch(FEED + name + "?t=" + Math.floor(Date.now() / 60000), { cache: "no-store", signal: ctl ? ctl.signal : undefined })
-      .then(function (r) { clearTimeout(timer); if (!r.ok) throw new Error(r.status); return r.json(); });
+      .then(function (r) { clearTimeout(timer); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
   }
+  var loading = {};
   function loadHome() {
-    var l = lang;
-    return get(HOME_FILE[l]).then(function (h) { if (h && (h.public || h.portfolio)) { D.home[l] = h; D.liveHome[l] = true; if (l === lang) renderData(); } }).catch(function () { renderStatus(); });
+    var l = lang; if (loading[l]) return loading[l];
+    loading[l] = get(HOME_FILE[l]).then(function (h) {
+      if (!h || typeof h !== "object") throw new Error("empty");
+      D.home[l] = { asof: h.asof, public_portfolio: h.public_portfolio || null, engine: h.engine || (D.home[l] || {}).engine };
+      D.live[l] = Date.now(); D.failed[l] = false;
+    }).catch(function () { D.failed[l] = true; }).then(function () { loading[l] = null; if (l === lang) renderAll(); });
+    return loading[l];
+  }
+  function loadMarkets() {
+    return get("markets.json").then(function (m) {
+      if (!m || !m.top) return;
+      D.markets = { asof: m.asof, n: m.top.length, symbols: m.top.map(function (c) { return c.symbol; }).filter(Boolean), top: m.top };
+      D.marketsLive = true; renderTicker(); renderHow();
+    }).catch(function () {});
   }
   function loadAll() {
-    loadHome();
-    get("scorecard.json").then(function (s) { D.scorecard = s; renderEngines(); renderThink(); }).catch(function () {});
-    get("conveyor.json").then(function (c) { D.conveyor = c; renderEngines(); renderTicker(); }).catch(function () {});
-    get("risk.json").then(function (r) { D.risk = r; renderEngines(); renderHeroCards(); renderTicker(); }).catch(function () {});
-    get("markets.json").then(function (m) { if (m && m.top) { D.markets = m; renderTicker(); } }).catch(function () {});
-    get("app_btc.json").then(function (b) { if (b && b.closes) { D.btc = b; renderPiggy(); } }).catch(function () {});
+    loadHome(); loadMarkets();
+    get("conveyor.json").then(function (c) { if (c && c.counts) { D.conveyor = { asof: c.asof, counts: c.counts }; renderHow(); renderVars(); } }).catch(function () {});
+    get("app_btc.json").then(function (b) { if (b && b.closes) { D.btc = b; pgBuilt = ""; renderPiggy(); } }).catch(function () {});
   }
+
+  /* ---------- hero status ---------- */
   function renderStatus() {
     var el = $("#status"); if (!el) return;
-    var h = H(), sp = $("span", el);
-    if (D.liveHome[lang] && h.asof) {
-      var m = Math.max(0, Math.round((Date.now() - h.asof) / 60000));
-      var ago = m < 1 ? t("ago.now") : m < 90 ? t("ago.min", { n: m }) : t("ago.h", { n: Math.round(m / 60) });
-      sp.textContent = t("status.live", { ago: ago }); el.classList.remove("stale");
-    } else { sp.textContent = t("status.snapshot", { date: stamp(SNAP.made || Date.now()).replace(/\.$/, "") }); el.classList.add("stale"); }
+    var sp = $("span", el), h = H(), pp = PP();
+    el.classList.remove("live", "stale");
+    if (D.live[lang] && h.asof) { sp.textContent = t("status.live", { ago: ago(h.asof) }); el.classList.add("live"); }
+    else if (D.failed[lang] || !window.fetch) { sp.textContent = t("status.snapshot", { date: stamp((pp && pp.asof) || h.asof || SNAP.made || Date.now()) }); el.classList.add("stale"); }
+    else sp.textContent = t("status.wait");
+  }
+  /* texts with numbers in them */
+  function renderVars() {
+    var pp = PP() || START, set = function (id, txt) { var el = doc.getElementById(id); if (el) el.textContent = txt; };
+    var since = date(pp.since || START.since, true), start = money(pp.start_usd || START.start_usd);
+    set("pfLead", t("pf.lead", { since: since, start: start }));
+    set("howD1", t("how.s1.d", { n: num(nCoins()) }));
+    set("howD3", t("how.s3.d", { n: num(nDesks()) }));
+    set("sf1", t("sys.f1", { n: num(nCoins()) }));
+    $$("[data-i-html]").forEach(function (el) { el.innerHTML = t(el.getAttribute("data-i-html"), { since: since, start: start }); });
+    $$("img[data-scr]").forEach(function (im) { var src = "assets/img/screens/" + lang + "/" + im.getAttribute("data-scr") + ".webp"; if (im.getAttribute("src") !== src) im.setAttribute("src", src); });
   }
 
-  /* ---------- turbine (the drawn "engine") ---------- */
-  function turbine(r, blades, speed, opt) {
-    opt = opt || {};
-    var o = [], i, a;
-    var id = "tg" + Math.random().toString(36).slice(2, 7);
-    o.push('<defs><radialGradient id="' + id + 'h" cx=".38" cy=".34" r=".7"><stop offset="0" stop-color="#E9FCFF"/><stop offset=".3" stop-color="#8FDCFF"/><stop offset=".62" stop-color="#00A6CC"/><stop offset="1" stop-color="#0B2155"/></radialGradient>' +
-      '<radialGradient id="' + id + 'g"><stop offset=".55" stop-color="#00B4D8" stop-opacity=".28"/><stop offset="1" stop-color="#00B4D8" stop-opacity="0"/></radialGradient>' +
-      '<linearGradient id="' + id + 'b" x1="0" x2="1"><stop offset="0" stop-color="#7FD3FF" stop-opacity=".05"/><stop offset="1" stop-color="#7FD3FF" stop-opacity=".42"/></linearGradient></defs>');
-    o.push('<circle r="' + (r * 1.32) + '" fill="url(#' + id + 'g)"/>');
-    // outer tick ring, slow
-    var ticks = [];
-    for (i = 0; i < 72; i++) { a = i * Math.PI / 36; var l = i % 6 === 0 ? 0.1 : 0.045; ticks.push("M" + (Math.cos(a) * r * 1.12).toFixed(1) + " " + (Math.sin(a) * r * 1.12).toFixed(1) + "L" + (Math.cos(a) * r * (1.12 + l)).toFixed(1) + " " + (Math.sin(a) * r * (1.12 + l)).toFixed(1)); }
-    o.push('<g class="spin" style="--d:' + (speed * 9) + 's"><path d="' + ticks.join("") + '" stroke="rgba(127,211,255,.35)" stroke-width="' + (r > 100 ? 1.4 : 1) + '"/></g>');
-    // dashed arcs, reverse
-    var arcs = [];
-    for (i = 0; i < 6; i++) { var a0 = i * Math.PI / 3 + 0.12, a1 = a0 + 0.7, R = r * 1.25; arcs.push("M" + (Math.cos(a0) * R).toFixed(1) + " " + (Math.sin(a0) * R).toFixed(1) + "A" + R + " " + R + " 0 0 1 " + (Math.cos(a1) * R).toFixed(1) + " " + (Math.sin(a1) * R).toFixed(1)); }
-    o.push('<g class="spin rev" style="--d:' + (speed * 6) + 's"><path d="' + arcs.join("") + '" fill="none" stroke="rgba(127,211,255,.4)" stroke-width="' + (r > 100 ? 2 : 1.5) + '" stroke-linecap="round"/></g>');
-    // housing
-    o.push('<circle class="ring" r="' + r + '" fill="rgba(8,16,44,.85)" stroke="rgba(127,211,255,.45)" stroke-width="' + (r > 100 ? 2 : 1.5) + '"/>');
-    o.push('<circle r="' + (r * 0.9) + '" fill="none" stroke="rgba(127,211,255,.14)" stroke-width="1"/>');
-    // blades, fast
-    var bl = [];
-    for (i = 0; i < blades; i++) {
-      var r0 = r * 0.26, r1 = r * 0.86;
-      bl.push('<path transform="rotate(' + (i * 360 / blades).toFixed(1) + ')" d="M' + r0 + " " + (-r * 0.02) + " Q" + (r * 0.56) + " " + (-r * 0.3) + " " + r1 + " " + (-r * 0.1) + " L" + r1 + " " + (r * 0.04) + " Q" + (r * 0.55) + " " + (-r * 0.04) + " " + r0 + " " + (r * 0.1) + 'Z"/>');
-    }
-    o.push('<g class="spin" style="--d:' + speed + 's" fill="url(#' + id + 'b)" stroke="rgba(160,225,255,.55)" stroke-width="' + (r > 100 ? 1.2 : 0.8) + '">' + bl.join("") + "</g>");
-    // hub
-    o.push('<circle r="' + (r * 0.24) + '" fill="url(#' + id + 'h)"/>');
-    o.push('<circle r="' + (r * 0.24) + '" fill="none" stroke="rgba(233,252,255,.6)" stroke-width="1"/>');
-    if (opt.halo) o.push('<circle class="halo" r="' + (r * 1.05) + '" fill="none" stroke="#7FD3FF" stroke-width="1.5" stroke-dasharray="3 6"/>');
-    return o.join("");
-  }
-
-  /* ---------- hero: turbine, flowing data, floating live cards ---------- */
-  function initFlow() {
-    var cv = $("#flow"); if (!cv || !cv.getContext) return;
-    var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, P = [], running = false, visible = true;
-    function size() { dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.round(cv.clientWidth * dpr); Hh = cv.height = Math.round(cv.clientHeight * dpr); }
-    function spawn() {
-      var ang = Math.random() * Math.PI * 2, R = Math.max(W, Hh) * (0.5 + Math.random() * 0.1);
-      return { a: ang, r: R, v: (0.6 + Math.random() * 0.9) * dpr, s: (0.8 + Math.random() * 1.6) * dpr, w: (Math.random() < 0.5 ? 1 : -1) * (0.002 + Math.random() * 0.004), c: Math.random() < 0.18 ? "58,219,147" : Math.random() < 0.5 ? "127,211,255" : "0,180,216" };
-    }
-    function frame() {
-      if (!running) return;
-      ctx.clearRect(0, 0, W, Hh);
-      var cx = W / 2, cy = Hh / 2, core = Math.min(W, Hh) * 0.1;
-      for (var i = 0; i < P.length; i++) {
-        var p = P[i]; p.r -= p.v; p.a += p.w;
-        if (p.r < core) { P[i] = spawn(); continue; }
-        var x = cx + Math.cos(p.a) * p.r, y = cy + Math.sin(p.a) * p.r * 0.92;
-        var al = Math.min(1, (Math.max(W, Hh) * 0.6 - p.r) / (Math.max(W, Hh) * 0.2)) * Math.min(1, (p.r - core) / (core * 2));
-        ctx.fillStyle = "rgba(" + p.c + "," + (0.75 * Math.max(0, al)).toFixed(3) + ")";
-        ctx.beginPath(); ctx.arc(x, y, p.s, 0, 6.283); ctx.fill();
-        var tx = cx + Math.cos(p.a - p.w * 8) * (p.r + p.v * 10), ty = cy + Math.sin(p.a - p.w * 8) * (p.r + p.v * 10) * 0.92;
-        ctx.strokeStyle = "rgba(" + p.c + "," + (0.25 * Math.max(0, al)).toFixed(3) + ")"; ctx.lineWidth = p.s * 0.8;
-        ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(x, y); ctx.stroke();
-      }
-      requestAnimationFrame(frame);
-    }
-    function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; requestAnimationFrame(frame); } else if (!want) running = false; }
-    size(); for (var i = 0; i < 90; i++) { var p = spawn(); p.r *= Math.random(); P.push(p); }
-    window.addEventListener("resize", size);
-    doc.addEventListener("visibilitychange", setRun);
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; setRun(); }).observe(cv);
-    setRun();
-  }
-  function spark(box, curve, start) {
-    var c = (curve || []).filter(function (r) { return r && r[1] != null; }); if (!box || c.length < 2) return;
-    var W = 200, Hh = 30, v = c.map(function (r) { return start + r[1]; }), lo = Math.min.apply(null, v), hi = Math.max.apply(null, v), sp = (hi - lo) || 1;
-    var pts = v.map(function (y, i) { return (i / (v.length - 1) * W).toFixed(1) + "," + (2 + (1 - (y - lo) / sp) * (Hh - 4)).toFixed(1); });
-    box.innerHTML = '<svg viewBox="0 0 ' + W + " " + Hh + '" preserveAspectRatio="none"><polyline points="' + pts.join(" ") + '" fill="none" stroke="' + (v[v.length - 1] >= start ? "#3ADB93" : "#FF6E86") + '" stroke-width="1.8" vector-effect="non-scaling-stroke"/></svg>';
-  }
-  function renderHeroCards() {
-    var p = P();
-    if (p) {
-      $("#fcVal").textContent = sgnUsd(p.total_usd);
-      var pv = earnedPct(p), pc = $("#fcPct"); pc.textContent = pct(pv); pc.className = pv >= 0 ? "up" : "down";
-      var fs = $("#fcSince"); if (fs && p.since) fs.textContent = t("fc.since", { date: date(p.since) });
-      spark($("#fcSpark"), p.curve, 0);
-    }
-    var o = ((H().futures || {}).open || [])[0];
-    if (o) {
-      var long = String(o.side).toUpperCase() !== "SHORT", span = long ? (o.target - o.stop) : (o.stop - o.target);
-      var x = Math.max(0, Math.min(1, long ? (o.price - o.stop) / span : (o.stop - o.price) / span)) * 100;
-      $("#fcSym").textContent = o.sym;
-      var sd = $("#fcSide"); sd.textContent = t(long ? "tc.long" : "tc.short"); sd.className = long ? "up" : "down";
-      var tp = $("#fcTp"); tp.textContent = pct(o.pct || 0); tp.className = (o.pct || 0) >= 0 ? "up" : "down";
-      $("#fcBar").style.left = x.toFixed(1) + "%";
-    }
-    var st = (D.risk || {}).state || "OK", fr = $("#fcRisk");
-    fr.textContent = st === "OK" ? t("fc.risk.ok") : t("risk." + st);
-    fr.style.color = st === "OK" ? "" : st === "HALT" ? "var(--down)" : "var(--amber)";
-  }
-
-  /* ---------- the NOVA energy core (hero and engine room) ----------
-     A glass sphere with a geodesic «filter» net, plasma filaments inside, the N at the centre. In the hero, coins drift
-     in: the coins the system holds in its spot portfolio pass the filter and are drawn in, others bounce off the shield. */
-  var LOGO = new Image(); LOGO.decoding = "async"; LOGO.src = "assets/img/n-holo.webp";
-  var COINCOL = { BTC: "#F7931A", ETH: "#8A92B2", SOL: "#9945FF", XRP: "#5B7FA6", BNB: "#F3BA2F", DOGE: "#C2A633", ADA: "#3468D1", LINK: "#2A5ADA", AVAX: "#E84142", SUI: "#4DA2FF", TON: "#0098EA", DOT: "#E6007A", NEAR: "#00C08B", LTC: "#A6A9AA", UNI: "#FF5CA8", TRX: "#EB0029", APT: "#3BD6B4", ARB: "#28A0F0", OP: "#FF0420", INJ: "#00A3FF", HBAR: "#7A7A7A", XLM: "#5AA1C9", ATOM: "#6F7390", FIL: "#0090FF", HYPE: "#5CE1C6", ENA: "#7B7B9A", PEPE: "#3D9B3A", SHIB: "#F06E28", WLD: "#9A9A9A", TAO: "#B8B8B8", ZEC: "#ECB244", XMR: "#FF6600", BCH: "#0AC18E", ETC: "#3AB83A", AAVE: "#B6509E", ONDO: "#5A7BD8", STX: "#FC6432", TIA: "#7B2BF9", SEI: "#9E1F19", RENDER: "#E4342F", PENDLE: "#29C3B1", CRV: "#40649F", ALGO: "#6D6D6D", ICP: "#29ABE2", VET: "#15BDFF", MNT: "#65B3AE", CRO: "#103F68" };
-  var GLYPH = { BTC: "₿", ETH: "Ξ", LTC: "Ł", DOGE: "Ð", XRP: "X", SOL: "S", ADA: "₳" };
-  function hashS(x) { var h = 0; for (var i = 0; i < x.length; i++) h = (h * 31 + x.charCodeAt(i)) | 0; return Math.abs(h); }
-  var STABLE = { USDT: 1, USDC: 1, DAI: 1, FDUSD: 1, USDE: 1, USDS: 1, PYUSD: 1, TUSD: 1, USD1: 1, XAUT: 1, PAXG: 1, WBTC: 1, WETH: 1, STETH: 1, WSTETH: 1, WEETH: 1, CBBTC: 1, LEO: 1, WBT: 1, BUIDL: 1, USDTB: 1, BSC: 1 };
-  function corePool() {
-    var sp = H().spot || {}, ok = (sp.movers || []).map(function (m) { return m.sym; }).filter(Boolean);
-    if (ok.length < 3) ok = ["BTC", "ETH", "SOL", "LINK", "NEAR"];
-    var no = ((D.markets || {}).top || []).map(function (c) { return c.symbol; }).filter(function (x) { return x && !STABLE[x] && ok.indexOf(x) < 0 && /^[A-Z0-9]{2,6}$/.test(x); }).slice(0, 24);
-    if (no.length < 6) no = ["DOGE", "ADA", "TRX", "XLM", "BCH", "HBAR", "TON", "DOT", "UNI", "SHIB", "ICP", "ETC"].filter(function (x) { return ok.indexOf(x) < 0; });
-    return { ok: ok, no: no };
-  }
-  function makeCore(cv, opt) {
-    if (!cv || !cv.getContext) return null;
-    var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, R = 0, cx = 0, cy = 0, running = false, visible = true, t0 = performance.now(), last = 0;
-    var NP = opt.lattice || 240, PTS = [], LINKS = [], i, j;
-    for (i = 0; i < NP; i++) { var yy = 1 - (i + 0.5) * 2 / NP, rr = Math.sqrt(1 - yy * yy), th = i * 2.399963229728653; PTS.push([Math.cos(th) * rr, yy, Math.sin(th) * rr]); }
-    var thr = 2.3 * Math.sqrt(4 * Math.PI / NP) * 0.62; thr *= thr;
-    for (i = 0; i < NP; i++) for (j = i + 1; j < NP; j++) { var dx = PTS[i][0] - PTS[j][0], dy = PTS[i][1] - PTS[j][1], dz = PTS[i][2] - PTS[j][2]; if (dx * dx + dy * dy + dz * dz < thr) LINKS.push([i, j]); }
-    var K = opt.angles ? opt.angles.length : 7, TEN = [];
-    for (i = 0; i < K; i++) TEN.push({ base: opt.angles ? opt.angles[i] : i * 2 * Math.PI / K + 0.3, phi: 0, lock: null });
-    var A = [], PS = [], flashes = [], boost = 0, ptr = { on: 0, a: 0, x: 0, y: 0 };
-    function size() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
-      cx = W / 2; cy = Hh / 2; R = Math.min(W, Hh) * (opt.r || 0.29);
-    }
-    function spawn(a) {
-      var pool = corePool(), ok = Math.random() < 0.42, list = ok ? pool.ok : pool.no;
-      a = a || {}; a.sym = list[Math.floor(Math.random() * list.length)]; a.ok = ok;
-      a.ang = Math.random() * Math.PI * 2; a.d = R * (1.75 + Math.random() * 0.55); a.v = R * (0.16 + Math.random() * 0.08);
-      a.sw = (Math.random() < 0.5 ? -1 : 1) * (0.05 + Math.random() * 0.06); a.st = "in"; a.tt = 0; a.al = 0; return a;
-    }
-    if (opt.assets) for (i = 0; i < 8; i++) { var a0 = spawn(); a0.d = R * (1.3 + Math.random() * 1.0); A.push(a0); }
-    function P(p, ay, ax) {
-      var x = p[0] * Math.cos(ay) + p[2] * Math.sin(ay), z = -p[0] * Math.sin(ay) + p[2] * Math.cos(ay), y = p[1];
-      return [cx + x * R, cy + (y * Math.cos(ax) - z * Math.sin(ax)) * R, y * Math.sin(ax) + z * Math.cos(ax)];
-    }
-    function net(pr, front) {
-      ctx.lineWidth = dpr * 0.7;
-      ctx.strokeStyle = front ? "rgba(127,211,255,.20)" : "rgba(127,211,255,.06)";
-      ctx.beginPath();
-      for (var k = 0; k < LINKS.length; k++) { var p = pr[LINKS[k][0]], q = pr[LINKS[k][1]]; if ((p[2] + q[2] > 0) !== front) continue; ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); }
-      ctx.stroke();
-      ctx.fillStyle = front ? "rgba(200,240,255,.75)" : "rgba(127,211,255,.22)";
-      for (var m = 0; m < pr.length; m++) { var o = pr[m]; if ((o[2] > 0) !== front) continue; ctx.fillRect(o[0] - dpr * 0.8, o[1] - dpr * 0.8, dpr * 1.6, dpr * 1.6); }
-    }
-    function glow(x, y, r, c, a) { var g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, "rgba(" + c + "," + a + ")"); g.addColorStop(1, "rgba(" + c + ",0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); }
-    function chip(a, x, y) {
-      var fs = Math.round(11 * dpr), padX = 7 * dpr, h = 20 * dpr;
-      ctx.font = "500 " + fs + "px 'JetBrains Mono',ui-monospace,monospace";
-      var w = ctx.measureText(a.sym).width + padX * 2, col = a.st === "pull" ? "58,219,147" : a.st === "out" ? "255,110,134" : "127,211,255";
-      ctx.globalAlpha = a.al;
-      ctx.fillStyle = "rgba(8,15,38,.88)"; ctx.strokeStyle = "rgba(" + col + "," + (a.st === "in" ? ".45" : ".95") + ")"; ctx.lineWidth = dpr;
-      var rx = 5 * dpr, x0 = x - w / 2, y0 = y - h / 2;
-      ctx.beginPath(); ctx.moveTo(x0 + rx, y0); ctx.arcTo(x0 + w, y0, x0 + w, y0 + h, rx); ctx.arcTo(x0 + w, y0 + h, x0, y0 + h, rx); ctx.arcTo(x0, y0 + h, x0, y0, rx); ctx.arcTo(x0, y0, x0 + w, y0, rx); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = a.st === "out" ? "rgba(255,170,185,.9)" : a.st === "pull" ? "#B8FFE0" : "#EAF6FF"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(a.sym, x, y + dpr * 0.5);
-      if (a.st === "test") { ctx.strokeStyle = "rgba(127,211,255,.9)"; ctx.lineWidth = 1.2 * dpr; ctx.beginPath(); ctx.arc(x, y, w * 0.72, a.tt * 9, a.tt * 9 + 1.6); ctx.stroke(); }
-      ctx.globalAlpha = 1;
-    }
-    function frame(now) {
-      if (!running && now !== -1) return;
-      var t = ((now === -1 ? t0 + 4000 : now) - t0) / 1000, dt = Math.min(0.05, last ? t - last : 0.016); last = t;
-      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
-      var ay = t * 0.12, ax = 0.42, pr = PTS.map(function (p) { return P(p, ay, ax); });
-      glow(cx, cy, R * 1.75, "0,180,216", 0.16 + boost * 0.08);
-      net(pr, false);
-      // glass and plasma
-      var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
-      g.addColorStop(0, "rgba(150,225,255,.30)"); g.addColorStop(0.45, "rgba(0,140,200,.12)"); g.addColorStop(0.9, "rgba(0,120,190,.08)"); g.addColorStop(1, "rgba(127,211,255,.18)");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.fill();
-      ctx.globalCompositeOperation = "lighter";
-      // tendrils: drift around their base angle; the pointer and the coin being checked pull the closest one
-      var targets = [];
-      if (ptr.on > 0) { ptr.on -= dt; targets.push(ptr.a); }
-      A.forEach(function (a) { if (a.st === "test" || a.st === "pull") targets.push(a.ang); });
-      TEN.forEach(function (tn, k) { tn.lock = null; tn.phi = tn.base + 0.55 * Math.sin(t * 0.33 + k * 1.7) + 0.25 * Math.sin(t * 0.71 + k); });
-      targets.forEach(function (ang) { var best = null, bd = 9; TEN.forEach(function (tn) { if (tn.lock != null) return; var d = Math.abs(Math.atan2(Math.sin(tn.phi - ang), Math.cos(tn.phi - ang))); if (d < bd) { bd = d; best = tn; } }); if (best) best.lock = ang; });
-      // 21.10 13:28: no lightning — energy streams from each engine flow into the core; refused bits stop at the shell
-      if (Math.random() < dt * 9) PS.push({ k: Math.floor(Math.random() * TEN.length), s: 0, v: 0.35 + Math.random() * 0.35, bad: Math.random() < 0.3, j: (Math.random() - 0.5) * 0.18 });
-      PS = PS.filter(function (q) {
-        q.s += q.v * dt;
-        var ph = TEN[q.k].base + q.j * (1 - q.s), rr = R * (1.25 - q.s * 1.05);
-        if (q.bad && rr <= R * 1.0) { flashes.push({ a: ph, t: 0.3 }); return false; }
-        if (rr < R * 0.22) { boost = Math.min(1, boost + 0.12); return false; }
-        var x = cx + Math.cos(ph) * rr, y = cy + Math.sin(ph) * rr;
-        glow(x, y, 7 * dpr, q.bad ? "255,110,134" : "127,211,255", 0.6);
-        ctx.fillStyle = q.bad ? "rgba(255,150,165,.95)" : "rgba(220,245,255,.95)"; ctx.beginPath(); ctx.arc(x, y, 1.8 * dpr, 0, 6.2832); ctx.fill();
-        return true;
-      });
-      TEN.forEach(function (tn) { var ex = cx + Math.cos(tn.base) * R, ey = cy + Math.sin(tn.base) * R; glow(ex, ey, R * 0.12, "127,211,255", 0.35); });
-      // slow energy rings
-      for (var ri = 0; ri < 3; ri++) { var ph2 = ((t * 0.35 + ri / 3) % 1), rr3 = R * (0.3 + ph2 * 0.68); ctx.strokeStyle = "rgba(127,211,255," + (0.28 * (1 - ph2)).toFixed(3) + ")"; ctx.lineWidth = 1.5 * dpr; ctx.beginPath(); ctx.arc(cx, cy, rr3, 0, 6.2832); ctx.stroke(); }
-      glow(cx, cy, R * 0.62, boost > 0 ? "120,255,200" : "160,230,255", 0.38 + boost * 0.35);
-      ctx.globalCompositeOperation = "source-over";
-      // the N
-      if (LOGO.complete && LOGO.naturalWidth) {
-        var sz = R * (opt.logo || 0.8) * (1 + 0.025 * Math.sin(t * 2.1)), lw = sz, lh = sz * LOGO.naturalHeight / LOGO.naturalWidth;
-        ctx.drawImage(LOGO, cx - lw / 2, cy - lh / 2, lw, lh);
-      }
-      // shield flashes where a coin was refused
-      flashes = flashes.filter(function (f) { f.t += dt; return f.t < 0.7; });
-      boost = Math.max(0, boost - dt * 0.8);
-      flashes.forEach(function (f) { ctx.strokeStyle = "rgba(255,110,134," + (0.8 * (1 - f.t / 0.7)).toFixed(3) + ")"; ctx.lineWidth = 2.5 * dpr; ctx.beginPath(); ctx.arc(cx, cy, R * 1.02, f.a - 0.28, f.a + 0.28); ctx.stroke(); });
-      net(pr, true);
-      ctx.strokeStyle = "rgba(127,211,255,.42)"; ctx.lineWidth = 1.2 * dpr; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.stroke();
-      // coins
-      boost = Math.max(0, boost - dt * 1.6);
-      A.forEach(function (a) {
-        if (a.st === "in") { a.d -= a.v * dt; a.ang += a.sw * dt; a.al = Math.min(1, a.al + dt * 1.5); if (a.d <= R * 1.2) { a.st = "test"; a.tt = 0; } }
-        else if (a.st === "test") { a.tt += dt; if (a.tt > 0.75) { a.st = a.ok ? "pull" : "out"; if (!a.ok) flashes.push({ a: a.ang, t: 0 }); } }
-        else if (a.st === "pull") { a.d -= R * 1.2 * dt; a.al = Math.max(0, Math.min(1, (a.d - R * 0.15) / (R * 0.5))); if (a.d < R * 0.18) { boost = 1; spawn(a); } }
-        else { a.d += R * 0.55 * dt; a.ang += a.sw * dt * 2; a.al = Math.max(0, a.al - dt * 0.7); if (a.al <= 0 || a.d > R * 2.6) spawn(a); }
-        var x = cx + Math.cos(a.ang) * a.d, y = cy + Math.sin(a.ang) * a.d * 0.94;
-        if (a.st === "test" || a.st === "pull") {
-          ctx.strokeStyle = a.st === "pull" ? "rgba(58,219,147,.75)" : "rgba(127,211,255,.6)"; ctx.lineWidth = 1.2 * dpr; ctx.setLineDash(a.st === "pull" ? [] : [4 * dpr, 4 * dpr]);
-          ctx.beginPath(); ctx.moveTo(cx + Math.cos(a.ang) * R, cy + Math.sin(a.ang) * R); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
-        }
-        chip(a, x, y);
-      });
-      if (now !== -1) requestAnimationFrame(frame);
-    }
-    function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; last = 0; requestAnimationFrame(frame); } else if (!want) running = false; }
-    size();
-    window.addEventListener("resize", function () { size(); if (!running) frame(-1); });
-    if (opt.pointer) {
-      var pt = function (ev) { var b = cv.getBoundingClientRect(), x = (ev.clientX - b.left) * dpr, y = (ev.clientY - b.top) * dpr, dx = x - cx, dy = y - cy; if (Math.sqrt(dx * dx + dy * dy) < R * 1.7) { ptr.on = 1.2; ptr.a = Math.atan2(dy, dx); } };
-      cv.addEventListener("pointermove", pt); cv.addEventListener("pointerdown", pt);
-    }
-    doc.addEventListener("visibilitychange", setRun);
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; setRun(); }).observe(cv);
-    LOGO.addEventListener("load", function () { if (!running) frame(-1); });
-    if (reduce) frame(-1); else setRun();
-    return { size: size };
-  }
-
-  /* ---------- hero: the NOVA tactical radar (21.10 13:28 owner: «не буква N и не молнии — радар, серьёзная система»)
-     A scope with range rings, bearing ticks and a phosphor sweep. Coins show up as contacts when the sweep passes:
-     the coins the system holds in its spot portfolio get locked (green brackets) and are pulled to the core,
-     the rest are marked as refused (red) and fade. Corner readouts are real: coins watched and the engine cycle. */
-  function makeRadar(cv, opt) {
-    opt = opt || {};
-    if (!cv || !cv.getContext) return null;
-    var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, R = 0, cx = 0, cy = 0, running = false, visible = true, t0 = performance.now(), last = 0;
-    var B = [], ptr = { on: 0, x: 0, y: 0 }, absorb = 0, SPIN = 2 * Math.PI / 4.8;
-    function size() { dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr)); cx = W / 2; cy = Hh / 2; R = Math.min(W, Hh) * (opt.mini ? 0.44 : 0.41); }
-    function spawn(b) {
-      var pool = corePool(), ok = Math.random() < 0.38, used = B.map(function (x) { return x.sym; }), list = (ok ? pool.ok : pool.no).filter(function (x) { return used.indexOf(x) < 0; });
-      if (!list.length) list = ok ? pool.ok : pool.no;
-      b = b || {}; b.sym = list[Math.floor(Math.random() * list.length)]; b.ok = ok; b.a = Math.random() * Math.PI * 2; b.r = 0.32 + Math.random() * 0.6;
-      b.lit = 0; b.seen = false; b.st = "idle"; b.k = 0; return b;
-    }
-    for (var i = 0; i < (opt.mini ? 6 : 11); i++) B.push(spawn());
-    function mono(sz, w) { return (w || 500) + " " + Math.round(sz * dpr) + "px 'JetBrains Mono',ui-monospace,monospace"; }
-    function ang(a) { a %= 2 * Math.PI; return a < 0 ? a + 2 * Math.PI : a; }
-    function frame(now) {
-      if (!running && now !== -1) return;
-      var tm = ((now === -1 ? t0 + 3200 : now) - t0) / 1000, dt = Math.min(0.05, last ? tm - last : 0.016); last = tm;
-      var sw = ang(tm * SPIN - Math.PI / 2);
-      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
-      // scope body
-      var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 1.12);
-      g.addColorStop(0, "rgba(0,70,95,.38)"); g.addColorStop(0.75, "rgba(0,40,70,.22)"); g.addColorStop(1, "rgba(0,20,40,0)");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R * 1.12, 0, 6.2832); ctx.fill();
-      ctx.strokeStyle = "rgba(127,211,255,.10)"; ctx.lineWidth = dpr;
-      for (var gx = -R; gx <= R; gx += R / 5) { var hh = Math.sqrt(Math.max(0, R * R - gx * gx)); ctx.beginPath(); ctx.moveTo(cx + gx, cy - hh); ctx.lineTo(cx + gx, cy + hh); ctx.moveTo(cx - hh, cy + gx); ctx.lineTo(cx + hh, cy + gx); ctx.stroke(); }
-      [0.25, 0.5, 0.75].forEach(function (k) { ctx.strokeStyle = "rgba(127,211,255,.22)"; ctx.setLineDash([3 * dpr, 5 * dpr]); ctx.beginPath(); ctx.arc(cx, cy, R * k, 0, 6.2832); ctx.stroke(); });
-      ctx.setLineDash([]); ctx.strokeStyle = "rgba(127,211,255,.55)"; ctx.lineWidth = 1.4 * dpr; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.stroke();
-      ctx.strokeStyle = "rgba(127,211,255,.18)"; ctx.lineWidth = dpr; ctx.beginPath(); ctx.arc(cx, cy, R * 1.075, 0, 6.2832); ctx.stroke();
-      // bearing ticks and labels
-      ctx.strokeStyle = "rgba(127,211,255,.45)";
-      for (var d = 0; d < 360; d += 5) { var a = d * Math.PI / 180 - Math.PI / 2, l = d % 30 === 0 ? 0.05 : 0.022; ctx.lineWidth = (d % 30 === 0 ? 1.3 : 0.8) * dpr; ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx.lineTo(cx + Math.cos(a) * R * (1 + l), cy + Math.sin(a) * R * (1 + l)); ctx.stroke(); }
-      ctx.fillStyle = "rgba(160,215,245,.6)"; ctx.font = mono(9.5); ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      if (!opt.mini) for (var dl = 0; dl < 360; dl += 30) { var al = dl * Math.PI / 180 - Math.PI / 2; ctx.fillText(("00" + dl).slice(-3), cx + Math.cos(al) * R * 1.14, cy + Math.sin(al) * R * 1.14); }
-      // crosshair
-      ctx.strokeStyle = "rgba(127,211,255,.28)"; ctx.lineWidth = dpr; ctx.beginPath(); ctx.moveTo(cx - R, cy); ctx.lineTo(cx + R, cy); ctx.moveTo(cx, cy - R); ctx.lineTo(cx, cy + R); ctx.stroke();
-      // sweep with phosphor trail
-      if (ctx.createConicGradient) {
-        var cg = ctx.createConicGradient(sw - 1.1, cx, cy);
-        cg.addColorStop(0, "rgba(34,203,234,0)"); cg.addColorStop(0.17, "rgba(34,203,234,.30)"); cg.addColorStop(0.175, "rgba(34,203,234,0)"); cg.addColorStop(1, "rgba(34,203,234,0)");
-        ctx.fillStyle = cg; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, sw - 1.1, sw); ctx.closePath(); ctx.fill();
-      } else {
-        for (var q = 0; q < 14; q++) { ctx.fillStyle = "rgba(34,203,234," + (0.02 * (14 - q) / 14 * 1.2).toFixed(3) + ")"; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, sw - (q + 1) * 0.08, sw - q * 0.08); ctx.closePath(); ctx.fill(); }
-      }
-      ctx.strokeStyle = "rgba(190,240,255,.95)"; ctx.lineWidth = 1.6 * dpr; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(sw) * R, cy + Math.sin(sw) * R); ctx.stroke();
-      // contacts
-      B.forEach(function (b) {
-        var ba = ang(b.a), behind = ang(sw - ba);
-        if (behind < 0.12 && !b.seen && b.st === "idle") { b.seen = true; b.lit = 1; b.st = b.ok ? "lock" : "refuse"; b.k = 0; }
-        if (b.st === "lock") { b.k += dt; if (b.k > 1.6) { b.r -= dt * 0.22; if (b.r < 0.06) { absorb = 1; spawn(b); return; } } }
-        else if (b.st === "refuse") { b.k += dt; b.lit = Math.max(0, 1 - b.k / 2.4); if (b.k > 2.6) { spawn(b); return; } }
-        else { b.lit = Math.max(0, b.lit - dt * 0.4); if (behind > 3) b.seen = false; }
-        var x = cx + Math.cos(b.a) * b.r * R, y = cy + Math.sin(b.a) * b.r * R;
-        var col = b.st === "lock" ? "58,219,147" : b.st === "refuse" ? "255,110,134" : "127,211,255", al2 = b.st === "idle" ? 0.25 + b.lit * 0.6 : b.st === "refuse" ? b.lit : 1;
-        var gl = ctx.createRadialGradient(x, y, 0, x, y, 14 * dpr); gl.addColorStop(0, "rgba(" + col + "," + (0.5 * al2).toFixed(3) + ")"); gl.addColorStop(1, "rgba(" + col + ",0)");
-        ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(x, y, 14 * dpr, 0, 6.2832); ctx.fill();
-        ctx.fillStyle = "rgba(" + col + "," + Math.min(1, al2 + 0.15).toFixed(3) + ")"; ctx.beginPath(); ctx.arc(x, y, 2.6 * dpr, 0, 6.2832); ctx.fill();
-        if (b.st === "lock") {
-          var s2 = 9 * dpr, c2 = 4 * dpr; ctx.strokeStyle = "rgba(58,219,147,.95)"; ctx.lineWidth = 1.3 * dpr; ctx.beginPath();
-          [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(function (c) { ctx.moveTo(x + c[0] * s2, y + c[1] * (s2 - c2)); ctx.lineTo(x + c[0] * s2, y + c[1] * s2); ctx.lineTo(x + c[0] * (s2 - c2), y + c[1] * s2); });
-          ctx.stroke();
-          ctx.strokeStyle = "rgba(58,219,147,.35)"; ctx.setLineDash([2 * dpr, 4 * dpr]); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(cx, cy); ctx.stroke(); ctx.setLineDash([]);
-        } else if (b.st === "refuse") {
-          var s3 = 4.5 * dpr; ctx.strokeStyle = "rgba(255,110,134," + al2.toFixed(3) + ")"; ctx.lineWidth = 1.3 * dpr; ctx.beginPath(); ctx.moveTo(x - s3 + 9 * dpr, y - s3); ctx.lineTo(x + s3 + 9 * dpr, y + s3); ctx.moveTo(x + s3 + 9 * dpr, y - s3); ctx.lineTo(x - s3 + 9 * dpr, y + s3); ctx.stroke();
-        }
-        if (b.st !== "idle" || b.lit > 0.25) {
-          ctx.font = mono(opt.mini ? 9 : 10.5, b.st === "lock" ? 700 : 500); ctx.textAlign = "left"; ctx.textBaseline = "middle";
-          ctx.fillStyle = "rgba(" + (b.st === "lock" ? "184,255,224" : b.st === "refuse" ? "255,170,185" : "200,235,255") + "," + Math.min(1, al2 + 0.1).toFixed(3) + ")";
-          ctx.fillText(b.sym, x + (b.st === "refuse" ? 17 : 13) * dpr, y - 9 * dpr);
-        }
-      });
-      // core: rotating square reticle, pulses green when a contact is absorbed
-      absorb = Math.max(0, absorb - dt * 1.4);
-      var cr = 14 * dpr * (1 + absorb * 0.35), rot = tm * 0.9;
-      var cg2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr * 3.2); cg2.addColorStop(0, absorb > 0.05 ? "rgba(58,219,147,.55)" : "rgba(127,211,255,.45)"); cg2.addColorStop(1, "rgba(127,211,255,0)");
-      ctx.fillStyle = cg2; ctx.beginPath(); ctx.arc(cx, cy, cr * 3.2, 0, 6.2832); ctx.fill();
-      ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = "rgba(200,240,255,.9)"; ctx.lineWidth = 1.4 * dpr; ctx.strokeRect(-cr, -cr, cr * 2, cr * 2); ctx.rotate(Math.PI / 4 - rot * 2); ctx.strokeStyle = "rgba(34,203,234,.8)"; ctx.strokeRect(-cr * 0.62, -cr * 0.62, cr * 1.24, cr * 1.24); ctx.restore();
-      ctx.fillStyle = absorb > 0.05 ? "#3ADB93" : "#EAF8FF"; ctx.beginPath(); ctx.arc(cx, cy, 2.8 * dpr, 0, 6.2832); ctx.fill();
-      // pointer reticle
-      if (ptr.on > 0) {
-        ptr.on -= dt; ctx.strokeStyle = "rgba(255,197,98,.85)"; ctx.lineWidth = 1.2 * dpr; var pr2 = 11 * dpr;
-        ctx.beginPath(); ctx.arc(ptr.x, ptr.y, pr2, 0, 6.2832); ctx.moveTo(ptr.x - pr2 * 1.7, ptr.y); ctx.lineTo(ptr.x - pr2 * 0.6, ptr.y); ctx.moveTo(ptr.x + pr2 * 0.6, ptr.y); ctx.lineTo(ptr.x + pr2 * 1.7, ptr.y); ctx.moveTo(ptr.x, ptr.y - pr2 * 1.7); ctx.lineTo(ptr.x, ptr.y - pr2 * 0.6); ctx.moveTo(ptr.x, ptr.y + pr2 * 0.6); ctx.lineTo(ptr.x, ptr.y + pr2 * 1.7); ctx.stroke();
-        var dx = ptr.x - cx, dy = ptr.y - cy, rr2 = Math.sqrt(dx * dx + dy * dy) / R, brg = (Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 450) % 360));
-        ctx.font = mono(9.5); ctx.fillStyle = "rgba(255,210,140,.9)"; ctx.textAlign = "left"; ctx.fillText(("00" + brg).slice(-3) + "° · " + Math.min(99, Math.round(rr2 * 100)) + "%", ptr.x + pr2 * 1.9, ptr.y + pr2 * 1.2);
-      }
-      if (opt.mini) { if (now !== -1) requestAnimationFrame(frame); return; }
-      // corner readouts (real numbers)
-      var e = E(), sc = D.scale || {}, d0 = new Date(), hh2 = function (n) { return ("0" + n).slice(-2); };
-      ctx.font = mono(10); ctx.fillStyle = "rgba(160,215,245,.75)"; ctx.textBaseline = "top"; ctx.textAlign = "left";
-      ctx.textAlign = "right"; var lx = W - 6 * dpr, ly = cy - R * 1.22, lh = 14 * dpr;
-      ctx.fillText(t("radar.scan", { n: num(sc.coins || 150) }), lx, ly);
-      ctx.fillText(t("radar.cycle", { n: num(e.cycle_sec || 60) }), lx, ly + lh);
-      ctx.fillText("UTC " + hh2(d0.getUTCHours()) + ":" + hh2(d0.getUTCMinutes()) + ":" + hh2(d0.getUTCSeconds()), lx, ly + lh * 2);
-      if (now !== -1) requestAnimationFrame(frame);
-    }
-    function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; last = 0; requestAnimationFrame(frame); } else if (!want) running = false; }
-    size();
-    window.addEventListener("resize", function () { size(); if (!running) frame(-1); });
-    var pt = function (ev) { var bx = cv.getBoundingClientRect(); ptr.x = (ev.clientX - bx.left) * dpr; ptr.y = (ev.clientY - bx.top) * dpr; var dx = ptr.x - cx, dy = ptr.y - cy; ptr.on = Math.sqrt(dx * dx + dy * dy) < R ? 1.4 : 0; };
-    cv.addEventListener("pointermove", pt); cv.addEventListener("pointerdown", pt);
-    doc.addEventListener("visibilitychange", setRun);
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; setRun(); }).observe(cv);
-    if (reduce) frame(-1); else setRun();
-    return { size: size };
-  }
-
-  /* ---------- hero (21.10 15:40 owner: «не радар — наша AI-система, которая всё проверяет, изучает, мониторит 24/7»):
-     data streams from the sources run through layers of analysis; at every layer part of it is thrown away (red),
-     what survives lights up green and flows into the app on the phone. Under it, a live log of what the system does,
-     with the engine's real numbers. */
-  /* ---------- hero: the AI system flows into the app (owner 21.10 16:20) ----------
-     sources → 01 collect → 02 analyse → 03 test → 04 NOVA AI (the sphere) → the phone. Weak signals turn red and drop;
-     the ones NOVA AI selects fly green into the phone, and the phone's balance follows the live portfolio value. */
-  function makeSystem(cv) {
-    if (!cv || !cv.getContext) return null;
-    var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, running = false, visible = true, t0 = performance.now(), last = 0;
-    var SRC = ["BINANCE", "BYBIT", "COINGECKO", "OKX", "HYPERLIQUID", "NEWS", "ON-CHAIN", "1927–2026"], SRC_S = ["BINANCE", "BYBIT", "GECKO", "OKX", "HYPER", "NEWS", "CHAIN", "1927+"];
-    var L = [], P = [], phoneX = 0, phoneY = 0, phoneT = 0, phoneB = 0, FAN = 15, glowIn = 0, sx = 0, narrow = false, AI = { x: 0, y: 0, r: 0, hit: 0 }, act = [0, 0, 0, 0];
-    var chips = $$("#sysflow li");
-    function size() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
-      var ph = $(".hero-phone"), cb = cv.getBoundingClientRect(), pb = ph ? ph.getBoundingClientRect() : null;
-      phoneX = pb && pb.width ? (pb.left - cb.left) * dpr : W * 0.7; phoneY = pb && pb.height ? (pb.top - cb.top + pb.height * 0.42) * dpr : Hh / 2;
-      phoneT = pb && pb.height ? (pb.top - cb.top + pb.height * 0.16) * dpr : Hh * 0.2; phoneB = pb && pb.height ? (pb.top - cb.top + pb.height * 0.84) * dpr : Hh * 0.8;
-      narrow = cv.clientWidth < 520;
-      ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace";
-      var mw = 0; (narrow ? SRC_S : SRC).forEach(function (n) { mw = Math.max(mw, ctx.measureText(n).width); });
-      sx = Math.max(W * 0.11, mw + 4 * dpr) + 6 * dpr;
-      AI.r = Math.max(16 * dpr, Math.min(W * 0.06, Hh * 0.1)); AI.x = phoneX - AI.r * 1.5 - Math.max(W * 0.03, 10 * dpr); AI.y = Hh * 0.47;
-      var x0 = sx + Math.max(W * 0.05, 16 * dpr), x1 = AI.x - AI.r * 1.6 - Math.max(W * 0.04, 14 * dpr), sizes = [6, 8, 6];
-      L = sizes.map(function (n, li) { var x = x0 + (x1 - x0) * li / (sizes.length - 1); var out = []; for (var k = 0; k < n; k++) out.push({ x: x, y: Hh * (0.08 + 0.78 * (n === 1 ? 0.5 : k / (n - 1))), lit: 0 }); return out; });
-    }
-    function fan(i) {   // curve i of the fan: from the sphere's right edge to a point on the phone's left edge
-      var k = FAN > 1 ? i / (FAN - 1) : 0.5, ax = AI.x + AI.r * 0.55, ay = AI.y + (k - 0.5) * AI.r * 0.5, bx = phoneX + 1 * dpr, by = phoneT + (phoneB - phoneT) * k;
-      return { ax: ax, ay: ay, bx: bx, by: by, cx: (ax + bx) / 2, cy: ay + (by - ay) * 0.15 };
-    }
-    function srcY(i) { return Hh * (0.06 + 0.82 * i / (SRC.length - 1)); }
-    function spawn() { var si = Math.floor(Math.random() * SRC.length); P.push({ seg: -1, k: Math.floor(Math.random() * L[0].length), from: { x: sx, y: srcY(si) }, s: 0, v: 0.55 + Math.random() * 0.35, bad: false, a: 1 }); }
-    function glow(x, y, r, col, a) { var g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, "rgba(" + col + "," + a.toFixed(3) + ")"); g.addColorStop(1, "rgba(" + col + ",0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); }
-    function frame(now) {
-      if (!running && now !== -1) return;
-      var tm = Math.max(0, ((now === -1 ? t0 + 4000 : now) - t0) / 1000), dt = Math.min(0.05, last ? tm - last : 0.016); last = tm;
-      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
-      if (!L.length) size();
-      if (now !== -1 && Math.random() < dt * 8) spawn();
-      if (now === -1 && !P.length) for (var q = 0; q < 26; q++) { spawn(); var pp = P[P.length - 1]; pp.seg = Math.floor(Math.random() * 4) - 1; pp.f = Math.floor(Math.random() * FAN); if (pp.seg >= 0) pp.k = Math.floor(Math.random() * L[Math.min(pp.seg, 2)].length); pp.s = Math.random(); }
-      // sources
-      ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
-      (narrow ? SRC_S : SRC).forEach(function (n, i) { var y = srcY(i); ctx.fillStyle = "rgba(127,211,255,.75)"; ctx.fillText(n, sx - 6 * dpr, y); ctx.fillStyle = "rgba(127,211,255,.9)"; ctx.beginPath(); ctx.arc(sx, y, 2.2 * dpr, 0, 6.2832); ctx.fill(); });
-      // wires: layers, layer 3 → NOVA AI, NOVA AI → phone
-      ctx.lineWidth = dpr * 0.6; ctx.strokeStyle = "rgba(127,211,255,.085)"; ctx.beginPath();
-      for (var li = 0; li < L.length - 1; li++) L[li].forEach(function (a) { L[li + 1].forEach(function (b) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); }); });
-      L[2].forEach(function (a) { ctx.moveTo(a.x, a.y); ctx.lineTo(AI.x - AI.r * 0.6, AI.y + (a.y - AI.y) * 0.12); });
-      ctx.stroke();
-      // a soft fan of light from NOVA AI into the phone (owner 19:17: not «3 arrows»)
-      for (var fi = 0; fi < FAN; fi++) {
-        var fq = fan(fi), gl = ctx.createLinearGradient(fq.ax, 0, fq.bx, 0);
-        gl.addColorStop(0, "rgba(127,211,255," + (0.28 + glowIn * 0.12).toFixed(3) + ")"); gl.addColorStop(1, "rgba(58,219,147," + (0.14 + glowIn * 0.3).toFixed(3) + ")");
-        ctx.strokeStyle = gl; ctx.lineWidth = (fi % 3 ? 0.7 : 1.1) * dpr; ctx.beginPath(); ctx.moveTo(fq.ax, fq.ay); ctx.quadraticCurveTo(fq.cx, fq.cy, fq.bx, fq.by); ctx.stroke();
-      }
-      // pulses
-      P = P.filter(function (p) {
-        p.s += p.v * dt;
-        var A, Bp;
-        if (p.seg === -1) { A = p.from; Bp = L[0][p.k]; }
-        else if (p.seg < 2) { A = L[p.seg][p.k]; Bp = L[p.seg + 1][p.nk != null ? p.nk : (p.nk = Math.floor(Math.random() * L[p.seg + 1].length))]; }
-        else if (p.seg === 2) { A = L[2][p.k]; Bp = { x: AI.x - AI.r * 0.6, y: AI.y + (A.y - AI.y) * 0.12 }; }
-        else { var fq2 = fan(p.f); A = { x: fq2.ax, y: fq2.ay }; Bp = { x: fq2.bx, y: fq2.by }; p.cq = fq2; }
-        if (p.bad) { p.a -= dt * 1.8; if (p.a <= 0) return false; }
-        if (p.s >= 1 && !p.bad) {
-          if (p.seg === 3) { glowIn = 1; act[3] = 1; phoneArrive(); return false; }
-          if (p.seg === 2) { AI.hit = 1; act[3] = Math.max(act[3], 0.6); if (Math.random() < 0.5) { p.seg = 3; p.s = 0; p.v = 0.8; p.f = Math.floor(Math.random() * FAN); return true; } return false; }
-          var node = p.seg === -1 ? L[0][p.k] : L[p.seg + 1][p.nk]; node.lit = 1; act[p.seg + 1] = 1;
-          p.k = p.seg === -1 ? p.k : p.nk; p.nk = null; p.seg += 1; p.s = 0;
-          if (p.seg >= 1 && Math.random() < 0.34) { p.bad = true; p.s = 0; p.v *= 0.4; }
-          return true;
-        }
-        var s = Math.min(1, p.s), x = A.x + (Bp.x - A.x) * s, y = A.y + (Bp.y - A.y) * s;
-        if (p.seg === 3 && p.cq) { var u = 1 - s; x = u * u * p.cq.ax + 2 * u * s * p.cq.cx + s * s * p.cq.bx; y = u * u * p.cq.ay + 2 * u * s * p.cq.cy + s * s * p.cq.by; }
-        var col = p.bad ? "255,110,134" : p.seg === 3 ? "58,219,147" : "127,211,255";
-        glow(x, y, 8 * dpr, col, 0.55 * p.a);
-        ctx.fillStyle = "rgba(" + col + "," + p.a.toFixed(3) + ")"; ctx.beginPath(); ctx.arc(x, y, (p.seg === 3 ? 2.4 : 1.9) * dpr, 0, 6.2832); ctx.fill();
-        return true;
-      });
-      // nodes
-      L.forEach(function (layer) {
-        layer.forEach(function (n) {
-          n.lit = Math.max(0, n.lit - dt * 2);
-          var r = 3 * dpr;
-          glow(n.x, n.y, r * 4.5, "127,211,255", 0.1 + n.lit * 0.45);
-          ctx.fillStyle = "rgba(8,16,40,.9)"; ctx.strokeStyle = "rgba(127,211,255," + (0.5 + n.lit * 0.45).toFixed(3) + ")"; ctx.lineWidth = 1.1 * dpr;
-          ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill(); ctx.stroke();
-        });
-      });
-      // NOVA AI: the brand sphere decides
-      AI.hit = Math.max(0, AI.hit - dt * 1.4);
-      if (AI.hit > 0.02) glow(AI.x, AI.y, AI.r * 2.1, "120,210,255", 0.35 * AI.hit);
-      if (window.NovaSphere) NovaSphere.draw(ctx, AI.x, AI.y, AI.r * 2.1, tm, { busy: AI.hit > 0.5, still: false });
-      ctx.font = "700 " + Math.round(9.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = "#BFEAFF";
-      ctx.fillText("NOVA AI", AI.x, AI.y + AI.r * 1.75);
-      glowIn = Math.max(0, glowIn - dt * 1.6);
-      var ph = $(".hero-phone .phone"); if (ph) { var on = glowIn > 0.25; if (on !== ph.classList.contains("arrive")) ph.classList.toggle("arrive", on); }
-      // the 01–04 chips under the picture light up with their stage
-      for (var c = 0; c < 4; c++) { act[c] = Math.max(now === -1 ? 0.5 : 0, act[c] - dt * 1.2); var av = Math.round(act[c] * 10) / 10; if (chips[c] && chips[c]._a !== av) { chips[c]._a = av; chips[c].style.setProperty("--a", av.toFixed(1)); } }
-      if (now !== -1) requestAnimationFrame(frame);
-    }
-    function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; last = 0; requestAnimationFrame(frame); } else if (!want) running = false; }
-    size(); window.addEventListener("resize", function () { size(); if (!running) frame(-1); });
-    doc.addEventListener("visibilitychange", setRun);
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; setRun(); }).observe(cv);
-    if (reduce) frame(-1); else setRun();
-    setTimeout(function () { size(); if (!running) frame(-1); }, 600);
-    return { size: size };
-  }
-
-  /* ---------- the phone in the hero: drawn in code, the new app home ----------
-     Real numbers only: «Заработано всего» of the public portfolio from the feed (and its live value from #live via "cn:pflive"),
-     the open trades of CRYPTO NOVA. When a selected signal flies in, the number moves to the latest value. */
-  var PH = { shown: null, target: null, pct: null, row: 0, anim: 0 };
-  function renderPhone() {
-    var el = $("#heroScr"); if (!el) return;
-    var p = P() || {}, open = ((H().futures || {}).open || []).slice(0, 5);
-    if (PH.target == null && p.total_usd != null) { PH.target = p.total_usd; PH.pct = earnedPct(p); }
-    if (PH.shown == null) PH.shown = PH.target;
-    var tabs = ["M3 11l9-7 9 7v9H3z", "M3 17l6-6 4 4 8-8", "", "M12 3a9 9 0 1 0 9 9h-9z", "M4 5h16v14H4zM8 9h8M8 13h5"];
-    el.innerHTML = '<div class="ph"><div class="ph-top"><canvas class="ph-logo" data-sphere aria-hidden="true"></canvas><b>CRYPTO NOVA</b><span class="ph-mode"><i></i>PUBLIC · LIVE</span></div>' +
-      '<div class="ph-card"><div class="ph-k">' + esc(t("live.total")) + '</div><div class="ph-val" id="phVal">' + (PH.shown != null ? sgnUsd(PH.shown, 2) : "—") + '</div>' +
-      '<div class="ph-pnl" id="phPnl"></div><div class="ph-chart" id="phChart"></div></div>' +
-      (function () { var sp = p.spot || {}, fu = p.futures || {};
-        function tile(k, o) { var v = o.pct; return '<div class="ph-tile"><div class="ph-k">' + esc(k) + '</div><b class="' + ((v || 0) >= 0 ? "up" : "down") + '">' + (v != null ? pct(v) : "—") + "</b><small>" + (o.usd != null ? sgnUsd(o.usd) : "") + "</small></div>"; }
-        return '<div class="ph-tiles">' + tile(t("ph.spot", { n: num((sp.coins || []).length) }), sp) + tile(t("ph.fut"), fu) + "</div>"; })() +
-      '<div class="ph-k2">' + esc(t("ph.signals")) + '</div><ul class="ph-sig" id="phSig">' +
-      open.map(function (o, i) { var long = String(o.side).toUpperCase() !== "SHORT", v = o.pct || 0;
-        return '<li data-i="' + i + '"><b>' + esc(o.sym) + '</b><span class="' + (long ? "up" : "down") + '">' + esc(t(long ? "tc.long" : "tc.short")) + '</span><em class="' + (v >= 0 ? "up" : "down") + '">' + pct(v) + "</em></li>"; }).join("") +
-      (open.length ? "" : '<li class="none">' + esc(t("ph.none")) + "</li>") + "</ul>" +
-      '<div class="ph-tabs">' + tabs.map(function (d, i) { return i === 2 ? '<canvas class="ph-nova" data-sphere aria-hidden="true"></canvas>' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + d + '"/></svg>'; }).join("") + "</div></div>";
-    phPnl(); spark($("#phChart"), p.curve, 0);
-    if (window.NovaSphere) NovaSphere.auto();
-  }
-  function phPnl() {
-    var e = $("#phPnl"), p = P(); if (!e || PH.pct == null) return;
-    e.className = "ph-pnl " + (PH.pct >= 0 ? "up" : "down"); e.textContent = pct(PH.pct) + (p && p.since ? " · " + t("fc.since", { date: date(p.since) }) : "");
-  }
-  function phoneArrive() {
-    var v = $("#phVal"), rows = $$("#phSig li[data-i]");
-    if (rows.length) { rows.forEach(function (r) { r.classList.remove("hit"); }); var r = rows[PH.row++ % rows.length]; void r.offsetWidth; r.classList.add("hit"); }
-    if (!v || PH.target == null || PH.shown == null) return;
-    if (Math.abs(PH.target - PH.shown) < 0.005) { v.classList.remove("tick"); void v.offsetWidth; v.classList.add("tick"); return; }
-    var from = PH.shown, to = PH.target, st = performance.now(), dir = to > from ? "up" : "down";
-    v.classList.remove("up", "down"); v.classList.add(dir);
-    cancelAnimationFrame(PH.anim);
-    (function step(n) { var k = Math.min(1, (n - st) / 700), e = 1 - Math.pow(1 - k, 3); PH.shown = from + (to - from) * e; v.textContent = sgnUsd(PH.shown, 2); if (k < 1) PH.anim = requestAnimationFrame(step); else setTimeout(function () { v.classList.remove("up", "down"); }, 600); })(st);
-    phPnl();
-  }
-  doc.addEventListener("cn:pflive", function (ev) {
-    var d = ev.detail || {}; if (typeof d.value !== "number") return;
-    PH.target = d.value; if (typeof d.pct === "number") PH.pct = d.pct;
-    if (PH.shown == null) { PH.shown = d.value; var v = $("#phVal"); if (v) v.textContent = sgnUsd(d.value, 2); phPnl(); }
-    if (reduce) phoneArrive();
-  });
-  function renderFlowChips() {
-    var e = E(), sc = D.scale || {};
-    var v = [t("sys.f1", { n: num(sc.coins || 150) }), t("sys.f2", { n: num(e.lab_tried || 0) }), t("sys.f3", { y: sc.since || 1927 }), t("sys.f4")];
-    v.forEach(function (x, i) { var el = $("#sf" + (i + 1)); if (el) el.textContent = x; });
-  }
-
-  /* the live log under the hero picture: real engine numbers, one line every ~1.6 s */
-  var logTimer = null;
-  function startLog() {
-    var el = $("#syslog"); if (!el) return;
-    if (logTimer) clearInterval(logTimer);
-    var i = 0;
-    function lines() {
-      var e = E(), sc = D.scale || {}, h = (D.scorecard || {}).headline || {}, c = (D.conveyor || {}).counts || {}, st = (D.risk || {}).state || "OK", sp = H().spot || {};
-      var out = [t("log.scan", { n: num(sc.coins || 150), f: num(sc.fut_markets || 18) }), t("log.lab", { a: num(e.lab_tried || 0), b: num(e.lab_tested || 0), c: num(e.lab_passed || 0), d: num(e.lab_reliable || 0) }),
-        t("log.drop", { n: num(Math.max(0, (e.lab_tried || 0) - (e.lab_reliable || 0))) }), t("log.hist", { n: num((sc.candle_checks || 0) / 1e6, 1) }),
-        st === "OK" ? t("log.risk") : "!" + t("log.riskw"), t("log.conv", { n: num(c.paper || 0) }), t("log.port", { n: num(sp.n_coins || 0) }), t("log.ledger", { n: num(h.recorded || 0) })];
-      return out.filter(Boolean);
-    }
-    function add() {
-      var L = lines(), d = new Date(), hh = function (n) { return ("0" + n).slice(-2); };
-      var row = doc.createElement("div"); row.innerHTML = '<span class="ts">' + hh(d.getHours()) + ":" + hh(d.getMinutes()) + ":" + hh(d.getSeconds()) + "</span> " + (function (x) { return x.charAt(0) === "!" ? esc(x.slice(1)) + ' <span class="wn">!</span>' : esc(x) + ' <span class="ok">OK</span>'; })(L[i++ % L.length]);
-      el.appendChild(row); while (el.children.length > 4) el.removeChild(el.firstChild);
-    }
-    for (var k = 0; k < 4; k++) add();
-    if (!reduce) logTimer = setInterval(function () { if (!doc.hidden) add(); }, 1600);
-  }
-
-  /* ---------- boot: a short mission-control start, once per visit ---------- */
-  function boot() {
-    var b = $("#boot"); if (!b) return;
-    var seen = false; try { seen = sessionStorage.getItem("cn.boot") === "1"; } catch (e) {}
-    if (reduce || seen || /[?&]noboot\b/.test(location.search) || navigator.webdriver) { b.parentNode.removeChild(b); return; }
-    try { sessionStorage.setItem("cn.boot", "1"); } catch (e) {}
-    b.hidden = false;
-    var e = E(), sc = D.scale || {}, lines = [t("boot.l1"), t("boot.l2", { n: num(sc.fut_markets || 18) }), t("boot.l3", { n: num(e.lab_tried || 800) }), t("boot.l4"), t("boot.l5")];
-    var log = $("#bootLog"), bar = $("#bootBar"), i = 0, done = false;
-    var cols = Math.max(30, Math.floor(log.clientWidth / (parseFloat(getComputedStyle(log).fontSize) * 0.6)));
-    function close() { if (done) return; done = true; b.classList.add("off"); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 600); }
-    function hh(n) { return ("0" + n).slice(-2); }
-    function step() {
-      if (done) return;
-      if (i < lines.length) {
-        var d = new Date(), ts = "[" + hh(d.getHours()) + ":" + hh(d.getMinutes()) + ":" + hh(d.getSeconds()) + "] ", txt = lines[i], dots = Math.max(2, cols - ts.length - txt.length - 4);
-        log.innerHTML += esc(ts + txt + " " + new Array(dots + 1).join(".") + " ") + '<span class="ok">OK</span>\n';
-        i++; bar.style.width = (i / (lines.length + 1) * 100).toFixed(0) + "%"; setTimeout(step, 230);
-      } else { log.innerHTML += '\n<span class="hi">&gt; ' + esc(t("boot.l6")) + "</span>"; bar.style.width = "100%"; setTimeout(close, 700); }
-    }
-    b.addEventListener("click", close); doc.addEventListener("keydown", close);
-    setTimeout(step, 220);
-  }
-
-  /* ---------- how the system thinks: a stream that narrows stage by stage, real numbers under it ---------- */
-  function renderThink() {
-    var ol = $("#tsteps");
-    var e = E(), sc = D.scale || {}, h = (D.scorecard || {}).headline || {};
-    var rows = [
-      [num(sc.coins || 150), t("think.s1.p", { fut: num(sc.fut_markets || 18) })],
-      [t("think.s2.b", { n: num(e.cycle_sec || 60) }), t("think.s2.p")],
-      [num(e.lab_tried || 0), t("think.s3.p")],
-      [t("think.s4.b", { n: num((sc.candle_checks || 0) / 1e6, 1) }), t("think.s4.p", { m: num(sc.lab_markets || 20), y: sc.since || 1927 })],
-      [t("think.s5.b", { a: num(e.lab_reliable || 0), b: num(e.lab_tried || 0) }), t("think.s5.p")],
-      [num(h.checked || 0), t("think.s6.p")]
-    ];
-    if (ol) ol.innerHTML = rows.map(function (r, i) { return '<li><div class="ix">0' + (i + 1) + '</div><h3>' + esc(t("think.s" + (i + 1) + ".t")) + '</h3><div class="big">' + esc(r[0]) + "</div><p>" + esc(r[1]) + "</p></li>"; }).join("");
-    if (!thinkRun) thinkRun = thinkFlow($("#thinkCv"));
-    var ai = $("#aiSteps");
-    if (ai) {
-      var A = [
-        t("ai.s1.p", { n: num(sc.coins || 150), f: num(sc.fut_markets || 18) }),   // v7: plain words, the coin count is live
-        t("ai.s2.p", { a: num(e.lab_tried || 0), m: num(sc.lab_markets || 20), y: sc.since || 1927, c: num((sc.candle_checks || 0) / 1e6, 1) }),
-        t("ai.s3.p", { p: num(h.checked || 0) }),
-        t("ai.s4.p")
-      ];
-      ai.innerHTML = A.map(function (x, i) { return '<li><i class="aidot" aria-hidden="true"></i><div><h4>' + esc(t("ai.s" + (i + 1) + ".t")) + "</h4><p>" + esc(x) + "</p></div></li>"; }).join("");
-    }
-  }
-  /* many assets enter on the left; each of the six stages lets fewer through (refused ones turn red and drop);
-     the few that survive reach the N core on the right. Gates sit on the column borders of the steps below. */
-  var thinkRun = null;
-  function thinkFlow(cv) {
-    if (!cv || !cv.getContext) return null;
-    var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, gates = [], ex = 0, ey = 0, C = [], running = false, visible = true, last = 0, t0 = performance.now(), pulse = 0;
-    var SURV = [0.62, 0.66, 0.52, 0.48, 0.56], seeded = false;
-    function size() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
-      var lis = $$("#tsteps li"), cb = cv.getBoundingClientRect(), wide = window.matchMedia("(min-width:1061px)").matches;
-      gates = [];
-      ex = W - Math.min(W * 0.14, 150 * dpr) - 6 * dpr; ey = Hh / 2;
-      if (wide && lis.length === 6) lis.forEach(function (li, i) { if (i) gates.push((li.getBoundingClientRect().left - cb.left) * dpr); });
-      else for (var g = 1; g < 6; g++) gates.push((ex - 50 * dpr) * g / 5.6);
-    }
-    function pool() { var m = ((D.markets || {}).top || []).map(function (c) { return c.symbol; }).filter(function (x) { return x && !STABLE[x] && /^[A-Z0-9]{2,6}$/.test(x); }); return m.length > 20 ? m : ["BTC", "ETH", "SOL", "XRP", "BNB", "DOGE", "ADA", "LINK", "AVAX", "SUI", "TON", "DOT", "NEAR", "LTC", "UNI", "TRX", "APT", "ARB", "OP", "INJ", "HBAR", "XLM", "ATOM", "FIL"]; }
-    function spawn() {
-      var P = pool(), fate = 0; while (fate < 5 && Math.random() < SURV[fate]) fate++;
-      C.push({ sym: P[Math.floor(Math.random() * P.length)], x: -30 * dpr, y: Hh * (0.08 + Math.random() * 0.84), v: (60 + Math.random() * 40) * dpr, fate: fate, st: "go", a: 1, vy: 0 });
-    }
-    function band(x) { var k = Math.min(1, Math.max(0, x / ex)); return Hh * (0.46 - 0.4 * k); }
-    /* owner 16:20: coins as coins, not boxes — a minted disc in the coin's own colour with its ticker */
-    function coin(sym, x, y, r, st) {
-      var base = COINCOL[sym] || ("hsl(" + (hashS(sym) % 360) + ",55%,55%)");
-      var g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
-      g.addColorStop(0, "rgba(255,255,255,.85)"); g.addColorStop(0.28, base); g.addColorStop(1, "rgba(8,14,32,.95)");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
-      ctx.lineWidth = Math.max(1, r * 0.12); ctx.strokeStyle = st === "out" ? "rgba(255,110,134,.95)" : st === "won" ? "rgba(58,219,147,.95)" : "rgba(220,240,255,.55)";
-      ctx.beginPath(); ctx.arc(x, y, r - ctx.lineWidth / 2, 0, 6.2832); ctx.stroke();
-      ctx.strokeStyle = "rgba(255,255,255,.25)"; ctx.lineWidth = Math.max(0.6, r * 0.06); ctx.beginPath(); ctx.arc(x, y, r * 0.72, 0, 6.2832); ctx.stroke();
-      var gl = GLYPH[sym] || sym.slice(0, sym.length > 3 ? 3 : sym.length);
-      ctx.font = "700 " + Math.round(r * (gl.length > 2 ? 0.62 : gl.length > 1 ? 0.78 : 1.05)) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillStyle = "rgba(4,10,24,.55)"; ctx.fillText(gl, x + r * 0.06, y + r * 0.1); ctx.fillStyle = "#fff"; ctx.fillText(gl, x, y + r * 0.04);
-      if (st === "won") { var h = ctx.createRadialGradient(x, y, r, x, y, r * 2.2); h.addColorStop(0, "rgba(58,219,147,.35)"); h.addColorStop(1, "rgba(58,219,147,0)"); ctx.fillStyle = h; ctx.beginPath(); ctx.arc(x, y, r * 2.2, 0, 6.2832); ctx.fill(); }
-    }
-    function frame(now) {
-      if (!running && now !== -1) return;
-      var tm = ((now === -1 ? t0 + 5000 : now) - t0) / 1000, dt = Math.min(0.05, last ? tm - last : 0.016); last = tm;
-      if (!seeded) { seeded = true; for (var w0 = 0; w0 < 70; w0++) { spawn(); var c0 = C[C.length - 1]; c0.x = Math.random() * ex * 0.92; if (c0.fate < 5 && c0.x > gates[c0.fate]) { C.pop(); } } }
-      if (now !== -1 && Math.random() < dt * 12) spawn();
-      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
-      // funnel
-      ctx.fillStyle = "rgba(0,180,216,.05)"; ctx.beginPath(); ctx.moveTo(0, Hh * 0.04); ctx.lineTo(ex, ey - Hh * 0.06); ctx.lineTo(ex, ey + Hh * 0.06); ctx.lineTo(0, Hh * 0.96); ctx.closePath(); ctx.fill();
-      // owner 19:17: the beam is divided into frames, like a radar computing stage by stage, and a scan line runs through it
-      ctx.save(); ctx.beginPath(); ctx.moveTo(0, Hh * 0.04); ctx.lineTo(ex, ey - Hh * 0.06); ctx.lineTo(ex, ey + Hh * 0.06); ctx.lineTo(0, Hh * 0.96); ctx.closePath(); ctx.clip();
-      var edges = [0].concat(gates).concat([ex]);
-      for (var fi2 = 0; fi2 < edges.length - 1; fi2++) {
-        var xa = edges[fi2], xb = edges[fi2 + 1], ha = band(xa) + 8 * dpr, hb2 = band(xb) + 8 * dpr;
-        ctx.strokeStyle = "rgba(127,211,255,.10)"; ctx.lineWidth = dpr; ctx.strokeRect(xa + 3 * dpr, ey - ha + 3 * dpr, xb - xa - 6 * dpr, ha * 2 - 6 * dpr);
-        ctx.fillStyle = fi2 % 2 ? "rgba(127,211,255,.018)" : "rgba(127,211,255,.035)"; ctx.fillRect(xa + 3 * dpr, ey - Math.max(ha, hb2), xb - xa - 6 * dpr, Math.max(ha, hb2) * 2);
-        for (var tk = 0; tk < 6; tk++) { var tx = xa + (xb - xa) * (tk + 0.5) / 6; ctx.fillStyle = "rgba(127,211,255,.22)"; ctx.fillRect(tx, ey - band(tx) - 2 * dpr, dpr, 4 * dpr); ctx.fillRect(tx, ey + band(tx) - 2 * dpr, dpr, 4 * dpr); }
-      }
-      var sw = ((tm * 0.16) % 1.25 - 0.1) * ex, sg = ctx.createLinearGradient(sw - 70 * dpr, 0, sw, 0);
-      sg.addColorStop(0, "rgba(127,211,255,0)"); sg.addColorStop(0.85, "rgba(127,211,255,.10)"); sg.addColorStop(1, "rgba(190,240,255,.45)");
-      ctx.fillStyle = sg; ctx.fillRect(sw - 70 * dpr, 0, 70 * dpr, Hh);
-      ctx.restore();
-      // gates: a filter mesh on every stage border
-      gates.forEach(function (gx, i) {
-        var hb = band(gx) + 10 * dpr;
-        ctx.strokeStyle = "rgba(127,211,255,.35)"; ctx.lineWidth = 1.2 * dpr; ctx.beginPath(); ctx.moveTo(gx, ey - hb); ctx.lineTo(gx, ey + hb); ctx.stroke();
-        ctx.strokeStyle = "rgba(127,211,255,.18)"; ctx.lineWidth = dpr; ctx.beginPath();
-        for (var yy = ey - hb; yy <= ey + hb; yy += 7 * dpr) { ctx.moveTo(gx - 4 * dpr, yy); ctx.lineTo(gx + 4 * dpr, yy); }
-        ctx.stroke();
-      });
-      // assets
-      C = C.filter(function (c) {
-        if (c.st === "go") {
-          c.x += c.v * dt; var hb2 = band(c.x); c.y += (Math.max(ey - hb2, Math.min(ey + hb2, c.y)) - c.y) * Math.min(1, dt * 3);
-          var g = gates[c.fate];
-          if (c.fate < 5 && g != null && c.x >= g - 6 * dpr) { c.st = "out"; c.vy = (Math.random() < 0.5 ? -1 : 1) * 30 * dpr; }
-          if (c.fate >= 5 && c.x >= ex - 26 * dpr) { pulse = 1; return false; }
-        } else { c.vy *= 1.03; c.y += c.vy * dt; c.x += c.v * 0.15 * dt; c.a -= dt * 1.2; if (c.a <= 0) return false; }
-        var won = c.fate >= 5 && c.x > gates[4], col = c.st === "out" ? "255,110,134" : won ? "58,219,147" : "127,211,255";
-        ctx.globalAlpha = Math.max(0, c.a);
-        coin(c.sym, c.x, c.y, (W < 900 ? 9 : 11) * dpr, c.st === "out" ? "out" : won ? "won" : "");
-        ctx.globalAlpha = 1;
-        return c.x < W + 40 * dpr;
-      });
-      // 21.10 15:27 owner: no N core here — a plain result box: what got through, with real numbers
-      pulse = Math.max(0, pulse - dt * 1.5);
-      var hp = H().spot || {}, cnt = (D.conveyor || {}).counts || {}, bw = Math.min(W * 0.14, 150 * dpr), sxc = W - bw / 2 - 6 * dpr, half = Math.min(bw * 0.45, Hh * 0.22);
-      if (window.NovaSphere) NovaSphere.draw(ctx, sxc, ey, half, tm, { busy: pulse > 0.3 });
-      ctx.textAlign = "center"; ctx.textBaseline = "top";
-      var ty = ey + half * 0.9;
-      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(127,211,255,.85)"; ctx.fillText(t("think.out"), sxc, ty);
-      ctx.font = "700 " + Math.round(20 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = pulse > 0.05 ? "#7CFFC4" : "#3ADB93"; ctx.fillText(num(hp.n_coins || 11), sxc, ty + 13 * dpr);
-      ctx.font = "500 " + Math.round(8.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.fillStyle = "rgba(200,230,250,.85)"; ctx.fillText(t("think.out.coins"), sxc, ty + 37 * dpr);
-      if (cnt.paper) { ctx.fillStyle = "rgba(127,211,255,.75)"; ctx.fillText(t("think.out.strats", { n: num(cnt.paper) }), sxc, ty + 51 * dpr); }
-      ctx.textAlign = "left"; ctx.fillStyle = "rgba(127,211,255,.7)"; ctx.fillText(t("think.in", { n: num((D.scale || {}).coins || 150) }), 8 * dpr, 6 * dpr);
-      if (now !== -1) requestAnimationFrame(frame);
-    }
-    function setRun() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; last = 0; requestAnimationFrame(frame); } else if (!want) running = false; }
-    size(); window.addEventListener("resize", function () { size(); if (!running) frame(-1); });
-    doc.addEventListener("visibilitychange", setRun);
-    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; setRun(); }).observe(cv);
-    LOGO.addEventListener("load", function () { if (!running) frame(-1); });
-    if (reduce) frame(-1); else setRun();
-    return { size: size };
-  }
-
-  /* ---------- ticker: market prices + the engines at work ---------- */
-  var GEAR = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="2.4"/><path d="M8 1.5v2.2M8 12.3v2.2M1.5 8h2.2M12.3 8h2.2M3.4 3.4 5 5M11 11l1.6 1.6M3.4 12.6 5 11M11 5l1.6-1.6"/></svg>';
+  /* ---------- the running line: the owner's phrase; market prices join it only when they are live ---------- */
   function renderTicker() {
     var el = $("#ticker"); if (!el) return;
-    var m = D.markets || {}, e = E(), items = [];
-    var sys = [];
-    if (e.cycle_sec) sys.push(t("tick.cycle", { n: num(e.cycle_sec) }));
-    if (e.lab_tried) sys.push(t("tick.lab", { n: num(e.lab_tried) }));
-    if (e.signals_checked) sys.push(t("tick.signals", { n: num(e.signals_checked) }));
-    if ((D.risk || {}).state === "OK") sys.push(t("tick.risk"));
-    if (m.fng && m.fng.value != null) sys.push(t("tick.fng", { n: m.fng.value }));
-    if (m.global && m.global.total_mcap) sys.push(t("tick.mcap", { v: "$" + nf({ maximumFractionDigits: 2 }).format(m.global.total_mcap / 1e12) + "T" }));
-    var TICK = ["BTC", "ETH", "SOL", "BNB", "XRP", "HYPE", "DOGE", "LINK", "ADA", "AVAX", "SUI", "TON", "NEAR", "LTC", "DOT", "TRX"];
-    var coins = (m.top || []).filter(function (c) { return c.price && TICK.indexOf(c.symbol) >= 0; });
-    var si = 0;
-    coins.forEach(function (c, i) {
-      var ch = c.chg24 || 0, d = c.price >= 100 ? 0 : c.price >= 1 ? 2 : 4;
-      items.push('<span class="it"><b>' + esc(c.symbol) + "</b>" + usd(c.price, d) + ' <span class="c ' + (ch >= 0 ? "up" : "down") + '">' + pct(ch) + "</span></span>");
-      if (i % 3 === 2 && sys.length) items.push('<span class="it sys">' + GEAR + esc(sys[si++ % sys.length]) + "</span>");
+    var m = D.markets || {}, fresh = D.marketsLive && m.asof && Date.now() - m.asof < 30 * 60000, px = [];
+    if (fresh) ["BTC", "ETH", "SOL"].forEach(function (s) {
+      var c = (m.top || []).filter(function (x) { return x.symbol === s; })[0];
+      if (c && c.price) px.push('<span class="px"><b>' + s + "</b>" + money(c.price, c.price >= 100 ? 0 : 2) + '<span class="' + cls(c.chg24 || 0) + '">' + pct(c.chg24 || 0) + "</span></span>");
     });
-    if (!coins.length) sys.forEach(function (s) { items.push('<span class="it sys">' + GEAR + esc(s) + "</span>"); });
-    var one = items.join("");
+    var one = "";
+    for (var i = 0; i < 4; i++) one += '<span class="ph">' + esc(t("tick.phrase")) + '</span><i class="dot"></i>' + (px.length ? px[i % px.length] + '<i class="dot"></i>' : "");
     el.innerHTML = one + one;
   }
 
-  /* ---------- engine room ---------- */
-  var ENG = [
-    { k: "scan", x: 330, y: 120, blades: 10, sp: 1.6 },
-    { k: "lab", x: 270, y: 330, blades: 12, sp: 2.4 },
-    { k: "conv", x: 330, y: 540, blades: 8, sp: 3.2 },
-    { k: "risk", x: 870, y: 120, blades: 9, sp: 4.2 },
-    { k: "port", x: 930, y: 330, blades: 11, sp: 3.6 },
-    { k: "log", x: 870, y: 540, blades: 7, sp: 2.8 }
-  ];
-  var engSel = "lab", engCore = null;
-  function engTitle(k) { return k === "core" ? t("eng.core") : t("eng." + k + ".t"); }
-  function engMetric(k) {
-    var e = E(), c = (D.conveyor || {}).counts || {}, s = (D.scorecard || {}).headline || {}, cc = (P() || {}).calc, st = (D.risk || {}).state || "OK";
-    switch (k) {
-      case "scan": return t("eng.scan.m", { n: num(e.cycle_sec || 60) });
-      case "lab": return t("eng.lab.m", { n: num(e.lab_tried || 0) });
-      case "conv": return t("eng.conv.m", { n: num(c.paper || 0) });
-      case "risk": return st === "OK" ? t("eng.risk.m") : t("risk." + st);
-      case "port": return cc ? [cc.spot, cc.futures, cc.active].map(function (x) { return num(x || 0); }).join(" / ") : "";
-      case "log": return t("eng.log.m", { n: num(s.recorded || 0) });
-      default: return "24/7";
+  /* ---------- how it works: the small visuals with the engine's real numbers ---------- */
+  var SRC_NAMES = ["BINANCE", "OKX", "BINGX", "HYPERLIQUID", "COINGECKO", "NEWS"];
+  function renderHow() {
+    var v1 = $("#viz1"), v2 = $("#viz2"), v3 = $("#viz3"), v4 = $("#viz4"), e = E();
+    if (v1) v1.innerHTML = '<div class="vrow"><span class="vbig">' + num(nCoins()) + '</span><span class="vk">' + esc(t("how.v1")) + '</span></div><div class="srcs">' +
+      SRC_NAMES.map(function (s, i) { return '<span style="--i:' + i + '">' + s + "</span>"; }).join("") + "</div>";
+    if (v2) v2.innerHTML = '<p class="vk">' + esc(t("how.v2")) + "</p>" + miniChart();
+    if (v3) {
+      var rows = [["lab_tried", "f.tried"], ["lab_tested", "f.tested"], ["lab_passed", "f.passed"], ["lab_reliable", "f.reliable"]], max = e.lab_tried || 1;
+      v3.innerHTML = '<p class="vk">' + esc(t("how.v3")) + "</p>" + (e.lab_tried ? '<div class="funnel">' + rows.map(function (r) {
+        var v = e[r[0]] || 0; return '<div class="fun"><div class="bar" style="width:' + Math.max(12, Math.sqrt(v / max) * 100).toFixed(1) + '%">' + num(v) + "</div><span>" + esc(t(r[1])) + "</span></div>";
+      }).join("") + "</div>" : "") + '<div class="desks"><i class="ldot" aria-hidden="true"></i><b>' + num(nDesks()) + "</b><span>" + esc(t("how.v3b")) + "</span></div>";
     }
+    if (v4) v4.innerHTML = '<p class="vk">' + esc(t("how.v4")) + '</p><div class="split" aria-hidden="true">' + RULES.map(function (r) { return '<i style="flex:' + r[1] + ";background:" + r[2] + '"></i>'; }).join("") +
+      '</div><ul class="splitl">' + RULES.map(function (r) { return '<li><i style="background:' + r[2] + '"></i><span>' + esc(t("split." + r[0])) + "</span><b>" + r[1] + "%</b></li>"; }).join("") + "</ul>";
   }
-  function svgEl(tag, attrs, html) { var el = doc.createElementNS(SVGNS, tag); for (var a in attrs) el.setAttribute(a, attrs[a]); if (html) el.innerHTML = html; return el; }
-  /* v7 (owner 21.10 21:48): the six engines in the order the work flows — data → ideas → demo test → risk → money → record —
-     then NOVA AI. No numbers. Each card opens on a tap: what it does, why it matters to you, and its live numbers. */
-  var ENG_ORDER = ["scan", "lab", "conv", "risk", "port", "log", "core"], engOpen = {}, engLang = "";
-  function engViz(k) {
-    switch (k) {
-      case "scan": return '<p class="small">' + esc(t("eng.scan.x", { n: num(E().signals_checked || 0) })) + "</p>" + tradeHTML();
-      case "lab": return funnelHTML();
-      case "conv": return stagesHTML();
-      case "risk": return riskHTML();
-      case "port": return portMiniHTML();
-      case "log": return logHTML();
-      default: return "";
-    }
+  function miniChart() {
+    // an illustration of what the analysis reads (a price line, a support level, volume) — not data
+    var pts = [52, 48, 55, 50, 58, 62, 57, 64, 60, 68, 66, 74, 70, 78, 75, 82], W = 300, Hh = 110, path = pts.map(function (v, i) { return (i ? "L" : "M") + (i * W / (pts.length - 1)).toFixed(1) + " " + (Hh - 18 - (v - 40) * 1.6).toFixed(1); }).join("");
+    var bars = pts.map(function (v, i) { var h = 6 + ((i * 37) % 17); return '<rect x="' + (i * W / pts.length + 3).toFixed(1) + '" y="' + (Hh - h) + '" width="' + (W / pts.length - 6).toFixed(1) + '" height="' + h + '" rx="1.5" fill="rgba(127,211,255,.18)"/>'; }).join("");
+    return '<svg class="mini" viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true">' + bars +
+      '<line x1="0" x2="300" y1="' + (Hh - 18 - (48 - 40) * 1.6) + '" y2="' + (Hh - 18 - (48 - 40) * 1.6) + '" stroke="rgba(127,211,255,.45)" stroke-dasharray="4 5"/>' +
+      '<path d="' + path + '" fill="none" stroke="#BFE6FF" stroke-width="2" stroke-linejoin="round"/>' +
+      (reduce ? "" : '<g class="scan"><rect x="-24" y="0" width="24" height="110" fill="url(#scg)"/><rect x="-1.5" y="0" width="1.5" height="110" fill="#BFE6FF" opacity=".7"/></g><defs><linearGradient id="scg" x1="0" x2="1"><stop offset="0" stop-color="#7FD3FF" stop-opacity="0"/><stop offset="1" stop-color="#7FD3FF" stop-opacity=".18"/></linearGradient></defs>') + "</svg>";
   }
-  function renderEngines() {
-    var box = $("#engPipe"); if (!box) return;
-    var n = num((D.scale || {}).coins || 150);
-    if (engLang !== lang || !box.children.length) {
-      engLang = lang;
-      box.innerHTML = ENG_ORDER.map(function (k) {
-        var nb = ENG.filter(function (x) { return x.k === k; })[0] || { blades: 12, sp: 5 }, core = k === "core", id = "eng-" + k, open = !!engOpen[k];
-        var icon = core ? '<canvas class="engsph" data-sphere aria-hidden="true"></canvas>' : '<svg viewBox="-80 -80 160 160" aria-hidden="true">' + turbine(52, nb.blades, nb.sp) + "</svg>";
-        return '<div class="eng' + (core ? " core" : "") + (open ? " open" : "") + '" data-k="' + k + '">' +
-          '<button type="button" class="enghead" aria-expanded="' + open + '" aria-controls="' + id + '">' +
-          '<span class="engic">' + icon + '</span><span class="engname"><b>' + esc(core ? t("eng.core.t") : t("eng." + k + ".t")) + "</b><span>" + esc(t("eng." + k + ".s")) + "</span></span>" +
-          (core ? "" : '<span class="engmet"></span>') + '<span class="engchev" aria-hidden="true"></span></button>' +
-          '<div class="engwrap" id="' + id + '" role="region" aria-label="' + esc(core ? t("eng.core.t") : t("eng." + k + ".t")) + '"><div class="engin"><div class="engbody">' +
-          '<div class="engtxt"><h4>' + esc(t("eng.lbl.what")) + "</h4><p>" + esc(t("eng." + k + ".what", { n: n })) + "</p><h4>" + esc(t("eng.lbl.why")) + "</h4><p>" + esc(t("eng." + k + ".why")) + "</p>" +
-          (core ? '<p class="engask"><a href="#ai">' + esc(t("eng.ask")) + "</a></p>" : "") + "</div>" +
-          (core ? "" : '<div class="engnow"><div class="now">' + esc(t("eng.now")) + '</div><div class="engviz"></div></div>') + "</div></div></div></div>";
-      }).join("");
-      $$(".enghead", box).forEach(function (b) {
-        b.addEventListener("click", function () {
-          var card = b.parentNode, k = card.getAttribute("data-k"), open = !card.classList.contains("open");
-          engOpen[k] = open; card.classList.toggle("open", open); b.setAttribute("aria-expanded", open ? "true" : "false");
-        });
-      });
-      if (window.NovaSphere) NovaSphere.auto();
+
+  /* ---------- 4 · the public portfolio ---------- */
+  var PF = { per: "all" };
+  var PERS = ["day", "week", "month", "all"];
+  function renderPortfolio() {
+    var box = $("#pf"); if (!box) return;
+    var pp = PP(), note = $("#pfNote");
+    var live = !!D.live[lang];
+    if (!pp) {
+      $("#pfVal").textContent = "—"; $("#pfRes").innerHTML = ""; $("#pfPerV").textContent = ""; $("#pfCurve").innerHTML = "";
+      ["#pfRules", "#pfWhere", "#pfHold", "#pfTrades", "#pfActs"].forEach(function (s) { var el = $(s); if (el) el.innerHTML = ""; });
+      note.className = "pfnote stale"; note.innerHTML = "<span>" + esc(t("pf.none")) + "</span>" + retryBtn();
+      bindRetry(); renderRules(); return;
     }
-    ENG_ORDER.forEach(function (k) {
-      var card = $('.eng[data-k="' + k + '"]', box); if (!card) return;
-      var m = $(".engmet", card); if (m) m.textContent = engMetric(k);
-      var v = $(".engviz", card); if (v) v.innerHTML = engViz(k);
+    $("#pfVal").textContent = money(pp.value_usd);
+    $("#pfRes").innerHTML = '<span class="' + cls(pp.pnl_usd) + '">' + smoney(pp.pnl_usd) + " · " + pct(pp.pnl_pct) + "</span> " + esc(t("pf.res", { date: date(pp.since) })) +
+      (pp.today_usd != null ? "<small>" + esc(t("pf.today")) + ': <span class="' + cls(pp.today_usd) + '">' + smoney(pp.today_usd) + " · " + pct(pp.today_pct || 0) + "</span></small>" : "");
+    if (live && !pp.stale) { note.className = "pfnote"; note.innerHTML = "<span>" + esc(t("pf.live", { ago: ago(pp.asof) })) + "</span>"; }
+    else if (live && pp.stale) { note.className = "pfnote stale"; note.innerHTML = "<span>" + esc(t("pf.stale", { date: stamp(pp.asof) })) + "</span>"; }
+    else if (D.failed[lang] || !window.fetch) { note.className = "pfnote stale"; note.innerHTML = "<span>" + esc(t("pf.snap", { date: stamp(pp.asof) })) + "</span>" + retryBtn(); bindRetry(); }
+    else { note.className = "pfnote"; note.textContent = t("status.wait"); }
+    renderPeriods(pp); renderRules(); renderWhere(pp); renderHold(pp); renderTrades(pp); renderActs(pp);
+  }
+  function retryBtn() { return window.fetch ? '<button type="button" class="btn" id="pfRetry">' + esc(t("pf.retry")) + "</button>" : ""; }
+  function bindRetry() {
+    var b = $("#pfRetry"); if (!b) return;
+    b.addEventListener("click", function () { b.disabled = true; b.textContent = "…"; loadHome(); });
+  }
+  function renderPeriods(pp) {
+    var seg = $("#pfPer"), per = (pp.periods || {});
+    if (!per[PF.per]) PF.per = "all";
+    seg.innerHTML = PERS.map(function (k) { return '<button type="button" data-k="' + k + '" aria-pressed="' + (k === PF.per) + '">' + esc(t("pf.per." + k)) + "</button>"; }).join("");
+    $$("button", seg).forEach(function (b) { b.addEventListener("click", function () { PF.per = b.getAttribute("data-k"); renderPeriods(PP() || pp); }); });
+    var p = per[PF.per] || {}, v = $("#pfPerV");
+    if (PF.per === "all") p = { from: pp.since, available: true, base_usd: pp.start_usd, usd: pp.pnl_usd, pct: pp.pnl_pct, clipped: false };
+    if (p.available && p.usd != null) {
+      var from = p.clipped ? t("pf.per.clip", { date: date(p.from) }) : t("pf.per.from", { date: PF.per === "day" ? stamp(p.from) : date(p.from) });
+      v.innerHTML = '<span class="' + cls(p.usd) + '">' + smoney(p.usd) + " · " + pct(p.pct || 0) + "</span><small>" + esc(from) + "</small>";
+    } else v.innerHTML = '<span class="small">' + esc(t("pf.per.na")) + "</span>";
+    drawCurve($("#pfCurve"), pp, p.from || pp.since, p.base_usd || pp.start_usd, p.usd);
+  }
+  function drawCurve(box, pp, from, base, res) {
+    var c = (pp.curve || []).filter(function (r) { return r && r[0] >= from - 1 && typeof r[1] === "number"; });
+    if (c.length < 2) { box.innerHTML = '<p class="small" style="padding-top:40px">' + esc(t("pf.per.na")) + "</p>"; return; }
+    var W = 640, Hh = 220, padT = 12, padB = 24, t0 = c[0][0], t1 = c[c.length - 1][0];
+    var vals = c.map(function (r) { return r[1]; }).concat([base]), lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals), pad = Math.max((hi - lo) * 0.15, 4); lo -= pad; hi += pad;
+    function X(tm) { return (tm - t0) / Math.max(1, t1 - t0) * W; }
+    function Y(v) { return padT + (1 - (v - lo) / (hi - lo)) * (Hh - padT - padB); }
+    var xy = c.map(function (r) { return X(r[0]).toFixed(1) + "," + Y(r[1]).toFixed(1); }), last = c[c.length - 1];
+    var col = (res != null ? res : last[1] - base) >= 0 ? "#3ADB93" : "#FF7A90", yb = Y(base);
+    box.innerHTML = '<svg viewBox="0 0 ' + W + " " + Hh + '" preserveAspectRatio="none" role="img" aria-label="' + esc(t("pf.chart") + ": " + money(c[0][1]) + " → " + money(last[1])) + '">' +
+      '<defs><linearGradient id="pfg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="' + col + '" stop-opacity=".22"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></linearGradient></defs>' +
+      '<line x1="0" x2="' + W + '" y1="' + yb.toFixed(1) + '" y2="' + yb.toFixed(1) + '" stroke="rgba(127,211,255,.4)" stroke-dasharray="4 5" vector-effect="non-scaling-stroke"/>' +
+      '<polygon points="0,' + (Hh - padB) + " " + xy.join(" ") + " " + W + "," + (Hh - padB) + '" fill="url(#pfg)"/>' +
+      '<polyline points="' + xy.join(" ") + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>' +
+      '<span class="cv-dot" style="left:' + (X(last[0]) / W * 100).toFixed(2) + "%;top:" + (Y(last[1]) / Hh * 100).toFixed(2) + "%;background:" + col + '"></span>' +
+      '<span class="cv-b" style="top:' + (yb / Hh * 100).toFixed(2) + '%">' + esc(t("pf.start", { v: money(base) })) + "</span>" +
+      '<span class="cv-x cv-l">' + esc(PF.per === "day" ? stamp(t0) : date(t0)) + '</span><span class="cv-x cv-r">' + esc(PF.per === "day" ? stamp(t1) : date(t1)) + "</span>";
+  }
+  function renderRules() {
+    var el = $("#pfRules"); if (!el) return;
+    el.innerHTML = '<div class="split" aria-hidden="true">' + RULES.map(function (r) { return '<i style="flex:' + r[1] + ";background:" + r[2] + '"></i>'; }).join("") + "</div>" +
+      RULES.map(function (r) { var k = r[0] === "fut" ? "pf.rule.fut" : r[0] === "spot" ? "pf.rule.spot" : "pf.rule.active"; return '<div class="rule"><i style="background:' + r[2] + '"></i><b>' + esc(t(k)) + "</b><em>" + r[1] + "%</em><p>" + esc(t(k + ".d")) + "</p></div>"; }).join("");
+  }
+  function rowsHTML(items) {
+    var max = Math.max.apply(null, items.map(function (x) { return x.share || 0; }).concat([1]));
+    return '<ul class="rows">' + items.map(function (x) {
+      return "<li><span" + (x.sym ? ' class="sym"' : "") + ">" + esc(x.name) + '</span><span class="n">' + money(x.usd || 0, 0) + '</span><span class="p">' + num(x.share || 0, 1) + '%</span><span class="b"><s style="width:' + Math.min(100, (x.share || 0) / max * 100).toFixed(1) + '%"></s></span></li>';
+    }).join("") + "</ul>";
+  }
+  function renderWhere(pp) {
+    var el = $("#pfWhere"); if (!el) return;
+    var g = ((pp.alloc || {}).groups || []).map(function (x) { return { name: x.name, usd: x.usd, share: x.share }; });
+    var sp = pp.spot || {}, fu = pp.futures || {};
+    var parts = (sp.pnl_usd != null || fu.pnl_usd != null) ? '<div class="parts"><p class="k">' + esc(t("pf.parts", { date: date(pp.since) })) + "</p>" +
+      [["pf.part.spot", sp], ["pf.part.fut", fu]].map(function (r) { var o = r[1]; return o.pnl_usd == null ? "" : '<div class="pp"><span>' + esc(t(r[0])) + (o.share_pct ? " · " + num(o.share_pct) + "%" : "") + '</span><b class="' + cls(o.pnl_usd) + '">' + smoney(o.pnl_usd) + " · " + pct(o.pct || 0) + "</b></div>"; }).join("") +
+      (sp.base_note || fu.base_note ? "<small>" + esc([sp.base_note, fu.base_note].filter(Boolean).join(" ")) + "</small>" : "") + "</div>" : "";
+    el.innerHTML = (g.length ? rowsHTML(g) : '<p class="none">' + esc(t("pf.per.na")) + "</p>") + parts;
+  }
+  function renderHold(pp) {
+    var el = $("#pfHold"); if (!el) return;
+    var a = ((pp.alloc || {}).assets || []).slice().sort(function (x, y) { return (y.usd || 0) - (x.usd || 0); }).slice(0, 10)
+      .map(function (x) { return { name: x.sym === "USDT" ? t("pf.cash") : x.sym, sym: x.sym !== "USDT", usd: x.usd, share: x.share }; });
+    el.innerHTML = a.length ? rowsHTML(a) : '<p class="none">' + esc(t("pf.per.na")) + "</p>";
+  }
+  function renderTrades(pp) {
+    var el = $("#pfTrades"); if (!el) return;
+    var f = pp.futures || {}, st = f.stats || {}, open = f.open || [], closed = (f.closed || []).slice().sort(function (a, b) { return (b.closed || 0) - (a.closed || 0); }).slice(0, 5);
+    var sym = function (o) { return o.sym || String(o.inst || "").split("-")[0]; }, side = function (o) { return String(o.side || "").toUpperCase() === "SHORT" ? t("pf.short") : t("pf.long"); };
+    var h = st.n != null ? '<p class="tstats">' + esc(t("pf.stats", { n: num(st.n || 0), w: num(st.wins || 0), l: num(st.losses || 0) })) + "</p>" : "";
+    if (open.length) h += open.map(function (o) {
+      var u = o.upnl_usd != null ? o.upnl_usd : null;
+      return '<div class="trade"><span><span class="sym">' + esc(sym(o)) + '</span><span class="side">' + esc(side(o)) + "</span></span>" + '<span class="r ' + cls(u || 0) + '">' + (u != null ? smoney(u) : "") + "</span>" +
+        "<small>" + esc(t("pf.open.h")) + (o.opened ? " " + dshort(o.opened) : "") + (o.lev ? " · " + esc(t("pf.lev", { n: num(o.lev) })) : "") + '</small><small class="r">' + (o.upnl_pct != null ? pct(o.upnl_pct) : "") + "</small></div>";
+    }).join("");
+    else h += '<p class="none">' + esc(t("pf.open.none")) + "</p>";
+    h += closed.map(function (o) {
+      return '<div class="trade"><span><span class="sym">' + esc(sym(o)) + '</span><span class="side">' + esc(side(o)) + "</span></span>" + '<span class="r ' + cls(o.pnl_usd || 0) + '">' + smoney(o.pnl_usd || 0) + "</span>" +
+        "<small>" + esc(t("pf.closed.h")) + " " + (o.opened ? dshort(o.opened) + " → " : "") + (o.closed ? dshort(o.closed) : "") + (o.lev ? " · " + esc(t("pf.lev", { n: num(o.lev) })) : "") + '</small><small class="r">' + (o.move_pct != null ? pct(o.move_pct) : "") + "</small></div>";
+    }).join("");
+    el.innerHTML = h;
+  }
+  function renderActs(pp) {
+    var el = $("#pfActs"); if (!el) return;
+    var a = (pp.actions || []).slice(0, 4);
+    el.innerHTML = a.length ? a.map(function (x) { return '<li><time datetime="' + new Date(x.t).toISOString() + '">' + esc(dshort(x.t)) + "</time><span>" + esc(x.text || "") + "</span></li>"; }).join("") : "<li><span>" + esc(t("pf.acts.none")) + "</span></li>";
+  }
+
+  /* ---------- the NOVA AI sphere's coin colours (shared by the two canvases) ---------- */
+  var COINCOL = { BTC: "#F7931A", ETH: "#8A92B2", SOL: "#9945FF", XRP: "#5B7FA6", BNB: "#F3BA2F", DOGE: "#C2A633", ADA: "#3468D1", LINK: "#2A5ADA", AVAX: "#E84142", SUI: "#4DA2FF", TON: "#0098EA", DOT: "#E6007A", NEAR: "#00C08B", LTC: "#A6A9AA", UNI: "#FF5CA8", TRX: "#EB0029", APT: "#3BD6B4", ARB: "#28A0F0", OP: "#FF0420", HYPE: "#5CE1C6", ZEC: "#ECB244", PENGU: "#7AB6FF", AAVE: "#B6509E", XLM: "#5AA1C9", HBAR: "#7A7A7A", BCH: "#0AC18E" };
+  var GLYPH = { BTC: "₿", ETH: "Ξ", LTC: "Ł", DOGE: "Ð", ADA: "₳" };
+  function hashS(x) { var h = 0; for (var i = 0; i < x.length; i++) h = (h * 31 + x.charCodeAt(i)) | 0; return Math.abs(h); }
+  function coinPool() {
+    var s = ((D.markets || {}).symbols || []).filter(function (x) { return /^[A-Z0-9]{2,6}$/.test(x); });
+    return s.length > 12 ? s.slice(0, 40) : ["BTC", "ETH", "SOL", "XRP", "BNB", "DOGE", "ADA", "LINK", "AVAX", "SUI", "TON", "DOT", "NEAR", "LTC", "HYPE", "TRX", "APT", "ARB", "OP", "ZEC", "AAVE", "XLM"];
+  }
+  function heldCoins() {
+    var a = (((PP() || {}).alloc || {}).assets || []).map(function (x) { return x.sym; }).filter(function (x) { return x && x !== "USDT"; });
+    return a.length ? a : ["BTC", "ETH", "SOL"];
+  }
+  /* coins and glows are drawn once into small sprites and reused every frame (no gradients per frame) */
+  var SPR = {};
+  if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(function () { SPR = {}; });
+  function sprite(key, size, paint) { var c = SPR[key]; if (c) return c; c = doc.createElement("canvas"); c.width = c.height = Math.max(2, Math.ceil(size)); paint(c.getContext("2d"), c.width / 2); SPR[key] = c; return c; }
+  function drawCoin(ctx, sym, x, y, r, a, glowCol) {
+    var rr = Math.round(r * 2) / 2, pad = glowCol ? rr * 1.5 : 1;
+    var c = sprite("c|" + sym + "|" + rr + "|" + (glowCol || ""), (rr + pad) * 2, function (g, m) {
+      var base = COINCOL[sym] || "hsl(" + (hashS(sym) % 360) + ",50%,58%)";
+      if (glowCol) { var h = g.createRadialGradient(m, m, rr * 0.8, m, m, rr * 2.4); h.addColorStop(0, "rgba(" + glowCol + ",.38)"); h.addColorStop(1, "rgba(" + glowCol + ",0)"); g.fillStyle = h; g.beginPath(); g.arc(m, m, rr * 2.4, 0, 6.2832); g.fill(); }
+      var gr = g.createRadialGradient(m - rr * 0.35, m - rr * 0.4, rr * 0.1, m, m, rr);
+      gr.addColorStop(0, "rgba(255,255,255,.9)"); gr.addColorStop(0.3, base); gr.addColorStop(1, "rgba(8,14,32,.95)");
+      g.fillStyle = gr; g.beginPath(); g.arc(m, m, rr, 0, 6.2832); g.fill();
+      g.lineWidth = Math.max(1, rr * 0.12); g.strokeStyle = "rgba(225,240,255,.6)"; g.beginPath(); g.arc(m, m, rr - g.lineWidth / 2, 0, 6.2832); g.stroke();
+      if (rr >= 6.5) {
+        var gl = GLYPH[sym] || sym.slice(0, sym.length > 3 ? 3 : sym.length);
+        g.font = "700 " + Math.round(rr * (gl.length > 2 ? 0.6 : gl.length > 1 ? 0.76 : 1.05)) + "px 'JetBrains Mono',monospace"; g.textAlign = "center"; g.textBaseline = "middle";
+        g.fillStyle = "#fff"; g.fillText(gl, m, m + rr * 0.05);
+      }
     });
+    ctx.globalAlpha = a; ctx.drawImage(c, x - c.width / 2, y - c.height / 2); ctx.globalAlpha = 1;
   }
-  function engDetail(k) {
-    var e = E(), big = "", desc = "", viz = "";
-    switch (k) {
-      case "scan": big = t("eng.scan.m", { n: num(e.cycle_sec || 60) }); desc = t("eng.scan.d"); viz = '<p class="small" style="margin-bottom:12px">' + esc(t("eng.scan.x", { n: num(e.signals_checked || 0) })) + "</p>" + tradeHTML(); break;
-      case "lab": big = num(e.lab_tried || 0); desc = t("sys.s1.p", { m: num(e.lab_markets || 20) }); viz = funnelHTML() + labStepsHTML(); break;
-      case "conv": big = num(((D.conveyor || {}).counts || {}).paper || 0); desc = t("sys.s2.p"); viz = stagesHTML(); break;
-      case "risk": big = t("risk." + ((D.risk || {}).state || "OK")); desc = t("sys.s3.p"); viz = riskHTML(); break;
-      case "port": big = engMetric("port"); desc = t("eng.port.d"); viz = portMiniHTML(); break;
-      case "log": big = num(((D.scorecard || {}).headline || {}).recorded || 0); desc = t("eng.log.d"); viz = logHTML(); break;
-      default: big = "NOVA"; desc = t("eng.core.d"); viz = '<div class="orbrow"><span class="orb"></span><b>' + esc(t("nova.t")) + '</b></div><p class="small" style="margin-top:10px">' + esc(t("nova.p")) + '</p><p style="margin-top:14px"><a href="#ai">' + esc(t("nav.ai")) + "</a></p>";
+  function glow(ctx, x, y, r, col, a) {
+    var rr = Math.max(2, Math.round(r));
+    var c = sprite("g|" + col + "|" + rr, rr * 2, function (g, m) { var gr = g.createRadialGradient(m, m, 0, m, m, m); gr.addColorStop(0, "rgba(" + col + ",1)"); gr.addColorStop(1, "rgba(" + col + ",0)"); g.fillStyle = gr; g.fillRect(0, 0, m * 2, m * 2); });
+    ctx.globalAlpha = Math.max(0, Math.min(1, a)); ctx.drawImage(c, x - c.width / 2, y - c.height / 2); ctx.globalAlpha = 1;
+  }
+  function ease(s) { return s * s * (3 - 2 * s); }
+  function runner(cv, frame) {   // runs a canvas only while it is on screen, the tab is visible and motion is allowed
+    var running = false, visible = true;
+    function set() { var want = visible && !doc.hidden && !reduce; if (want && !running) { running = true; requestAnimationFrame(loop); } else if (!want) running = false; }
+    function loop(now) { if (!running) return; frame(now); requestAnimationFrame(loop); }
+    doc.addEventListener("visibilitychange", set);
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; set(); }).observe(cv);
+    set();
+    return { running: function () { return running; } };
+  }
+
+  /* ---------- hero: coins → NOVA AI → the phone (the owner's idea, kept) ----------
+     Coins from the market's sources move through three layers (collect, analyse, test); at every layer part of them fades out —
+     the system drops them. The few that pass reach NOVA AI (the brand sphere), which sends the result as light into the app.
+     It explains the process; it never shows a coin turning into profit. */
+  function makeSystem(cv) {
+    if (!cv || !cv.getContext) return null;
+    var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, t0 = performance.now(), last = 0;
+    var SRC = ["BINANCE", "OKX", "BINGX", "HYPERLIQUID", "COINGECKO", "NEWS", "F&G INDEX", "HISTORY"], SRC_S = ["BINANCE", "OKX", "BINGX", "HYPER", "GECKO", "NEWS", "F&G", "HIST"];
+    var L = [], P = [], ph = { x: 0, t: 0, b: 0 }, FAN = 13, glowIn = 0, sx = 0, narrow = false, AI = { x: 0, y: 0, r: 0, hit: 0 }, act = [0, 0, 0, 0], cr = 6;
+    var chips = $$("#sysflow li"), phoneEl = $(".hero-phone .phone");
+    function size() {
+      dpr = Math.min(window.devicePixelRatio || 1, cv.clientWidth < 620 ? 1.5 : 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
+      var pe = $(".hero-phone"), cb = cv.getBoundingClientRect(), pb = pe ? pe.getBoundingClientRect() : null;
+      ph.x = pb && pb.width ? (pb.left - cb.left) * dpr : W * 0.75;
+      ph.t = pb && pb.height ? (pb.top - cb.top + pb.height * 0.18) * dpr : Hh * 0.2; ph.b = pb && pb.height ? (pb.top - cb.top + pb.height * 0.82) * dpr : Hh * 0.8;
+      narrow = cv.clientWidth < 620; cr = (narrow ? 5 : 8.4) * dpr;
+      ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace";
+      var mw = 0; (narrow ? SRC_S : SRC).forEach(function (n) { mw = Math.max(mw, ctx.measureText(n).width); });
+      sx = mw + 10 * dpr;
+      AI.r = Math.max(15 * dpr, Math.min(W * 0.055, Hh * 0.1)); AI.x = ph.x - AI.r * 1.6 - Math.max(W * 0.035, 12 * dpr); AI.y = Hh * 0.48;
+      var x0 = sx + Math.max(W * 0.06, 18 * dpr), x1 = AI.x - AI.r * 1.7 - Math.max(W * 0.04, 12 * dpr), sizes = [6, 8, 6];
+      L = sizes.map(function (n, li) { var x = x0 + (x1 - x0) * li / (sizes.length - 1), out = []; for (var k = 0; k < n; k++) out.push({ x: x, y: Hh * (0.1 + 0.8 * k / (n - 1)), lit: 0 }); return out; });
     }
-    return '<div><h3>' + esc(engTitle(k)) + '</h3><div class="big">' + esc(big) + "</div><p>" + esc(desc) + '</p></div><div><div class="now">' + esc(t("eng.now")) + "</div>" + viz + "</div>";
-  }
-  function funnelHTML() {
-    var e = E(); if (e.lab_tried == null) return "";
-    var rows = [["lab_tried", "f.tried"], ["lab_tested", "f.tested"], ["lab_passed", "f.passed"], ["lab_reliable", "f.reliable"]], max = e.lab_tried || 1;
-    return '<div class="funnel">' + rows.map(function (r) {
-      var v = e[r[0]] || 0, w = Math.max(9, Math.sqrt(v / max) * 100);
-      return '<div class="fun"><div class="bar" style="width:' + w.toFixed(1) + '%">' + num(v) + "</div><span>" + esc(t(r[1])) + "</span></div>";
-    }).join("") + '</div><p class="funnel-note">' + esc(t("f.note")) + "</p>";
-  }
-  /* owner 16:20: «лабораторию детальнее расписать» — the five steps a rule goes through, with tonight's numbers */
-  function labStepsHTML() {
-    var e = E(), sc = D.scale || {}, c = (D.conveyor || {}).counts || {};
-    var v = [t("lab.s1", { n: num(e.lab_tried || 0) }), t("lab.s2", { m: num(sc.lab_markets || e.lab_markets || 20), y: sc.since || 1927, c: num((sc.candle_checks || 0) / 1e6, 1) }),
-      t("lab.s3", { n: num(e.lab_passed || 0) }), t("lab.s4", { n: num(e.lab_reliable || 0) }), t("lab.s5", { n: num(c.paper || 0) })];
-    return '<h4 class="labh">' + esc(t("lab.h")) + '</h4><ol class="labsteps">' + v.map(function (x, i) { return "<li><b>" + (i + 1) + "</b><span><strong>" + esc(t("lab.t" + (i + 1))) + "</strong> " + esc(x) + "</span></li>"; }).join("") + "</ol>";
-  }
-  function stagesHTML() {
-    var c = (D.conveyor || {}).counts || {};
-    return '<div class="track4">' + [["lab", "c.lab"], ["paper", "c.paper"], ["ready", "c.ready"], ["retired", "c.retired"]].map(function (r) {
-      var v = c[r[0]] || 0; return '<div class="tk' + (v ? "" : " zero") + '"><b>' + num(v) + "</b><span>" + esc(t(r[1])) + "</span></div>";
-    }).join("") + "</div>";
-  }
-  function riskHTML() {
-    var r = D.risk || {}, st = r.state || "OK", cls = st === "OK" ? "g" : st === "HALT" ? "r" : "a";
-    return '<div class="riskhead"><span class="chip ' + cls + '">' + esc(t("risk." + st)) + '</span></div><div class="gauges">' + (r.limits || []).map(function (l) {
-      var p = Math.max(0, l.pct_of_limit || 0), c = p >= 100 ? "r" : p >= 70 ? "a" : "";
-      return '<div class="gauge"><div class="row"><span>' + esc(t("lim." + l.key) || l.key) + "</span><span>" + esc(t("lim.of", { pct: num(p) + "%" })) + '</span></div><div class="tr"><i class="' + c + '" style="width:' + Math.min(100, Math.max(p, 1.5)).toFixed(1) + '%"></i></div></div>';
-    }).join("") + "</div>";
-  }
-  function logHTML() {
-    var s = D.scorecard || {}, h = s.headline || {}, head = ((s.chain || {}).ledger || {}).head;
-    return '<div class="recnums">' + [["recorded", "rec.recorded"], ["checked", "rec.checked"], ["sources", "rec.sources"]].map(function (r) { return "<div><b>" + num(h[r[0]] || 0) + "</b><span>" + esc(t(r[1])) + "</span></div>"; }).join("") +
-      '</div>' + (head ? '<div class="hash">SHA-256 <code>' + esc(head.slice(0, 16)) + "…</code></div>" : "");
-  }
-  /* v8: how CRYPTO NOVA splits any sum (feed public.calc: spot / futures / active spot, %) — no DeFi, no other sources */
-  var SLEEVE_COL = { spot: "#00B4D8", futures: "#7FD3FF", active: "#5C8DFF" };
-  var PORT_T = { spot: "pub.spot.t", futures: "pub.fut.t", active: "sl.active.t" };
-  function portMiniHTML() {
-    var c = (P() || {}).calc; if (!c) return "";
-    var sl = ["spot", "futures", "active"].map(function (k) { return { key: k, share: +c[k] || 0 }; }).filter(function (x) { return x.share > 0; });
-    return '<p class="small" style="margin-bottom:10px">' + esc(t("eng.port.calc")) + '</p><div class="stack">' + sl.map(function (s) { return '<i style="flex:' + s.share + ";background:" + SLEEVE_COL[s.key] + '"></i>'; }).join("") + '</div><ul class="sleeves one">' +
-      sl.map(function (s) { return '<li><i style="background:' + SLEEVE_COL[s.key] + '"></i><span><b>' + esc(t(PORT_T[s.key])) + '</b></span><span class="n">' + num(s.share) + "%</span></li>"; }).join("") +
-      '</ul><p style="margin-top:12px"><a href="#live">' + esc(t("live.h2")) + "</a></p>";
-  }
-  function px(v) { if (v == null) return "–"; var a = Math.abs(v), d = a >= 1000 ? 0 : a >= 100 ? 1 : a >= 1 ? 3 : 5; return nf({ maximumFractionDigits: d, minimumFractionDigits: Math.min(d, 2) }).format(v); }
-  var OKI = '<svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" fill="rgba(58,219,147,.16)"/><path d="M5.4 9.2 7.8 11.5l4.6-5" stroke="#3ADB93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  var NOI = '<svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" fill="rgba(255,110,134,.16)"/><path d="M6.2 6.2l5.6 5.6M11.8 6.2l-5.6 5.6" stroke="#FF6E86" stroke-width="1.8" stroke-linecap="round"/></svg>';
-  function tradeHTML() {
-    var o = ((H().futures || {}).open || [])[0];
-    if (!o) return '<p class="small">' + esc(t("tc.none")) + "</p>";
-    var long = String(o.side).toUpperCase() !== "SHORT", span = long ? (o.target - o.stop) : (o.stop - o.target);
-    function x(v) { var r = long ? (v - o.stop) / span : (o.stop - v) / span; return Math.max(0, Math.min(1, r)) * 100; }
-    var p = o.pct || 0;
-    return '<div class="trade"><div class="th"><span class="coin">' + esc(String(o.sym).slice(0, 5)) + "</span><div><b>" + esc(o.sym) + '</b><div class="side ' + (long ? "up" : "down") + '">' + esc(t(long ? "tc.long" : "tc.short")) + '</div></div><span class="pct ' + (p >= 0 ? "up" : "down") + '">' + pct(p) + "</span></div>" +
-      '<div class="tstats">' + [["tc.stop", o.stop], ["tc.entry", o.entry], ["tc.now", o.price], ["tc.target", o.target]].map(function (r) { return "<div><span>" + esc(t(r[0])) + "</span><b>" + px(r[1]) + "</b></div>"; }).join("") + "</div>" +
-      '<div class="scale" aria-hidden="true"><div class="ln"></div><span class="tick" style="left:' + x(o.entry).toFixed(1) + '%"></span><span class="dot" style="left:' + x(o.price).toFixed(1) + '%"></span></div>' +
-      '<div class="why"><h4>' + esc(t("tc.why")) + "</h4><p>" + esc(o.why_title || "") + '</p><ul class="checks">' + (o.checks || []).slice(0, 4).map(function (c) { return "<li>" + (c.ok === false ? NOI : OKI) + "<span><b>" + esc(c.t) + "</b>" + esc(c.v) + "</span></li>"; }).join("") + "</ul></div></div>";
+    function srcY(i) { return Hh * (0.07 + 0.86 * i / (SRC.length - 1)); }
+    function fan(i) { var k = FAN > 1 ? i / (FAN - 1) : 0.5, ax = AI.x + AI.r * 0.6, ay = AI.y + (k - 0.5) * AI.r * 0.5, bx = ph.x + 2 * dpr, by = ph.t + (ph.b - ph.t) * k; return { ax: ax, ay: ay, bx: bx, by: by, cx: (ax + bx) / 2, cy: ay + (by - ay) * 0.15 }; }
+    function spawn(seed) {
+      var pool = coinPool(), held = heldCoins(), keep = Math.random() < 0.3;
+      var sym = keep ? held[Math.floor(Math.random() * held.length)] : pool[Math.floor(Math.random() * pool.length)];
+      var si = Math.floor(Math.random() * SRC.length);
+      var p = { sym: sym, seg: -1, k: Math.floor(Math.random() * L[0].length), from: { x: sx, y: srcY(si) }, s: 0, v: 0.45 + Math.random() * 0.25, drop: -1, a: 1, keep: keep };
+      // which layer drops it (the held coins pass every layer); the rest fail at layer 1, 2 or 3
+      if (!keep) p.drop = Math.random() < 0.45 ? 0 : Math.random() < 0.6 ? 1 : 2;
+      if (seed) { p.seg = Math.floor(Math.random() * 3) - 1; if (p.seg >= 0) p.k = Math.floor(Math.random() * L[p.seg].length); p.s = Math.random(); }
+      P.push(p);
+    }
+    function target(p) {
+      if (p.seg === -1) return { A: p.from, B: L[0][p.k] };
+      if (p.seg < 2) { if (p.nk == null) p.nk = Math.floor(Math.random() * L[p.seg + 1].length); return { A: L[p.seg][p.k], B: L[p.seg + 1][p.nk] }; }
+      if (p.seg === 2) return { A: L[2][p.k], B: { x: AI.x - AI.r * 0.7, y: AI.y + (L[2][p.k].y - AI.y) * 0.12 } };
+      var f = fan(p.f); return { A: { x: f.ax, y: f.ay }, B: { x: f.bx, y: f.by }, q: f };
+    }
+    function frame(now) {
+      var tm = Math.max(0, ((now == null ? performance.now() + 4000 : now) - t0) / 1000), dt = 0.016;
+      if (now != null) { dt = last ? Math.min(0.05, Math.max(0, tm - last)) : 0.016; last = tm; }
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
+      if (!L.length) size();
+      if (now != null && Math.random() < dt * 5.4) spawn(false);
+      // sources
+      ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      (narrow ? SRC_S : SRC).forEach(function (n, i) { var y = srcY(i); ctx.fillStyle = "rgba(160,205,240,.7)"; ctx.fillText(n, sx - 7 * dpr, y); ctx.fillStyle = "rgba(127,211,255,.9)"; ctx.beginPath(); ctx.arc(sx, y, 2 * dpr, 0, 6.2832); ctx.fill(); });
+      // wires
+      ctx.lineWidth = dpr * 0.6; ctx.strokeStyle = "rgba(127,211,255,.07)"; ctx.beginPath();
+      for (var li = 0; li < L.length - 1; li++) L[li].forEach(function (a) { L[li + 1].forEach(function (b) { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); }); });
+      L[2].forEach(function (a) { ctx.moveTo(a.x, a.y); ctx.lineTo(AI.x - AI.r * 0.7, AI.y + (a.y - AI.y) * 0.12); });
+      ctx.stroke();
+      // the soft fan of light from NOVA AI into the phone
+      for (var fi = 0; fi < FAN; fi++) {
+        var fq = fan(fi);
+        ctx.strokeStyle = "rgba(150,215,255," + (0.16 + glowIn * 0.2).toFixed(3) + ")"; ctx.lineWidth = (fi % 3 ? 0.7 : 1.1) * dpr; ctx.beginPath(); ctx.moveTo(fq.ax, fq.ay); ctx.quadraticCurveTo(fq.cx, fq.cy, fq.bx, fq.by); ctx.stroke();
+      }
+      // layer nodes
+      L.forEach(function (layer) { layer.forEach(function (n) { n.lit = Math.max(0, n.lit - dt * 1.6); var r = 3 * dpr; glow(ctx, n.x, n.y, r * 4.5, "127,211,255", 0.08 + n.lit * 0.4); ctx.fillStyle = "rgba(8,16,40,.95)"; ctx.strokeStyle = "rgba(127,211,255," + (0.45 + n.lit * 0.5).toFixed(3) + ")"; ctx.lineWidth = 1.1 * dpr; ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill(); ctx.stroke(); }); });
+      // coins and light
+      P = P.filter(function (p) {
+        if (now != null) p.s += p.v * dt;
+        if (p.fade) { p.a -= dt * 1.4; p.y0 = (p.y0 || 0) + dt * 14 * dpr; if (p.a <= 0) return false; }
+        var tg = target(p);
+        if (p.s >= 1 && !p.fade) {
+          if (p.seg === 3) { glowIn = 1; act[3] = 1; return false; }
+          if (p.seg === 2) { AI.hit = 1; act[3] = Math.max(act[3], 0.7); p.seg = 3; p.s = 0; p.v = 0.9; p.f = Math.floor(Math.random() * FAN); return true; }
+          var node = tg.B; node.lit = 1; act[p.seg + 1] = 1;
+          if (p.seg + 1 === p.drop) { p.fade = true; p.s = 1; p.fx = node.x; p.fy = node.y; return true; }
+          p.k = p.seg === -1 ? p.k : p.nk; p.nk = null; p.seg += 1; p.s = 0;
+        }
+        var s = ease(Math.min(1, p.s)), x, y;
+        if (p.fade) { x = p.fx; y = p.fy + p.y0; }
+        else if (p.seg === 3 && tg.q) { var u = 1 - s, q = tg.q; x = u * u * q.ax + 2 * u * s * q.cx + s * s * q.bx; y = u * u * q.ay + 2 * u * s * q.cy + s * s * q.by; }
+        else { x = tg.A.x + (tg.B.x - tg.A.x) * s; y = tg.A.y + (tg.B.y - tg.A.y) * s; }
+        if (p.seg === 3) { glow(ctx, x, y, 9 * dpr, "200,235,255", 0.5); ctx.fillStyle = "rgba(235,248,255,.95)"; ctx.beginPath(); ctx.arc(x, y, 2.2 * dpr, 0, 6.2832); ctx.fill(); }
+        else if (p.fade) { ctx.globalAlpha = Math.max(0, p.a) * 0.6; ctx.fillStyle = "rgba(140,160,190,1)"; ctx.beginPath(); ctx.arc(x, y, cr * 0.8, 0, 6.2832); ctx.fill(); ctx.globalAlpha = 1; }
+        else drawCoin(ctx, p.sym, x, y, cr, Math.min(1, p.a), p.seg === 2 ? "127,211,255" : null);
+        return true;
+      });
+      // NOVA AI decides
+      AI.hit = Math.max(0, AI.hit - dt * 1.3);
+      if (AI.hit > 0.02) glow(ctx, AI.x, AI.y, AI.r * 2.2, "120,210,255", 0.32 * AI.hit);
+      if (window.NovaSphere) NovaSphere.draw(ctx, AI.x, AI.y, AI.r * 2.1, tm, { busy: AI.hit > 0.5, still: now == null });
+      ctx.font = "700 " + Math.round(9.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = "#CFEFFF";
+      ctx.fillText("NOVA AI", AI.x, AI.y + AI.r * 1.8);
+      glowIn = Math.max(0, glowIn - dt * 1.4);
+      if (phoneEl) { var on = glowIn > 0.25; if (on !== phoneEl.classList.contains("arrive")) phoneEl.classList.toggle("arrive", on); }
+      for (var c = 0; c < 4; c++) { act[c] = Math.max(now == null ? 0.5 : 0, act[c] - dt * 1.1); var av = Math.round(act[c] * 10) / 10; if (chips[c] && chips[c]._a !== av) { chips[c]._a = av; chips[c].style.setProperty("--a", av.toFixed(1)); } }
+    }
+    size(); for (var i = 0; i < 30; i++) spawn(true);
+    var r = runner(cv, frame);
+    window.addEventListener("resize", function () { size(); if (!r.running()) frame(); });
+    setTimeout(function () { size(); if (!r.running()) frame(); }, 400);
+    frame();
+    return { size: size };
   }
 
-  /* ---------- public portfolio: rendered by assets/sections.js (live value, the two lines, the spot coins) ---------- */
-
-  /* ---------- app screens (v7, owner 21.10 21:48): swipe right on the phone; the tabs and dots follow ---------- */
-  var tabKey = "home", TABS = ["home", "trade", "nova", "piggy", "learn", "spot"], scrLoaded = false;
-  function scrLoad() {
-    if (scrLoaded) return; scrLoaded = true;
-    $$("#scr img[data-src]").forEach(function (im) { im.src = im.getAttribute("data-src"); im.removeAttribute("data-src"); });
+  /* ---------- 1 · what: hundreds of coins in, few reach the portfolio ---------- */
+  function thinkFlow(cv) {
+    if (!cv || !cv.getContext) return null;
+    var ctx = cv.getContext("2d"), W = 0, Hh = 0, dpr = 1, gates = [], ex = 0, ey = 0, C = [], last = 0, t0 = performance.now(), pulse = 0, seeded = false;
+    var SURV = [0.6, 0.62, 0.5, 0.45];
+    function size() {
+      dpr = Math.min(window.devicePixelRatio || 1, cv.clientWidth < 620 ? 1.5 : 2); W = cv.width = Math.max(1, Math.round(cv.clientWidth * dpr)); Hh = cv.height = Math.max(1, Math.round(cv.clientHeight * dpr));
+      ex = W - colW(); ey = Hh / 2; gates = []; for (var g = 1; g <= 4; g++) gates.push((ex - 40 * dpr) * g / 4.6);
+    }
+    function colW() { return Math.min(Math.max(W * 0.22, 128 * dpr), 176 * dpr); }
+    function label(txt, x, y, px, col, weight, maxW) {
+      var s = px; ctx.font = (weight || 500) + " " + Math.round(s * dpr) + "px 'JetBrains Mono',monospace";
+      while (s > 6.5 && ctx.measureText(txt).width > maxW) { s -= 0.5; ctx.font = (weight || 500) + " " + Math.round(s * dpr) + "px 'JetBrains Mono',monospace"; }
+      ctx.fillStyle = col; ctx.fillText(txt, x, y);
+    }
+    function spawn() { var P = coinPool(), held = heldCoins(), fate = 0; while (fate < 4 && Math.random() < SURV[fate]) fate++; var sym = fate >= 4 ? held[Math.floor(Math.random() * held.length)] : P[Math.floor(Math.random() * P.length)]; C.push({ sym: sym, x: -20 * dpr, y: Hh * (0.1 + Math.random() * 0.8), v: (55 + Math.random() * 35) * dpr, fate: fate, st: "go", a: 1, vy: 0 }); }
+    function band(x) { var k = Math.min(1, Math.max(0, x / ex)); return Hh * (0.44 - 0.36 * k); }
+    function frame(now) {
+      var tm = ((now == null ? performance.now() + 5000 : now) - t0) / 1000, dt = 0.016;
+      if (now != null) { dt = last ? Math.min(0.05, Math.max(0, tm - last)) : 0.016; last = tm; }
+      if (!seeded) { seeded = true; for (var w0 = 0; w0 < 46; w0++) { spawn(); var c0 = C[C.length - 1]; c0.x = Math.random() * ex * 0.92; if (c0.fate < 4 && c0.x > gates[c0.fate]) C.pop(); } }
+      if (now != null && Math.random() < dt * 8) spawn();
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, Hh);
+      ctx.fillStyle = "rgba(0,160,220,.05)"; ctx.beginPath(); ctx.moveTo(0, Hh * 0.06); ctx.lineTo(ex, ey - Hh * 0.08); ctx.lineTo(ex, ey + Hh * 0.08); ctx.lineTo(0, Hh * 0.94); ctx.closePath(); ctx.fill();
+      gates.forEach(function (gx) { var hb = band(gx) + 10 * dpr; ctx.strokeStyle = "rgba(127,211,255,.3)"; ctx.lineWidth = 1.2 * dpr; ctx.beginPath(); ctx.moveTo(gx, ey - hb); ctx.lineTo(gx, ey + hb); ctx.stroke(); ctx.strokeStyle = "rgba(127,211,255,.14)"; ctx.lineWidth = dpr; ctx.beginPath(); for (var yy = ey - hb; yy <= ey + hb; yy += 7 * dpr) { ctx.moveTo(gx - 4 * dpr, yy); ctx.lineTo(gx + 4 * dpr, yy); } ctx.stroke(); });
+      if (!reduce) { var sw = ((tm * 0.14) % 1.2 - 0.1) * ex, sg = ctx.createLinearGradient(sw - 60 * dpr, 0, sw, 0); sg.addColorStop(0, "rgba(127,211,255,0)"); sg.addColorStop(1, "rgba(190,240,255,.16)"); ctx.fillStyle = sg; ctx.fillRect(sw - 60 * dpr, 0, 60 * dpr, Hh); }
+      var r = (W < 900 ? 8.5 : 10) * dpr;
+      C = C.filter(function (c) {
+        if (c.st === "go") {
+          if (now != null) c.x += c.v * dt; var hb2 = band(c.x); c.y += (Math.max(ey - hb2, Math.min(ey + hb2, c.y)) - c.y) * Math.min(1, dt * 3);
+          var g = gates[c.fate]; if (c.fate < 4 && g != null && c.x >= g - 6 * dpr) { c.st = "out"; c.vy = (Math.random() < 0.5 ? -1 : 1) * 26 * dpr; }
+          if (c.fate >= 4 && c.x >= ex - 18 * dpr) { pulse = 1; return false; }
+          drawCoin(ctx, c.sym, c.x, c.y, r, 1, c.fate >= 4 && c.x > gates[3] ? "127,211,255" : null);
+        } else {
+          c.vy *= 1.02; c.y += c.vy * dt; c.x += c.v * 0.12 * dt; c.a -= dt * 1.3; if (c.a <= 0) return false;
+          ctx.globalAlpha = Math.max(0, c.a) * 0.55; ctx.fillStyle = "rgba(140,160,190,1)"; ctx.beginPath(); ctx.arc(c.x, c.y, r * 0.8, 0, 6.2832); ctx.fill(); ctx.globalAlpha = 1;
+        }
+        return c.x < W + 30 * dpr;
+      });
+      pulse = Math.max(0, pulse - dt * 1.5);
+      var bw = colW(), cx = W - bw / 2 - 4 * dpr, half = Math.min(bw * 0.4, Hh * 0.2), mw = bw - 10 * dpr;
+      if (window.NovaSphere) NovaSphere.draw(ctx, cx, ey - Hh * 0.1, half, tm, { busy: pulse > 0.3, still: now == null });
+      var held = heldCoins().length, ty = ey - Hh * 0.1 + half * 0.95;
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      label(t("think.out"), cx, ty, 8.5, "rgba(160,215,245,.9)", 500, mw);
+      label(num(held), cx, ty + 13 * dpr, 19, pulse > 0.05 ? "#FFFFFF" : "#DDF2FF", 700, mw);
+      label(t("think.out.coins"), cx, ty + 36 * dpr, 8.5, "rgba(200,225,245,.85)", 500, mw);
+      label(t("think.out.desks", { n: num(nDesks()) }), cx, ty + 50 * dpr, 8.5, "rgba(127,211,255,.75)", 500, mw);
+      ctx.textAlign = "left"; label(t("think.in", { n: num(nCoins()) }), 10 * dpr, 8 * dpr, 8.5, "rgba(160,205,240,.75)", 500, W * 0.6);
+    }
+    size();
+    var r = runner(cv, frame);
+    window.addEventListener("resize", function () { size(); if (!r.running()) frame(); });
+    frame();
+    return { draw: function () { if (!r.running()) frame(); } };
   }
+
+  /* ---------- the app: real screens you can swipe; the feature list follows ---------- */
+  var TABS = ["home", "demo", "fut", "spot", "nova", "review", "buy", "learn", "piggy", "connect"], tabKey = "home", scrLoaded = false, pausedTill = 0;
+  function scrLoad() { if (scrLoaded) return; scrLoaded = true; $$("#scr img[data-src]").forEach(function (im) { im.src = im.getAttribute("data-src"); im.removeAttribute("data-src"); }); }
   function renderScreens() {
     var scr = $("#scr"); if (!scr) return;
     scrLoaded = false;
     scr.setAttribute("role", "region"); scr.setAttribute("aria-roledescription", "carousel"); scr.setAttribute("aria-label", t("app.h2"));
     scr.innerHTML = TABS.map(function (k, i) {
-      return '<img data-k="' + k + '" alt="' + esc(t("tab." + k + ".t")) + '" ' + (i === 0 ? 'src="assets/img/screens/' + lang + "/" + k + '.webp"' : 'data-src="assets/img/screens/' + lang + "/" + k + '.webp"') +
-        ' width="600" height="1300" decoding="async" draggable="false">';
+      var src = "assets/img/screens/" + lang + "/" + k + ".webp";
+      return '<img data-k="' + k + '" alt="' + esc(t("tab." + k + ".t") + ": " + t("tab." + k + ".p")) + '" ' + (i === 0 ? 'src="' + src + '"' : 'data-src="' + src + '"') + ' width="720" height="1560" decoding="async" draggable="false">';
     }).join("");
     var dots = $("#scrDots");
-    if (dots) dots.innerHTML = TABS.map(function (k) { return '<button type="button" data-k="' + k + '" aria-label="' + esc(t("tab." + k + ".t")) + '"></button>'; }).join("");
-    $$("#scrDots button").forEach(function (b) { b.addEventListener("click", function () { selectTab(b.getAttribute("data-k")); }); });
-    $$("#tabs .tab").forEach(function (b) { b.setAttribute("aria-label", t("tab." + b.getAttribute("data-k") + ".t")); });
+    if (dots) { dots.innerHTML = TABS.map(function (k) { return '<button type="button" data-k="' + k + '" aria-label="' + esc(t("tab." + k + ".t")) + '"></button>'; }).join(""); $$("button", dots).forEach(function (b) { b.addEventListener("click", function () { hold(); selectTab(b.getAttribute("data-k")); }); }); }
     var box = $("#app");
-    if (box && "IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { scrLoad(); io.disconnect(); } }, { rootMargin: "800px 0px" }); io.observe(box); }
-    else scrLoad();
+    if (box && "IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { scrLoad(); io.disconnect(); } }, { rootMargin: "600px 0px" }); io.observe(box); } else scrLoad();
     selectTab(tabKey, false, true);
   }
   function markTab(k) {
@@ -988,86 +525,86 @@
     var scr = $("#scr"), i = TABS.indexOf(k); if (i < 0) return;
     markTab(k); scrLoad();
     if (focus) { var tb = $('#tabs .tab[data-k="' + k + '"]'); if (tb) tb.focus(); }
-    if (scr && scr.clientWidth) { scr._prog = Date.now(); scr.scrollTo({ left: i * scr.clientWidth, behavior: instant || reduce ? "auto" : "smooth" }); }
+    if (scr && scr.clientWidth) scr.scrollTo({ left: i * scr.clientWidth, behavior: instant || reduce ? "auto" : "smooth" });
   }
+  function step(d) { var i = TABS.indexOf(tabKey); selectTab(TABS[(i + d + TABS.length) % TABS.length]); }
+  function hold() { pausedTill = Date.now() + 12000; }
   (function () {
     var scr = $("#scr"); if (!scr) return;
     var tm = null;
-    scr.addEventListener("scroll", function () {
-      clearTimeout(tm);
-      tm = setTimeout(function () { var i = Math.round(scr.scrollLeft / Math.max(1, scr.clientWidth)); var k = TABS[Math.max(0, Math.min(TABS.length - 1, i))]; if (k !== tabKey) markTab(k); }, 90);
-    }, { passive: true });
-    // a mouse drags the strip too (touch already scrolls natively)
-    var drag = null;
-    scr.addEventListener("pointerdown", function (ev) { if (ev.pointerType !== "mouse") return; drag = { x: ev.clientX, l: scr.scrollLeft }; scr.classList.add("drag"); scr.setPointerCapture(ev.pointerId); });
+    scr.addEventListener("scroll", function () { clearTimeout(tm); tm = setTimeout(function () { var i = Math.round(scr.scrollLeft / Math.max(1, scr.clientWidth)); var k = TABS[Math.max(0, Math.min(TABS.length - 1, i))]; if (k !== tabKey) markTab(k); }, 90); }, { passive: true });
+    var drag = null;   // a mouse drags the strip too (touch already scrolls natively)
+    scr.addEventListener("pointerdown", function (ev) { hold(); if (ev.pointerType !== "mouse") return; drag = { x: ev.clientX, l: scr.scrollLeft }; scr.classList.add("drag"); scr.setPointerCapture(ev.pointerId); });
     scr.addEventListener("pointermove", function (ev) { if (drag) scr.scrollLeft = drag.l - (ev.clientX - drag.x); });
-    function end(ev) {
-      if (!drag) return; var dx = ev.clientX - drag.x, i = TABS.indexOf(tabKey); drag = null; scr.classList.remove("drag");
-      if (Math.abs(dx) > 40) i = Math.max(0, Math.min(TABS.length - 1, Math.round(scr.scrollLeft / scr.clientWidth)));
-      selectTab(TABS[i]);
-    }
+    function end(ev) { if (!drag) return; var dx = ev.clientX - drag.x, i = TABS.indexOf(tabKey); drag = null; scr.classList.remove("drag"); if (Math.abs(dx) > 40) i = Math.max(0, Math.min(TABS.length - 1, Math.round(scr.scrollLeft / scr.clientWidth))); selectTab(TABS[i]); }
     scr.addEventListener("pointerup", end); scr.addEventListener("pointercancel", end);
-    scr.addEventListener("keydown", function (ev) {
-      var i = TABS.indexOf(tabKey);
-      if (ev.key === "ArrowRight") { ev.preventDefault(); selectTab(TABS[(i + 1) % TABS.length]); }
-      if (ev.key === "ArrowLeft") { ev.preventDefault(); selectTab(TABS[(i - 1 + TABS.length) % TABS.length]); }
-    });
+    scr.addEventListener("keydown", function (ev) { if (ev.key === "ArrowRight") { ev.preventDefault(); hold(); step(1); } if (ev.key === "ArrowLeft") { ev.preventDefault(); hold(); step(-1); } });
     window.addEventListener("resize", function () { var j = TABS.indexOf(tabKey); scr.scrollTo({ left: j * scr.clientWidth, behavior: "auto" }); });
+    var pv = $("#scrPrev"), nx = $("#scrNext");
+    if (pv) pv.addEventListener("click", function () { hold(); step(-1); });
+    if (nx) nx.addEventListener("click", function () { hold(); step(1); });
+    // the phone turns its own pages while it is on screen; any touch pauses it
+    var vis = false, box = $(".appgrid");
+    if (box && "IntersectionObserver" in window) new IntersectionObserver(function (en) { vis = en[0].isIntersecting; }, { threshold: 0.35 }).observe(box);
+    if (!reduce) setInterval(function () { if (vis && !doc.hidden && Date.now() > pausedTill) step(1); }, 4500);
   })();
   $$("#tabs .tab").forEach(function (b) {
-    b.addEventListener("click", function () { selectTab(b.getAttribute("data-k")); });
+    b.addEventListener("click", function () { hold(); selectTab(b.getAttribute("data-k")); });
     b.addEventListener("keydown", function (ev) {
-      var tabs = $$("#tabs .tab"), i = tabs.indexOf(b), n = null;
-      if (ev.key === "ArrowRight" || ev.key === "ArrowDown") n = tabs[(i + 1) % tabs.length];
-      if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") n = tabs[(i - 1 + tabs.length) % tabs.length];
-      if (n) { ev.preventDefault(); selectTab(n.getAttribute("data-k"), true); }
+      var all = $$("#tabs .tab"), i = all.indexOf(b), n = null;
+      if (ev.key === "ArrowRight" || ev.key === "ArrowDown") n = all[(i + 1) % all.length];
+      if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") n = all[(i - 1 + all.length) % all.length];
+      if (n) { ev.preventDefault(); hold(); selectTab(n.getAttribute("data-k"), true); }
     });
   });
 
-  /* ---------- NOVA demo (rendered on load and on a language change only) ---------- */
-  var typing = null;
+  /* ---------- NOVA AI: ready answers from the app's own FAQ (no server call on the site — the live chat is in the app) ---------- */
+  var typing = null, novaArmed = false;
   function renderNova() {
-    var nv = (window.CN_NOVA || {})[lang] || (window.CN_NOVA || {}).en; var chat = $("#chat"), qs = $("#qs");
-    if (!nv || !chat) return;
+    var nv = (window.CN_NOVA || {})[lang] || (window.CN_NOVA || {}).en, chat = $("#chat"), qs = $("#qs");
+    if (!chat || !qs) return;
     if (typing) { clearInterval(typing); typing = null; }
+    if (!nv) { chat.innerHTML = ""; qs.innerHTML = ""; return; }
     chat.innerHTML = '<div class="msg bot">' + esc(nv.hello) + "</div>";
-    // the first time the chat comes into view NOVA answers the first question by itself — a live example, no empty box
-    if (!renderNova.demoArmed && "IntersectionObserver" in window) {
-      renderNova.demoArmed = true;
-      var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { io.disconnect(); setTimeout(function () { var q0 = $("#qs .q"); if (q0 && !typing && !$("#chat .msg.me")) q0.click(); }, 900); } }, { threshold: 0.25 });
-      io.observe(chat);
-    }
     qs.innerHTML = nv.items.map(function (it, i) { return '<button type="button" class="q" data-i="' + i + '">' + esc(it.q) + "</button>"; }).join("");
     $$(".q", qs).forEach(function (b) {
       b.addEventListener("click", function () {
         if (typing) return;
         var it = nv.items[+b.getAttribute("data-i")]; b.disabled = true;
         chat.insertAdjacentHTML("beforeend", '<div class="msg me">' + esc(it.q) + "</div>");
-        var bot = doc.createElement("div"); bot.className = "msg bot"; chat.appendChild(bot);
+        var bot = doc.createElement("div"); bot.className = "msg bot typing"; chat.appendChild(bot);
         var words = it.a.split(/(\s+)/), i = 0;
         function scroll() { chat.scrollTop = chat.scrollHeight; }
-        if (reduce) { bot.textContent = it.a; scroll(); return; }
-        typing = setInterval(function () { i += 2; bot.textContent = words.slice(0, i).join(""); scroll(); if (i >= words.length) { clearInterval(typing); typing = null; } }, 28);
+        if (reduce) { bot.textContent = it.a; bot.classList.remove("typing"); scroll(); return; }
+        typing = setInterval(function () { i += 2; bot.textContent = words.slice(0, i).join(""); scroll(); if (i >= words.length) { clearInterval(typing); typing = null; bot.classList.remove("typing"); } }, 30);
       });
     });
+    // the first time the chat comes into view NOVA AI answers the first question by itself: a live example, not an empty box
+    if (!novaArmed && "IntersectionObserver" in window && !reduce) {
+      novaArmed = true;
+      var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { io.disconnect(); setTimeout(function () { var q0 = $("#qs .q"); if (q0 && !typing && !$("#chat .msg.me")) q0.click(); }, 900); } }, { threshold: 0.4 });
+      io.observe(chat);
+    }
   }
+  var sph = $("#novaSph");
+  if (sph && window.NovaSphere && !sph._sph) sph._sph = window.NovaSphere.mount(sph, { busy: function () { return !!typing; } });
 
-  /* ---------- Piggy calculator on real BTC closes ---------- */
+  /* ---------- the piggy bank on real daily BTC closes ---------- */
   var PG = { amt: 10, freq: "w", year: 2021 }, pgBuilt = "";
-  function seg(el, items, cur, on, after) {
+  function seg(el, items, cur, on) {
     el.innerHTML = items.map(function (it) { return '<button type="button" aria-pressed="' + (String(it[0]) === String(cur)) + '" data-v="' + it[0] + '">' + esc(it[1]) + "</button>"; }).join("");
-    $$("button", el).forEach(function (b) { b.addEventListener("click", function () { on(b.getAttribute("data-v")); $$("button", el).forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); (after || calcPiggy)(); }); });
+    $$("button", el).forEach(function (b) { b.addEventListener("click", function () { on(b.getAttribute("data-v")); $$("button", el).forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); calcPiggy(); }); });
   }
   function renderPiggy() {
     var b = D.btc; if (!b || !b.closes || !$("#pgAmt")) return;
     var DAY = 86400000, sd = b.start_day, lastDay = sd + b.closes.length - 1;
-    var firstYear = new Date(sd * DAY).getUTCFullYear(), lastYear = new Date(lastDay * DAY).getUTCFullYear();
-    var years = []; for (var y = firstYear; y <= Math.min(lastYear - 1, firstYear + 6); y++) years.push([y, String(y)]);
+    var firstYear = new Date(sd * DAY).getUTCFullYear(), lastYear = new Date(lastDay * DAY).getUTCFullYear(), years = [];
+    for (var y = firstYear; y <= Math.min(lastYear - 1, firstYear + 6); y++) years.push([y, String(y)]);
     if (PG.year < firstYear) PG.year = firstYear;
     var key = lang + sd + b.closes.length;
     if (pgBuilt !== key) {
       pgBuilt = key;
-      seg($("#pgAmt"), [5, 10, 25, 50].map(function (a) { return [a, usd(a)]; }), PG.amt, function (v) { PG.amt = +v; });
+      seg($("#pgAmt"), [5, 10, 25, 50].map(function (a) { return [a, money(a, 0)]; }), PG.amt, function (v) { PG.amt = +v; });
       seg($("#pgFreq"), [["w", t("piggy.weekly")], ["m", t("piggy.monthly")]], PG.freq, function (v) { PG.freq = v; });
       seg($("#pgYear"), years, PG.year, function (v) { PG.year = +v; });
     }
@@ -1075,46 +612,54 @@
   }
   function calcPiggy() {
     var b = D.btc; if (!b) return;
-    var DAY = 86400000, cl = b.closes, sd = b.start_day, lastDay = sd + cl.length - 1;
-    var buys = [], d0 = Math.max(sd, Math.floor(Date.UTC(PG.year, 0, 1) / DAY));
+    var DAY = 86400000, cl = b.closes, sd = b.start_day, lastDay = sd + cl.length - 1, buys = [], d0 = Math.max(sd, Math.floor(Date.UTC(PG.year, 0, 1) / DAY));
     if (PG.freq === "w") { for (var d = d0; d <= lastDay; d += 7) buys.push(d); }
     else { for (var mm = 0; ; mm++) { var dd = Math.floor(Date.UTC(PG.year, mm, 1) / DAY); if (dd > lastDay) break; if (dd >= sd) buys.push(dd); } }
     var put = 0, btc = 0, series = [];
     buys.forEach(function (day) { var c = cl[day - sd]; if (!c) return; put += PG.amt; btc += PG.amt / c; series.push([day, put, btc * c]); });
-    var last = cl[cl.length - 1]; series.push([lastDay, put, btc * last]);
-    $("#pgPut").textContent = usd(put);
-    var worth = btc * last, w = $("#pgWorth"); w.textContent = usd(worth); w.className = worth >= put ? "up" : "down";
-    $("#pgBtc").textContent = nf({ maximumFractionDigits: 4, minimumFractionDigits: 4 }).format(btc) + " BTC";
-    var W = 600, Hh = 150, t0 = series[0][0], t1 = lastDay, hi = 0;
+    var lastP = cl[cl.length - 1]; series.push([lastDay, put, btc * lastP]);
+    var worth = btc * lastP;
+    $("#pgPut").textContent = money(put, 0);
+    var w = $("#pgWorth"); w.textContent = money(worth, 0); w.className = cls(worth - put);
+    $("#pgBtc").textContent = num(btc, 4) + " BTC";
+    var W = 600, Hh = 140, ts = series[0][0], te = lastDay, hi = 0;
     series.forEach(function (s) { hi = Math.max(hi, s[1], s[2]); });
-    function X(v) { return (v - t0) / Math.max(1, t1 - t0) * W; }
+    function X(v) { return (v - ts) / Math.max(1, te - ts) * W; }
     function Y(v) { return 6 + (1 - v / (hi || 1)) * (Hh - 12); }
-    var a = series.map(function (s) { return X(s[0]).toFixed(1) + "," + Y(s[1]).toFixed(1); }).join(" ");
-    var v2 = series.map(function (s) { return X(s[0]).toFixed(1) + "," + Y(s[2]).toFixed(1); }).join(" ");
-    $("#pgChart").innerHTML = '<svg viewBox="0 0 ' + W + " " + Hh + '" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="' + W + '" y1="' + (Hh - 6) + '" y2="' + (Hh - 6) + '" stroke="rgba(127,211,255,.15)" vector-effect="non-scaling-stroke"/>' +
+    var a = series.map(function (s) { return X(s[0]).toFixed(1) + "," + Y(s[1]).toFixed(1); }).join(" "), v2 = series.map(function (s) { return X(s[0]).toFixed(1) + "," + Y(s[2]).toFixed(1); }).join(" ");
+    $("#pgChart").innerHTML = '<svg viewBox="0 0 ' + W + " " + Hh + '" preserveAspectRatio="none" role="img" aria-label="' + esc(t("piggy.put") + " " + money(put, 0) + " · " + t("piggy.worth") + " " + money(worth, 0)) + '"><line x1="0" x2="' + W + '" y1="' + (Hh - 6) + '" y2="' + (Hh - 6) + '" stroke="rgba(127,211,255,.15)" vector-effect="non-scaling-stroke"/>' +
       '<polyline points="' + a + '" fill="none" stroke="#8EA2C6" stroke-width="2" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"/><polyline points="' + v2 + '" fill="none" stroke="#7FD3FF" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';
   }
 
+  /* ---------- the loading screen (kept): a short mission-control start, once per visit ----------
+     The inline script in <head> shows it before the first paint and removes it after 4.5 s whatever happens; this fills the log
+     and closes it about 1.8 s later, or at once on a tap, a key or «Пропустить». */
+  function boot() {
+    var root = doc.documentElement, b = $("#boot"); if (!b || !root.classList.contains("booting")) return;
+    var e = E(), lines = [t("boot.l1", { n: num(nCoins()) }), t("boot.l2"), t("boot.l3", { n: num(nDesks()) }), t("boot.l4"), t("boot.l5")];
+    var log = $("#bootLog"), bar = $("#bootBar"), i = 0, done = false;
+    var cols = Math.max(26, Math.floor(log.clientWidth / (parseFloat(getComputedStyle(log).fontSize) * 0.6)));
+    function close() { if (done) return; done = true; b.classList.add("off"); setTimeout(function () { root.classList.remove("booting"); }, 520); }
+    function hh(n) { return ("0" + n).slice(-2); }
+    function next() {
+      if (done) return;
+      if (i < lines.length) {
+        var d = new Date(), ts = "[" + hh(d.getHours()) + ":" + hh(d.getMinutes()) + ":" + hh(d.getSeconds()) + "] ", txt = lines[i], dots = Math.max(2, cols - ts.length - txt.length - 4);
+        log.innerHTML += esc(ts + txt + " " + new Array(dots + 1).join(".") + " ") + '<span class="ok">OK</span>\n';
+        i++; bar.style.width = (i / (lines.length + 1) * 100).toFixed(0) + "%"; setTimeout(next, 220);
+      } else { log.innerHTML += '\n<span class="hi">&gt; ' + esc(t("boot.l6")) + "</span>"; bar.style.width = "100%"; setTimeout(close, 650); }
+    }
+    b.addEventListener("click", close); doc.addEventListener("keydown", close, { once: true });
+    void e; setTimeout(next, 200);
+  }
+
   /* ---------- go ---------- */
-  function renderHeroStats() {
-    var sc = D.scale || {}, a = $("#hs1"), b = $("#hs2");
-    if (a && sc.coins) a.textContent = num(sc.coins);
-    void b;
-  }
-  function emit(n) { try { doc.dispatchEvent(new CustomEvent(n)); } catch (e) { /* old browsers */ } }
-  function renderData() {   // everything that shows live numbers; safe to call on every refresh
-    renderStatus(); renderHeroCards(); renderHeroStats(); renderTicker(); renderThink(); renderEngines(); renderPhone(); renderFlowChips();
-    emit("cn:data");
-    var since = (P() || {}).since;
-    $$("[data-i-html]").forEach(function (el) { el.innerHTML = t(el.getAttribute("data-i-html"), since ? { since: date(since, true) } : null); });
-  }
-  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; renderPiggy(); if (logTimer) startLog(); emit("cn:static"); }
-  /* a small read-only API for the section scripts (assets/sections.js): texts, data and formatters */
-  window.CN = { t: function (k, v) { return t(k, v); }, $: $, $$: $$, esc: esc, usd: usd, num: num, lang: function () { return lang; },
-    home: function () { return H(); }, engine: function () { return E(); }, data: function () { return D; }, reduce: reduce, feed: FEED };   // interactive widgets: load and language change only
-  boot(); renderData(); renderStatic(); initFlow();
-  makeSystem($("#core")); startLog();
-  var mq = window.matchMedia("(max-width:860px)"); if (mq.addEventListener) mq.addEventListener("change", renderEngines);
-  if (window.fetch) { loadAll(); setInterval(function () { if (!doc.hidden) loadAll(); }, 5 * 60000); }
-  setInterval(renderStatus, 60000);
+  function renderAll() { renderStatus(); renderVars(); renderTicker(); renderHow(); renderPortfolio(); if (flow) flow.draw(); }
+  function renderStatic() { renderScreens(); renderNova(); pgBuilt = ""; renderPiggy(); }
+  var flow = null;
+  boot(); renderAll(); renderStatic();
+  makeSystem($("#core")); flow = thinkFlow($("#thinkCv"));
+  if (window.fetch) { loadAll(); setInterval(function () { if (!doc.hidden) { loadHome(); loadMarkets(); } }, 5 * 60000); }
+  else renderAll();
+  setInterval(function () { if (!doc.hidden) { renderStatus(); var pp = PP(); if (pp && D.live[lang] && !pp.stale) { var n = $("#pfNote span"); if (n) n.textContent = t("pf.live", { ago: ago(pp.asof) }); } } }, 30000);
 })();
