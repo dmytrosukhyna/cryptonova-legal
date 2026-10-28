@@ -10,8 +10,8 @@
   var HOME_FILE = { ru: "app_home.json", en: "app_home.en.json", uk: "app_home.uk.json", el: "app_home.el.json", es: "app_home.es.json" };
   // the account's own start (web/public_real.json) — used only if no feed and no snapshot is there to say it
   var START = { since: 1792669322166, start_usd: 10024.4 };
-  // the public account's split, the owner's rule (cockpit okx_alloc.SHARES)
-  var RULES = [["spot", 65, "#7FD3FF"], ["fut", 25, "#5C8DFF"], ["active", 10, "#B9C6E6"]];
+  // the public account's split, the owner's rule (cockpit okx_alloc.SHARES; owner's decision of 28.10: futures 25 → 15 %, + extra core 10 %)
+  var RULES = [["spot", 65, "#7FD3FF"], ["core", 10, "#4FD1C5"], ["fut", 15, "#5C8DFF"], ["active", 10, "#B9C6E6"]];
   var I18N = window.CN_I18N || {};
   var doc = document, $ = function (s, r) { return (r || doc).querySelector(s); }, $$ = function (s, r) { return Array.prototype.slice.call((r || doc).querySelectorAll(s)); };
   var reduce = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -245,7 +245,7 @@
   function renderRules() {
     var el = $("#pfRules"); if (!el) return;
     el.innerHTML = '<div class="split" aria-hidden="true">' + RULES.map(function (r) { return '<i style="flex:' + r[1] + ";background:" + r[2] + '"></i>'; }).join("") + "</div>" +
-      RULES.map(function (r) { var k = r[0] === "fut" ? "pf.rule.fut" : r[0] === "spot" ? "pf.rule.spot" : "pf.rule.active"; return '<div class="rule"><i style="background:' + r[2] + '"></i><b>' + esc(t(k)) + "</b><em>" + r[1] + "%</em><p>" + esc(t(k + ".d")) + "</p></div>"; }).join("");
+      RULES.map(function (r) { var k = "pf.rule." + r[0]; return '<div class="rule"><i style="background:' + r[2] + '"></i><b>' + esc(t(k)) + "</b><em>" + r[1] + "%</em><p>" + esc(t(k + ".d")) + "</p></div>"; }).join("");
   }
   function rowsHTML(items) {
     var max = Math.max.apply(null, items.map(function (x) { return x.share || 0; }).concat([1]));
