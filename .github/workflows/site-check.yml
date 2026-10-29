@@ -1,7 +1,9 @@
 name: site-check
-# v9 (28.10.2026): every outside address of the preview branch opened from a runner — the App Store listing, Google Play
-# (closed testing: a 404 is expected), OKX partner link and lead-trader profile, Telegram, and the live feeds on cryptonova.vip
-# with their CORS header. Read-only; it runs only on pushes to site-v9 (production is never touched).
+# Every outside address of the preview branch opened from a runner — the App Store listing, Google Play (closed testing: a 404 is
+# expected), the OKX partner link, OKX's help articles and the lead-trader profile, Telegram, and the live feeds on
+# cryptonova.vip with their CORS header. Read-only; it runs only on pushes to site-v9 (production is never touched).
+# A commit whose message holds «[live]» also checks production after a deploy: it waits until cryptonova.pro serves this build
+# (the site.css?v= stamp), then opens every page and asset and drives the live page in Chromium at 390 / 768 / 1280 / 1920.
 on:
   push:
     branches: [site-v9]
@@ -22,9 +24,15 @@ jobs:
         run: python3 tools/linkcheck.py index.html stores
       - name: live feeds and CORS
         run: python3 tools/linkcheck.py index.html feeds
-      - name: production (cryptonova.pro) after a deploy — pages, title, assets
+  live:
+    if: contains(github.event.head_commit.message, '[live]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: production (cryptonova.pro) after a deploy — this build, pages, assets
         run: python3 tools/linkcheck.py index.html live
-      - name: production in a real browser — the live public portfolio loads
+      - name: production in a real browser — the live portfolio, the six cards, the buttons, «Подключиться», the phone tabs
         run: |
           pip install -q playwright==1.47.0 && python3 -m playwright install --with-deps chromium >/dev/null
           python3 tools/livecheck.py

@@ -1,32 +1,51 @@
-/* CRYPTO NOVA — the NOVA AI sphere (owner 21.10 17:24: «вот такую сферу оживи… динамически, без обрывов»):
-   a glass sphere with a small universe inside (stars, a warm glow, a cool highlight) and three glowing orbit ribbons
-   with glass electrons. Everything moves continuously: electrons run their orbits, light flows along the ribbons,
-   the whole atom turns slowly in the plane, the stars inside drift and twinkle. 100-unit design grid, scaled to any
-   size at the screen's pixel density. NovaSphere.draw(ctx, cx, cy, half, t, {busy, still}); NovaSphere.mount(canvas,
-   {busy: fn}); every <canvas data-sphere> mounts itself. */
+/* CRYPTO NOVA — the NOVA AI emblem, alive (owner 29.10: «обнови светящийся шар с нашим фирменным логотипом» and «он должен
+   быть динамичным — вращаться, двигаться, как старый»). It is the owner's picture in motion: the glowing «N» core and the
+   BTC / ETH / SOL / BNB coins are cut from his picture (assets/img/nova-parts.webp, tools in the site README); the three
+   glowing orbits are drawn live with the picture's geometry, turn slowly in the plane, the coins travel along them, light
+   flows along the rings and the core breathes softly. With prefers-reduced-motion it stands still in the picture's own pose.
+   100-unit design grid, scaled to any size at the screen's pixel density.
+   NovaSphere.draw(ctx, cx, cy, half, t, {busy, still}); NovaSphere.mount(canvas, {busy: fn}); NovaSphere.ready(fn) runs fn
+   once the picture parts are loaded; every <canvas data-sphere> mounts itself. */
 (function (w) {
   "use strict";
-  var TAU = Math.PI * 2;
-  // owner 21.10 18:06: the live sphere stays simple — one electron per orbit, no sparks, no extra lines (the coins live on the icon)
-  var ORB = [{ g: 1.62, b: 0.30, w: 0.78, e: [0] }, { g: 0.36, b: 0.27, w: -0.64, e: [2.2] }, { g: -0.30, b: 0.33, w: 0.71, e: [4.1] }];
-  var STARS = [];
-  (function () { var s = 7; function r() { s = (s * 16807) % 2147483647; return s / 2147483647; }
-    for (var i = 0; i < 26; i++) { var u = r() * 2 - 1, a = r() * TAU, rr = Math.cbrt(r()) * 0.92, q = Math.sqrt(1 - u * u); STARS.push({ x: q * Math.cos(a) * rr, y: u * rr, z: q * Math.sin(a) * rr, s: 0.25 + r() * 0.55, ph: r() * TAU, warm: r() < 0.3 }); } })();
-  var SPARK = [];
-  (function () { for (var i = 0; i < 9; i++) SPARK.push({ o: i % 3, th: i * 0.73 + 0.3, sp: 0.05 + (i % 4) * 0.02, ph: i * 1.7 }); })();
+  var TAU = Math.PI * 2, doc = w.document;
+  // the parts sheet sits next to this script: assets/sphere.js → assets/img/nova-parts.webp (same ?v= stamp)
+  var me = doc.currentScript && doc.currentScript.src;
+  var SRC = me ? me.replace(/sphere\.js(\?[^#]*)?$/, "img/nova-parts.webp$1") : "assets/img/nova-parts.webp";
+  var IMG = new Image(), READY = false, WAIT = [];
+  IMG.decoding = "async";
+  IMG.onload = function () { READY = true; WAIT.splice(0).forEach(function (f) { try { f(); } catch (e) { /* a canvas that went away */ } }); };
+  IMG.src = SRC;
+  // sheet: the core 256×256 at 0,0 (glass interior, radius 120 of 128); coins 128×128 (disc radius 50 of 64)
+  var CORE = [0, 0, 256, 256, 120 / 128], COIN = { btc: [256, 0], eth: [384, 0], sol: [256, 128], bnb: [384, 128] };
+  var WARM = { btc: true, bnb: true };
 
-  /* a point of orbit o at angle th: tilted circle (flat ellipse) turned by g around the view axis; z > 0 is in front */
-  function op(o, th, rad, rot) {
-    var x = Math.cos(th) * rad, y = Math.sin(th) * rad * Math.sin(o.b), z = Math.sin(th) * rad * Math.cos(o.b), g = o.g + rot;
+  /* the picture's geometry, measured on the owner's 1254-px picture (centre 632,618; 640 px = 50 units): every orbit is a
+     tilted circle — g: the long axis on screen, b: the tilt (short / long = sin b), R: the radius, w: the coins' speed,
+     coins: [name, angle at t = 0] (t = 0 is the picture's own pose) */
+  var K = 50 / 640;
+  var ORB = [
+    { g: -1.44, b: 0.41, R: 523 * K, w: 0.34, coins: [] },
+    { g: 0.50, b: 0.35, R: 580 * K, w: 0.26, coins: [["btc", -2.38], ["bnb", 0.62]] },
+    { g: -0.36, b: 0.33, R: 550 * K, w: -0.3, coins: [["eth", 0.42], ["sol", 2.36]] }
+  ];
+  var FAINT = [{ g: 0.2, b: 0.62, R: 44 }, { g: -0.9, b: 0.5, R: 40 }];
+  var RS = 13.6, CR = 4.1, ROT = 0.045, TEMPO = 1;
+  var STARS = [];
+  (function () { var s = 11; function r() { s = (s * 16807) % 2147483647; return s / 2147483647; }
+    for (var i = 0; i < 22; i++) { var a = r() * TAU, d = 17 + r() * 30; STARS.push({ x: Math.cos(a) * d, y: Math.sin(a) * d * 0.9, s: 0.25 + r() * 0.45, ph: r() * TAU }); } })();
+
+  /* a point of orbit o at angle th: the tilted circle turned by g + rot in the plane; z > 0 is in front of the core */
+  function op(o, th, rot) {
+    var x = Math.cos(th) * o.R, y = Math.sin(th) * o.R * Math.sin(o.b), z = Math.sin(th) * o.R * Math.cos(o.b), g = o.g + rot;
     return { x: x * Math.cos(g) - y * Math.sin(g), y: x * Math.sin(g) + y * Math.cos(g), z: z };
   }
-  /* depth shade: a conic gradient whose darkness follows how far behind the sphere each part of the orbit is.
-     One continuous stroke per half orbit, so there are no seams, and the back fades smoothly into the front. */
+  /* depth shade: darker where the orbit is behind the core, one continuous conic gradient per half (no seams) */
   function shade(g, o, rot) {
-    var st = [], p0 = op(o, 0, 1, rot), f0 = Math.atan2(p0.y, p0.x);
-    for (var q = 0; q < 48; q++) {
-      var th = q * TAU / 48, p = op(o, th, 1, rot), f = Math.atan2(p.y, p.x) - f0;
-      f = ((f % TAU) + TAU) % TAU / TAU; st.push([f, 0.62 * (1 - (Math.sin(th) + 1) / 2)]);
+    var st = [], p0 = op(o, 0, rot), f0 = Math.atan2(p0.y, p0.x);
+    for (var q = 0; q < 36; q++) {
+      var th = q * TAU / 36, p = op(o, th, rot), f = Math.atan2(p.y, p.x) - f0;
+      st.push([((f % TAU) + TAU) % TAU / TAU, 0.55 * (1 - (Math.sin(th) + 1) / 2)]);
     }
     st.sort(function (a, b) { return a[0] - b[0]; });
     var gr = g.createConicGradient(f0, 0, 0);
@@ -34,109 +53,82 @@
     gr.addColorStop(1, "rgba(4,10,34," + st[0][1].toFixed(3) + ")");
     return gr;
   }
-  function ribbon(g, o, rad, rot, front, t, k, glow, small) {
-    var a0 = front ? -0.015 : Math.PI - 0.015, a1 = front ? Math.PI + 0.015 : TAU + 0.015, n = small ? 36 : 80;
-    function path(r) { g.beginPath(); for (var i = 0; i <= n; i++) { var p = op(o, a0 + (a1 - a0) * i / n, r, rot); if (i) g.lineTo(p.x, p.y); else g.moveTo(p.x, p.y); } }
-    var grad = "rgba(150,205,255,.85)", conic = !!g.createConicGradient;
-    if (conic) {
-      grad = g.createConicGradient(t * 0.5 * (o.w > 0 ? 1 : -1) + o.g, 0, 0);
-      grad.addColorStop(0, "rgba(90,170,255,.9)"); grad.addColorStop(0.18, "rgba(235,248,255,.95)"); grad.addColorStop(0.3, "rgba(255,205,140,.9)");
-      grad.addColorStop(0.45, "rgba(90,165,255,.85)"); grad.addColorStop(0.7, "rgba(60,130,255,.8)"); grad.addColorStop(0.85, "rgba(225,244,255,.95)"); grad.addColorStop(1, "rgba(90,170,255,.9)");
+  function ribbon(g, o, rot, front, t, glow, small) {
+    var a0 = front ? -0.02 : Math.PI - 0.02, a1 = front ? Math.PI + 0.02 : TAU + 0.02, n = small ? 28 : 72;
+    function path() { g.beginPath(); for (var i = 0; i <= n; i++) { var p = op(o, a0 + (a1 - a0) * i / n, rot); if (i) g.lineTo(p.x, p.y); else g.moveTo(p.x, p.y); } }
+    var conic = !!g.createConicGradient, body = "rgba(150,210,255,.9)";
+    if (conic) {   // the picture's colours: cold blue and white light with warm gold passages, flowing slowly along the ring
+      body = g.createConicGradient(t * 0.35 * (o.w > 0 ? 1 : -1) + o.g, 0, 0);
+      body.addColorStop(0, "rgba(80,165,255,.95)"); body.addColorStop(0.16, "rgba(235,248,255,1)"); body.addColorStop(0.27, "rgba(255,196,120,.95)");
+      body.addColorStop(0.38, "rgba(120,190,255,.95)"); body.addColorStop(0.62, "rgba(60,140,255,.9)"); body.addColorStop(0.8, "rgba(230,246,255,1)");
+      body.addColorStop(0.9, "rgba(255,210,150,.9)"); body.addColorStop(1, "rgba(80,165,255,.95)");
     }
-    g.lineCap = "butt"; g.lineJoin = "round";
-    path(rad); g.strokeStyle = "rgba(70,150,255," + ((front ? 0.16 : 0.09) * glow).toFixed(3) + ")"; g.lineWidth = 4.6 * k; g.stroke();
-    path(rad); g.strokeStyle = grad; g.lineWidth = 2.5 * k; g.stroke();
-    path(rad); g.strokeStyle = "rgba(255,255,255,.75)"; g.lineWidth = 0.7 * k; g.stroke();
-    if (conic) { var sh = shade(g, o, rot); path(rad); g.strokeStyle = sh; g.lineWidth = 2.7 * k; g.stroke(); }
-    else if (!front) { path(rad); g.strokeStyle = "rgba(4,10,34,.45)"; g.lineWidth = 2.7 * k; g.stroke(); }
+    g.lineCap = "round"; g.lineJoin = "round";
+    if (!small) { path(); g.strokeStyle = "rgba(40,120,255," + ((front ? 0.13 : 0.08) * glow).toFixed(3) + ")"; g.lineWidth = 7; g.stroke(); }
+    path(); g.strokeStyle = "rgba(70,150,255," + ((front ? 0.24 : 0.14) * glow).toFixed(3) + ")"; g.lineWidth = small ? 3.6 : 3.8; g.stroke();
+    path(); g.strokeStyle = body; g.lineWidth = small ? 1.7 : 1.9; g.stroke();
+    if (!small) { path(); g.strokeStyle = "rgba(255,255,255,.8)"; g.lineWidth = 0.55; g.stroke(); }
+    if (conic && !front) { path(); g.strokeStyle = shade(g, o, rot); g.lineWidth = small ? 3.8 : 4; g.stroke(); }
   }
-  function bead(g, x, y, r, warm, dim) {
-    var h = g.createRadialGradient(x, y, 0, x, y, r * 3.4);
-    h.addColorStop(0, warm ? "rgba(255,210,150," + (0.45 * dim).toFixed(3) + ")" : "rgba(120,200,255," + (0.5 * dim).toFixed(3) + ")"); h.addColorStop(1, "rgba(120,200,255,0)");
-    g.fillStyle = h; g.beginPath(); g.arc(x, y, r * 3.4, 0, TAU); g.fill();
-    var b = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.05, x, y, r);
-    b.addColorStop(0, "rgba(255,255,255," + dim + ")"); b.addColorStop(0.35, warm ? "rgba(255,226,180," + dim + ")" : "rgba(150,225,255," + dim + ")");
-    b.addColorStop(1, warm ? "rgba(200,140,70," + (0.9 * dim) + ")" : "rgba(30,95,220," + (0.9 * dim) + ")");
-    g.fillStyle = b; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill();
-  }
-
-  var TEMPO = 1.35;   // owner 21.10 18:11: «чуть-чуть ускорить» — every motion a third faster
-  /* «coins» variant (owner 21.10 19:17: the big atom like the icon — bitcoin and ether on the orbits, the N in the core) */
-  function coin(g, x, y, r, kind, dim) {
-    var h = g.createRadialGradient(x, y, r * 0.8, x, y, r * 2.6);
-    h.addColorStop(0, kind === "btc" ? "rgba(255,170,60," + (0.45 * dim).toFixed(3) + ")" : "rgba(140,170,255," + (0.4 * dim).toFixed(3) + ")"); h.addColorStop(1, "rgba(120,160,255,0)");
-    g.fillStyle = h; g.beginPath(); g.arc(x, y, r * 2.6, 0, TAU); g.fill();
-    var b = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
-    if (kind === "btc") { b.addColorStop(0, "#FFE3A3"); b.addColorStop(0.45, "#F7A43A"); b.addColorStop(1, "#B9650E"); }
-    else { b.addColorStop(0, "#3A4A86"); b.addColorStop(0.6, "#18224F"); b.addColorStop(1, "#0B1233"); }
-    g.globalAlpha = dim; g.fillStyle = b; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill();
-    g.lineWidth = r * 0.14; g.strokeStyle = kind === "btc" ? "rgba(255,226,160,.95)" : "rgba(170,190,255,.9)"; g.beginPath(); g.arc(x, y, r * 0.93, 0, TAU); g.stroke();
-    if (kind === "btc") {
-      g.fillStyle = "#FFF6E0"; g.font = "700 " + (r * 1.25).toFixed(2) + "px Arial,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("\u20BF", x + r * 0.03, y + r * 0.06);
-    } else {   // the ether diamond
-      g.fillStyle = "rgba(235,240,255,.95)"; g.beginPath(); g.moveTo(x, y - r * 0.62); g.lineTo(x + r * 0.38, y + r * 0.02); g.lineTo(x, y + r * 0.2); g.lineTo(x - r * 0.38, y + r * 0.02); g.closePath(); g.fill();
-      g.fillStyle = "rgba(200,210,255,.85)"; g.beginPath(); g.moveTo(x, y + r * 0.3); g.lineTo(x + r * 0.38, y + r * 0.1); g.lineTo(x, y + r * 0.64); g.lineTo(x - r * 0.38, y + r * 0.1); g.closePath(); g.fill();
+  function coin(g, name, x, y, r, dim, small) {
+    var warm = WARM[name];
+    if (!small) {
+      var h = g.createRadialGradient(x, y, r * 0.7, x, y, r * 2.4);
+      h.addColorStop(0, warm ? "rgba(255,160,60," + (0.5 * dim).toFixed(3) + ")" : "rgba(90,170,255," + (0.5 * dim).toFixed(3) + ")");
+      h.addColorStop(1, warm ? "rgba(255,160,60,0)" : "rgba(90,170,255,0)");
+      g.fillStyle = h; g.beginPath(); g.arc(x, y, r * 2.4, 0, TAU); g.fill();
     }
-    g.globalAlpha = 1;
+    if (READY) {
+      var s = COIN[name], rr = r * 64 / 50;   // the disc is 50 of the tile's 64 px half
+      g.globalAlpha = dim; g.drawImage(IMG, s[0], s[1], 128, 128, x - rr, y - rr, rr * 2, rr * 2); g.globalAlpha = 1;
+    } else {
+      g.fillStyle = warm ? "rgba(247,164,58," + dim + ")" : "rgba(110,180,255," + dim + ")"; g.beginPath(); g.arc(x, y, r * 0.8, 0, TAU); g.fill();
+    }
   }
-  function glyphN(g, RS, t) {   // the brand N: one smooth wave and a small four-point star
-    var s = RS / 17;
-    g.save(); g.scale(s, s); g.lineCap = "round"; g.lineJoin = "round";
-    var gr = g.createLinearGradient(-7, 6, 7, -6); gr.addColorStop(0, "rgba(190,225,255,.95)"); gr.addColorStop(1, "#FFFFFF");
-    g.shadowColor = "rgba(160,215,255,.9)"; g.shadowBlur = 6 * s;
-    g.strokeStyle = gr; g.lineWidth = 2.6; g.beginPath(); g.moveTo(-7, 5.5); g.bezierCurveTo(-7.5, -7, -2.5, -7.5, 0, 0); g.bezierCurveTo(2.5, 7.5, 7.5, 7, 7, -5.5); g.stroke();
-    var tw = 0.75 + 0.25 * Math.sin(t * 3), sx = 9.4, sy = -7.6, a = 2.4 * tw, b2 = 0.55 * tw;
-    g.fillStyle = "#FFFFFF"; g.beginPath(); g.moveTo(sx, sy - a); g.lineTo(sx + b2, sy - b2); g.lineTo(sx + a, sy); g.lineTo(sx + b2, sy + b2); g.lineTo(sx, sy + a); g.lineTo(sx - b2, sy + b2); g.lineTo(sx - a, sy); g.lineTo(sx - b2, sy - b2); g.closePath(); g.fill();
-    g.shadowBlur = 0; g.restore();
+  function core(g, t, glow, small) {
+    var p = 0.5 + 0.5 * Math.sin(t * 1.25);   // the soft breath
+    var halo = g.createRadialGradient(0, 0, RS * 0.85, 0, 0, RS * 1.75);
+    halo.addColorStop(0, "rgba(90,170,255," + ((0.42 + 0.16 * p) * glow).toFixed(3) + ")"); halo.addColorStop(1, "rgba(90,170,255,0)");
+    g.fillStyle = halo; g.beginPath(); g.arc(0, 0, RS * 1.75, 0, TAU); g.fill();
+    // the glass: the owner's «N» interior, then a glowing shell and rim drawn around it
+    g.fillStyle = "#050B2A"; g.beginPath(); g.arc(0, 0, RS * 0.98, 0, TAU); g.fill();
+    if (READY) { var ri = RS * 0.74 / CORE[4]; g.drawImage(IMG, CORE[0], CORE[1], CORE[2], CORE[3], -ri, -ri, ri * 2, ri * 2); }
+    else { g.strokeStyle = "rgba(220,240,255,.9)"; g.lineWidth = RS * 0.16; g.beginPath(); g.moveTo(-RS * 0.4, RS * 0.3); g.bezierCurveTo(-RS * 0.42, -RS * 0.45, -RS * 0.12, -RS * 0.45, 0, 0); g.bezierCurveTo(RS * 0.12, RS * 0.45, RS * 0.42, RS * 0.42, RS * 0.4, -RS * 0.3); g.stroke(); }
+    var sh = g.createRadialGradient(0, 0, RS * 0.62, 0, 0, RS);
+    sh.addColorStop(0, "rgba(20,80,230,0)"); sh.addColorStop(0.45, "rgba(25,95,255," + (0.42 + 0.1 * p).toFixed(3) + ")");
+    sh.addColorStop(0.78, "rgba(70,165,255," + (0.78 + 0.12 * p).toFixed(3) + ")"); sh.addColorStop(0.95, "rgba(200,236,255,.95)"); sh.addColorStop(1, "rgba(150,210,255,.35)");
+    g.fillStyle = sh; g.beginPath(); g.arc(0, 0, RS, 0, TAU); g.fill();
+    if (!small) {
+      g.strokeStyle = "rgba(235,248,255,.8)"; g.lineWidth = 0.5; g.beginPath(); g.arc(0, 0, RS * 0.995, 0, TAU); g.stroke();
+      g.strokeStyle = "rgba(255,255,255," + (0.45 + 0.2 * p).toFixed(3) + ")"; g.lineWidth = 0.8; g.beginPath(); g.arc(0, 0, RS * 0.9, Math.PI * 1.08, Math.PI * 1.42); g.stroke();
+      g.strokeStyle = "rgba(190,230,255,.35)"; g.lineWidth = 0.6; g.beginPath(); g.arc(0, 0, RS * 0.9, Math.PI * 0.08, Math.PI * 0.36); g.stroke();
+    }
   }
   function draw(g, cx0, cy0, half, t, opt) {
-    opt = opt || {}; t = t * TEMPO;
-    var busy = !!opt.busy, k = 1, small = half < 22, glow = busy ? 1.35 : 1, rot = t * 0.07, RO = 43, RS = 17;
+    opt = opt || {}; t = (t || 0) * TEMPO;
+    var busy = !!opt.busy, small = half < 24, glow = busy ? 1.35 : 1, rot = t * ROT;
     g.save(); g.translate(cx0, cy0); g.scale(half / 50, half / 50);
-    // bloom
-    var hz = g.createRadialGradient(0, 0, RS * 0.6, 0, 0, 50);
-    hz.addColorStop(0, "rgba(70,150,255," + (0.42 * glow).toFixed(3) + ")"); hz.addColorStop(0.45, "rgba(50,110,240," + (0.13 * glow).toFixed(3) + ")"); hz.addColorStop(1, "rgba(40,90,220,0)");
+    // the blue haze of the picture
+    var hz = g.createRadialGradient(0, 0, RS * 0.5, 0, 0, 50);
+    hz.addColorStop(0, "rgba(50,130,255," + (0.3 * glow).toFixed(3) + ")"); hz.addColorStop(0.5, "rgba(40,100,240," + (0.1 * glow).toFixed(3) + ")"); hz.addColorStop(1, "rgba(30,80,220,0)");
     g.fillStyle = hz; g.beginPath(); g.arc(0, 0, 50, 0, TAU); g.fill();
-    // back halves of the orbits and the electrons behind the sphere
-    var E = [];
-    ORB.forEach(function (o, oi) {
-      ribbon(g, o, RO, rot, false, t, k, glow, small);
-      o.e.forEach(function (e0, ei) { var th = e0 + t * o.w; /* busy speeds the clock in mount(), never the angle */ var p = op(o, th, RO, rot); E.push({ p: p, r: 2.7 * (small ? 1.2 : 1), warm: oi === 2, coin: opt.coins ? ["btc", "eth", null][oi] : null }); });
+    if (!small) {
+      // the thin dotted orbits and the star dust around
+      g.setLineDash([0.5, 1.6]); g.lineWidth = 0.35; g.strokeStyle = "rgba(120,185,255,.28)";
+      FAINT.forEach(function (o) { g.beginPath(); for (var i = 0; i <= 64; i++) { var p = op(o, i * TAU / 64, rot * 0.6); if (i) g.lineTo(p.x, p.y); else g.moveTo(p.x, p.y); } g.stroke(); });
+      g.setLineDash([]);
+      STARS.forEach(function (s) { var a = 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(t * 1.9 + s.ph)); g.fillStyle = "rgba(170,215,255," + a.toFixed(3) + ")"; g.beginPath(); g.arc(s.x, s.y, s.s, 0, TAU); g.fill(); });
+    }
+    var C = [];
+    ORB.forEach(function (o) {
+      ribbon(g, o, rot, false, t, glow, small);
+      o.coins.forEach(function (c) { var p = op(o, c[1] + t * o.w, rot); C.push({ n: c[0], p: p, R: o.R }); });
     });
-    E.filter(function (e) { return e.p.z < 0; }).forEach(function (e) { var rr = e.r * (0.85 + 0.15 * (1 + e.p.z / RO)); if (e.coin) coin(g, e.p.x, e.p.y, rr * 1.75, e.coin, 0.6); else bead(g, e.p.x, e.p.y, rr, e.warm, 0.55); });
-    // the sphere: a small universe in glass
-    var sg = g.createRadialGradient(0, 0, RS * 0.9, 0, 0, RS * 1.35);
-    sg.addColorStop(0, "rgba(110,190,255," + (0.5 * glow).toFixed(3) + ")"); sg.addColorStop(1, "rgba(110,190,255,0)");
-    g.fillStyle = sg; g.beginPath(); g.arc(0, 0, RS * 1.35, 0, TAU); g.fill();
-    g.save(); g.beginPath(); g.arc(0, 0, RS, 0, TAU); g.clip();
-    var b = g.createRadialGradient(RS * 0.38, -RS * 0.2, 0, RS * 0.1, 0, RS * 1.45);
-    b.addColorStop(0, "#FFF6E2"); b.addColorStop(0.07, "#C9F5FF"); b.addColorStop(0.24, "#4CCBFF"); b.addColorStop(0.5, "#1E58CF"); b.addColorStop(0.78, "#0C1758"); b.addColorStop(1, "#050928");
-    g.fillStyle = b; g.fillRect(-RS, -RS, RS * 2, RS * 2);
-    var wm = g.createRadialGradient(-RS * 0.25, RS * 0.55, 0, -RS * 0.25, RS * 0.55, RS * 0.75);
-    wm.addColorStop(0, "rgba(255,190,110,.42)"); wm.addColorStop(1, "rgba(255,190,110,0)");
-    g.fillStyle = wm; g.fillRect(-RS, -RS, RS * 2, RS * 2);
-    var ya = t * 0.18, cy = Math.cos(ya), sy = Math.sin(ya);
-    (small ? STARS.slice(0, 14) : STARS).forEach(function (s) {
-      var x = s.x * cy + s.z * sy, z = -s.x * sy + s.z * cy, tw = 0.55 + 0.45 * Math.sin(t * 2.2 + s.ph), a = (0.35 + 0.65 * (z + 1) / 2) * tw;
-      g.fillStyle = s.warm ? "rgba(255,215,160," + a.toFixed(3) + ")" : "rgba(220,240,255," + a.toFixed(3) + ")";
-      g.beginPath(); g.arc(x * RS, s.y * RS, s.s * (small ? 1.6 : 1), 0, TAU); g.fill();
-    });
-    var hl = g.createRadialGradient(RS * 0.42, -RS * 0.22, 0, RS * 0.42, -RS * 0.22, RS * 0.55);
-    hl.addColorStop(0, "rgba(255,255,255," + ((opt.coins ? 0.3 : 0.85) + 0.15 * Math.sin(t * 1.4)).toFixed(3) + ")"); hl.addColorStop(1, "rgba(255,255,255,0)");
-    g.fillStyle = hl; g.fillRect(-RS, -RS, RS * 2, RS * 2);
-    var ed = g.createRadialGradient(0, 0, RS * 0.7, 0, 0, RS);
-    ed.addColorStop(0, "rgba(4,8,30,0)"); ed.addColorStop(1, "rgba(4,8,30,.45)");
-    g.fillStyle = ed; g.fillRect(-RS, -RS, RS * 2, RS * 2);
-    g.restore();
-    if (opt.coins) glyphN(g, RS, t);
-    // glass rim and a reflection
-    var rg = g.createLinearGradient(-RS, -RS, RS, RS);
-    rg.addColorStop(0, "rgba(190,230,255,.9)"); rg.addColorStop(0.5, "rgba(90,160,255,.55)"); rg.addColorStop(1, "rgba(160,220,255,.85)");
-    g.strokeStyle = rg; g.lineWidth = 0.8; g.beginPath(); g.arc(0, 0, RS - 0.4, 0, TAU); g.stroke();
-    g.strokeStyle = "rgba(255,255,255,.45)"; g.lineWidth = 0.9; g.beginPath(); g.arc(0, 0, RS * 0.84, Math.PI * 1.08, Math.PI * 1.42); g.stroke();
-    // front halves and electrons in front
-    ORB.forEach(function (o) { ribbon(g, o, RO, rot, true, t, k, glow, small); });
-    E.filter(function (e) { return e.p.z >= 0; }).forEach(function (e) { var rr = e.r * (0.85 + 0.15 * (1 + e.p.z / RO)); if (e.coin) coin(g, e.p.x, e.p.y, rr * 1.75, e.coin, 1); else bead(g, e.p.x, e.p.y, rr, e.warm, 1); });
+    function coinAt(c, dim) { var k = 0.86 + 0.14 * (c.p.z / c.R + 1) / 2; coin(g, c.n, c.p.x, c.p.y, CR * k * (small ? 1.25 : 1), dim, small); }
+    C.filter(function (c) { return c.p.z < 0; }).forEach(function (c) { coinAt(c, 0.72); });
+    core(g, t, glow, small);
+    ORB.forEach(function (o) { ribbon(g, o, rot, true, t, glow, small); });
+    C.filter(function (c) { return c.p.z >= 0; }).forEach(function (c) { coinAt(c, 1); });
     g.restore();
   }
 
@@ -149,23 +141,25 @@
     function frame(now) {
       if (!run && now !== -1) return;
       var busy = typeof opt.busy === "function" ? opt.busy() : false;
-      if (now !== -1) { var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016; last = now; t += dt * (busy ? 3 : 1); } else t = t || 1.3;
+      if (now !== -1) { var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016; last = now; t += dt * (busy ? 2.2 : 1); }
       ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H);
-      draw(ctx, W / 2, H / 2, Math.min(W, H) / 2, t, { busy: busy, still: now === -1 && reduce, coins: !!opt.coins });
+      draw(ctx, W / 2, H / 2, Math.min(W, H) / 2, t, { busy: busy });
       if (now !== -1) requestAnimationFrame(frame);
     }
-    function set() { var want = vis && !document.hidden && !reduce; if (want && !run) { run = true; last = 0; requestAnimationFrame(frame); } else if (!want) { run = false; frame(-1); } }
+    function set() { var want = vis && !doc.hidden && !reduce; if (want && !run) { run = true; last = 0; requestAnimationFrame(frame); } else if (!want) { run = false; frame(-1); } }
     size(); w.addEventListener("resize", function () { size(); if (!run) frame(-1); });
-    // a canvas that starts hidden (chat, report window) gets its real size when it is shown
+    // a canvas that starts hidden gets its real size when it is shown
     if ("ResizeObserver" in w) new ResizeObserver(function () { var d = Math.min(3, w.devicePixelRatio || 1); if (Math.round(cv.clientWidth * d) !== W || Math.round(cv.clientHeight * d) !== H) { size(); if (!run) frame(-1); } }).observe(cv);
-    document.addEventListener("visibilitychange", set);
+    doc.addEventListener("visibilitychange", set);
     if ("IntersectionObserver" in w) new IntersectionObserver(function (en) { vis = en[0].isIntersecting; set(); }).observe(cv);
+    ready(function () { if (!run) frame(-1); });
     set(); frame(-1);
     return { size: size };
   }
+  function ready(fn) { if (READY) fn(); else WAIT.push(fn); }
 
-  w.NovaSphere = { draw: draw, mount: mount };
-  function auto() { [].forEach.call(document.querySelectorAll("canvas[data-sphere]"), function (c) { if (!c._sph) try { c._sph = mount(c, { coins: c.getAttribute("data-sphere") === "coins" }); } catch (e) { c._sph = true; } }); }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", auto); else auto();
+  w.NovaSphere = { draw: draw, mount: mount, ready: ready };
+  function auto() { [].forEach.call(doc.querySelectorAll("canvas[data-sphere]"), function (c) { if (!c._sph) try { c._sph = mount(c, {}); } catch (e) { c._sph = true; } }); }
+  if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", auto); else auto();
   w.NovaSphere.auto = auto;
 })(window);

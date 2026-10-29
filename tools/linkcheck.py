@@ -1,6 +1,6 @@
 """Every outside address the site sends people to or reads from, opened from a GitHub runner (the sandbox the site is built in
 can't reach them): status, final address, page title / the facts that matter. Changes nothing. Stdlib only.
-  python3 tools/linkcheck.py index.html links|stores|feeds   (GitHub keeps 10 notices a step: one part per step)"""
+  python3 tools/linkcheck.py index.html links|stores|feeds|live   (GitHub keeps 10 notices a step: one part per step)"""
 import json, re, sys, time, urllib.error, urllib.request
 
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15"
@@ -73,13 +73,15 @@ if part == "feeds":
 
 if part == "live":
     # production after a deploy: wait for GitHub Pages to serve the new build, then every page and every asset it loads
-    want = re.search(r'<title[^>]*>(.*?)</title>', page).group(1)
-    for i in range(24):
-        code, final, hd, body = get("https://cryptonova.pro/")
-        if title(body) == want:
+    # the build stamp (assets/site.css?v=…) tells this build from the previous one; the title alone doesn't change
+    want = re.search(r'site\.css\?v=(\d+)', page).group(1)
+    for i in range(32):
+        code, final, hd, body = get("https://cryptonova.pro/?t=" + str(int(time.time())))
+        got = (re.search(r'site\.css\?v=(\d+)', body) or [None, None])[1]
+        if got == want:
             break
         time.sleep(15)
-    note("live title", f"after {i * 15} s: HTTP {code} · «{title(body)}» · expected «{want}» · {'OK' if title(body) == want else 'NOT YET'}")
+    note("live build", f"after {i * 15} s: HTTP {code} · «{title(body)}» · build {got} · expected {want} · {'OK' if got == want else 'NOT YET'}")
     for path in ("", "privacy.html", "terms.html", "support.html", "delete.html", "privacy", "no-such-page"):
         c, f, h, b = get("https://cryptonova.pro/" + path)
         note("page", f"/{path} → HTTP {c} · «{title(b)}»")
@@ -90,6 +92,7 @@ if part == "live":
         if c != 200:
             bad.append(f"{a} {c}")
     shots = [f"assets/img/screens/{l}/{k}.webp" for l in ("en", "ru", "uk", "el", "es") for k in ("home", "demo", "fut", "spot", "nova", "review", "buy", "learn", "piggy", "connect")]
+    shots.append("assets/img/nova-parts.webp")   # loaded by sphere.js, not named in the HTML
     for a in shots:
         c, f, h, b = get("https://cryptonova.pro/" + a, n=50)
         if c != 200:

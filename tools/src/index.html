@@ -40,11 +40,12 @@ if(!rm&&!navigator.webdriver&&!/[?&]noboot\b/.test(location.search)&&s.getItem("
       <a href="#what" data-i="nav.what">{{nav.what}}</a>
       <a href="#how" data-i="nav.how">{{nav.how}}</a>
       <a href="#portfolio" data-i="nav.portfolio">{{nav.portfolio}}</a>
-      <a href="#start" data-i="nav.start">{{nav.start}}</a>
       <a href="#app" data-i="nav.app">{{nav.app}}</a>
       <a href="#faq" data-i="nav.faq">{{nav.faq}}</a>
+      <a class="nav-cn" href="#connect" data-i="cta.connect">{{cta.connect}}</a>
     </nav>
     <div class="langsel"><label class="sr" for="lang" data-i="nav.lang">{{nav.lang}}</label><select id="lang"><option value="en">EN</option><option value="ru">RU</option><option value="uk">UK</option><option value="el">EL</option><option value="es">ES</option></select></div>
+    <a class="btn-cn" href="#connect" data-i="nav.connect">{{nav.connect}}</a>
     <a class="btn-dl" href="{{appstore}}" data-i="nav.download">{{nav.download}}</a>
     <button type="button" class="menu-btn" id="menuBtn" aria-controls="nav" aria-expanded="false"><span class="sr" data-i="nav.menu">{{nav.menu}}</span><i></i><i></i><i></i></button>
   </div>
@@ -60,9 +61,9 @@ if(!rm&&!navigator.webdriver&&!/[?&]noboot\b/.test(location.search)&&s.getItem("
       <div class="heroside">
         <p class="line" data-i="hero.line">{{hero.line}}</p>
         <div class="cta">
-          <a class="btn primary" href="#portfolio" data-i="hero.b2">{{hero.b2}}</a>
+          <a class="btn primary" href="#connect" data-i="cta.connect">{{cta.connect}}</a>
+          <a class="btn" href="#portfolio" data-i="hero.b2">{{hero.b2}}</a>
           <a class="btn" href="#what" data-i="hero.b1">{{hero.b1}}</a>
-          <a class="btn" href="#app" data-i="hero.b3">{{hero.b3}}</a>
         </div>
       </div>
     </div>
@@ -156,6 +157,11 @@ if(!rm&&!navigator.webdriver&&!/[?&]noboot\b/.test(location.search)&&s.getItem("
         <div class="pflinks"><a class="btn" href="{{copy_url}}" target="_blank" rel="noopener" data-i="pf.okx">{{pf.okx}}</a><a class="btn" href="{{appstore}}" data-i="pf.app">{{pf.app}}</a></div>
       </div>
     </div>
+    <div class="copyband">
+      <canvas class="cbsph" data-sphere aria-hidden="true"></canvas>
+      <div class="cbtext"><h3 data-i="pf.copy.t">{{pf.copy.t}}</h3><p data-i="pf.copy.p">{{pf.copy.p}}</p></div>
+      <a class="btn primary" href="#connect" data-i="cta.connect">{{cta.connect}}</a>
+    </div>
   </div>
 </section>
 
@@ -210,26 +216,13 @@ if(!rm&&!navigator.webdriver&&!/[?&]noboot\b/.test(location.search)&&s.getItem("
 <section class="sec connect" id="connect" aria-labelledby="cnH">
   <div class="wrap">
     <div class="sec-head"><h2 id="cnH" data-i="cn.h2">{{cn.h2}}</h2><p class="lead" data-i="cn.lead">{{cn.lead}}</p></div>
-    <ol class="cnthree">
-      <li><h3 data-i="cn.c1.t">{{cn.c1.t}}</h3><p data-i="cn.c1.p">{{cn.c1.p}}</p><span class="cntag free" data-i="cn.free">{{cn.free}}</span></li>
-      <li><h3 data-i="cn.c2.t">{{cn.c2.t}}</h3><p data-i="cn.c2.p">{{cn.c2.p}}</p><span class="cntag free" data-i="cn.free">{{cn.free}}</span></li>
-      <li><h3 data-i="cn.c3.t">{{cn.c3.t}}</h3><p data-i="cn.c3.p">{{cn.c3.p}}</p><span class="cntag ext" data-i="cn.ext">{{cn.ext}}</span></li>
+    <ol class="cnsteps3">
+      <li class="cnk"><span class="cnn" aria-hidden="true">1</span><h3 data-i="cn.k1.t">{{cn.k1.t}}</h3><p data-i="cn.k1.p">{{cn.k1.p}}</p><a class="btn" href="{{okx_ref}}" target="_blank" rel="noopener sponsored" data-i="cn.k1.a">{{cn.k1.a}}</a></li>
+      <li class="cnk"><span class="cnn" aria-hidden="true">2</span><h3 data-i="cn.k2.t">{{cn.k2.t}}</h3><p data-i="cn.k2.p">{{cn.k2.p}}</p><p class="cnhelp"><a href="{{okx_help_dep}}" target="_blank" rel="noopener" data-i="cn.k2.l">{{cn.k2.l}}</a></p><a class="btn" href="{{okx_help_kyc}}" target="_blank" rel="noopener" data-i="cn.k2.a">{{cn.k2.a}}</a></li>
+      <li class="cnk main"><span class="cnn" aria-hidden="true">3</span><h3 data-i="cn.k3.t">{{cn.k3.t}}</h3><p data-i="cn.k3.p">{{cn.k3.p}}</p><a class="btn primary" href="{{copy_url}}" target="_blank" rel="noopener" data-i="cn.k3.a">{{cn.k3.a}}</a></li>
     </ol>
-    <div class="cngrid">
-      <div class="panel cnsteps">
-        <h3 data-i="cn.steps.h">{{cn.steps.h}}</h3>
-        <ol><li data-i="cn.s1">{{cn.s1}}</li><li data-i="cn.s2">{{cn.s2}}</li><li data-i="cn.s3">{{cn.s3}}</li><li data-i="cn.s4">{{cn.s4}}</li><li data-i="cn.s5">{{cn.s5}}</li><li data-i="cn.s6">{{cn.s6}}</li></ol>
-        <p class="cnguide" data-i="cn.guide">{{cn.guide}}</p>
-        <div class="cnlinks"><a class="btn" href="{{okx_ref}}" target="_blank" rel="noopener sponsored" data-i="cn.reg">{{cn.reg}}</a><a class="btn" href="{{copy_url}}" target="_blank" rel="noopener" data-i="cn.profile">{{cn.profile}}</a></div>
-        <p class="fine" data-i="cn.partner">{{cn.partner}}</p>
-      </div>
-      <div class="cnside">
-        <div class="cnnote"><h3 data-i="cn.fee.t">{{cn.fee.t}}</h3><p data-i="cn.fee.p">{{cn.fee.p}}</p></div>
-        <div class="cnnote"><h3 data-i="cn.region.t">{{cn.region.t}}</h3><p data-i="cn.region.p">{{cn.region.p}}</p></div>
-        <ul class="cnsafe"><li><b data-i="cn.safe1.t">{{cn.safe1.t}}</b><span data-i="cn.safe1.p">{{cn.safe1.p}}</span></li><li><b data-i="cn.safe2.t">{{cn.safe2.t}}</b><span data-i="cn.safe2.p">{{cn.safe2.p}}</span></li><li><b data-i="cn.safe3.t">{{cn.safe3.t}}</b><span data-i="cn.safe3.p">{{cn.safe3.p}}</span></li></ul>
-      </div>
-    </div>
-    <p class="risk" data-i="cn.risk">{{cn.risk}}</p>
+    <p class="cninfo"><span class="ii" aria-hidden="true">i</span><span data-i="cn.region">{{cn.region}}</span></p>
+    <div class="cnfine"><p data-i="cn.fine">{{cn.fine}}</p><p data-i="cn.partner">{{cn.partner}}</p><p data-i="cn.guide">{{cn.guide}}</p></div>
   </div>
 </section>
 
@@ -238,13 +231,12 @@ if(!rm&&!navigator.webdriver&&!/[?&]noboot\b/.test(location.search)&&s.getItem("
     <div class="sec-head"><h2 id="appH" data-i="app.h2">{{app.h2}}</h2><p class="lead" data-i="app.lead">{{app.lead}}</p></div>
     <div class="appgrid">
       <div class="appphone">
-        <div class="phone tilt"><span class="island" aria-hidden="true"></span><div class="scr swipe" id="scr" tabindex="0"></div></div>
-        <div class="scrnav"><button type="button" class="scrbtn" id="scrPrev" aria-label="{{app.prev}}" data-i-attr="aria-label:app.prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg></button><div class="scrdots" id="scrDots"></div><button type="button" class="scrbtn" id="scrNext" aria-label="{{app.next}}" data-i-attr="aria-label:app.next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6 6 6-6 6"/></svg></button></div>
-        <p class="tabdesc" id="tabdesc" aria-live="polite"></p>
+        <div class="phone"><span class="island" aria-hidden="true"></span><div class="scr stack" id="scr" role="tabpanel" aria-labelledby="tab-home"></div></div>
         <p class="appcap" data-i="app.caption">{{app.caption}}</p>
       </div>
       <div class="appside">
         <ul class="tabs" role="tablist" id="tabs" aria-label="{{app.h2}}">{{tabs}}</ul>
+        <p class="tabdesc" id="tabdesc" aria-live="polite"></p>
         <div class="appstores"><div class="stores">{{stores}}</div><p class="small" data-i="app.android">{{app.android}}</p></div>
       </div>
     </div>

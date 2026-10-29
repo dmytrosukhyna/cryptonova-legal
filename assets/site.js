@@ -359,7 +359,8 @@
       ctx.font = "500 " + Math.round(9 * dpr) + "px 'JetBrains Mono',monospace";
       var mw = 0; (narrow ? SRC_S : SRC).forEach(function (n) { mw = Math.max(mw, ctx.measureText(n).width); });
       sx = mw + 10 * dpr;
-      AI.r = Math.max(15 * dpr, Math.min(W * 0.055, Hh * 0.1)); AI.x = ph.x - AI.r * 1.6 - Math.max(W * 0.035, 12 * dpr); AI.y = Hh * 0.48;
+      // the NOVA AI emblem, a little larger than the old sphere
+      AI.r = Math.max(15 * dpr, Math.min(W * (narrow ? 0.072 : 0.062), Hh * 0.118)); AI.x = ph.x - AI.r * 1.6 - Math.max(W * 0.035, 12 * dpr); AI.y = Hh * 0.48;
       var x0 = sx + Math.max(W * 0.06, 18 * dpr), x1 = AI.x - AI.r * 1.7 - Math.max(W * 0.04, 12 * dpr), sizes = [6, 8, 6];
       L = sizes.map(function (n, li) { var x = x0 + (x1 - x0) * li / (sizes.length - 1), out = []; for (var k = 0; k < n; k++) out.push({ x: x, y: Hh * (0.1 + 0.8 * k / (n - 1)), lit: 0 }); return out; });
     }
@@ -426,7 +427,7 @@
       // NOVA AI decides
       AI.hit = Math.max(0, AI.hit - dt * 1.3);
       if (AI.hit > 0.02) glow(ctx, AI.x, AI.y, AI.r * 2.2, "120,210,255", 0.32 * AI.hit);
-      if (window.NovaSphere) NovaSphere.draw(ctx, AI.x, AI.y, AI.r * 2.1, tm, { busy: AI.hit > 0.5, still: now == null });
+      if (window.NovaSphere) NovaSphere.draw(ctx, AI.x, AI.y, AI.r * 2.1, now == null ? 0 : tm, { busy: AI.hit > 0.5, still: now == null });
       ctx.font = "700 " + Math.round(9.5 * dpr) + "px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "top"; ctx.fillStyle = "#CFEFFF";
       ctx.fillText("NOVA AI", AI.x, AI.y + AI.r * 1.8);
       glowIn = Math.max(0, glowIn - dt * 1.4);
@@ -437,6 +438,7 @@
     var r = runner(cv, frame);
     window.addEventListener("resize", function () { size(); if (!r.running()) frame(); });
     setTimeout(function () { size(); if (!r.running()) frame(); }, 400);
+    if (window.NovaSphere && NovaSphere.ready) NovaSphere.ready(function () { if (!r.running()) frame(); });
     frame();
     return { size: size };
   }
@@ -482,7 +484,7 @@
       });
       pulse = Math.max(0, pulse - dt * 1.5);
       var bw = colW(), cx = W - bw / 2 - 4 * dpr, half = Math.min(bw * 0.4, Hh * 0.2), mw = bw - 10 * dpr;
-      if (window.NovaSphere) NovaSphere.draw(ctx, cx, ey - Hh * 0.1, half, tm, { busy: pulse > 0.3, still: now == null });
+      if (window.NovaSphere) NovaSphere.draw(ctx, cx, ey - Hh * 0.1, half, now == null ? 0 : tm, { busy: pulse > 0.3, still: now == null });
       var held = heldCoins().length, ty = ey - Hh * 0.1 + half * 0.95;
       ctx.textAlign = "center"; ctx.textBaseline = "top";
       label(t("think.out"), cx, ty, 8.5, "rgba(160,215,245,.9)", 500, mw);
@@ -494,67 +496,70 @@
     size();
     var r = runner(cv, frame);
     window.addEventListener("resize", function () { size(); if (!r.running()) frame(); });
+    if (window.NovaSphere && NovaSphere.ready) NovaSphere.ready(function () { if (!r.running()) frame(); });
     frame();
     return { draw: function () { if (!r.running()) frame(); } };
   }
 
-  /* ---------- the app: real screens you can swipe; the feature list follows ---------- */
-  var TABS = ["home", "demo", "fut", "spot", "nova", "review", "buy", "learn", "piggy", "connect"], tabKey = "home", scrLoaded = false, pausedTill = 0;
-  function scrLoad() { if (scrLoaded) return; scrLoaded = true; $$("#scr img[data-src]").forEach(function (im) { im.src = im.getAttribute("data-src"); im.removeAttribute("data-src"); }); }
+  /* ---------- the app: a static, upright phone; the tab list next to it (under it on a phone) switches its screen ----------
+     Owner 29.10: «телефон кривой, кнопочки не нажимаются, разбор портфеля дёргается, переключатель ниже не нужен». Every screen
+     is a stacked <img> in one fixed 720×1560 box (nothing moves or changes size); the screens of the language are preloaded
+     when the section comes near, and a tab shows its screen only once it is decoded, so a switch never flashes or jumps. */
+  var TABS = ["home", "demo", "fut", "spot", "nova", "review", "buy", "learn", "piggy", "connect"], tabKey = "home", scrLang = "", scrWant = 0;
+  function scrSrc(k) { return "assets/img/screens/" + lang + "/" + k + ".webp"; }
+  function scrPreload() {
+    $$("#scr img").forEach(function (im) { var s = im.getAttribute("data-src"); if (s) { im.src = s; im.removeAttribute("data-src"); } });
+  }
   function renderScreens() {
     var scr = $("#scr"); if (!scr) return;
-    scrLoaded = false;
-    scr.setAttribute("role", "region"); scr.setAttribute("aria-roledescription", "carousel"); scr.setAttribute("aria-label", t("app.h2"));
-    scr.innerHTML = TABS.map(function (k, i) {
-      var src = "assets/img/screens/" + lang + "/" + k + ".webp";
-      return '<img data-k="' + k + '" alt="' + esc(t("tab." + k + ".t") + ": " + t("tab." + k + ".p")) + '" ' + (i === 0 ? 'src="' + src + '"' : 'data-src="' + src + '"') + ' width="720" height="1560" decoding="async" draggable="false">';
-    }).join("");
-    var dots = $("#scrDots");
-    if (dots) { dots.innerHTML = TABS.map(function (k) { return '<button type="button" data-k="' + k + '" aria-label="' + esc(t("tab." + k + ".t")) + '"></button>'; }).join(""); $$("button", dots).forEach(function (b) { b.addEventListener("click", function () { hold(); selectTab(b.getAttribute("data-k")); }); }); }
-    var box = $("#app");
-    if (box && "IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { scrLoad(); io.disconnect(); } }, { rootMargin: "600px 0px" }); io.observe(box); } else scrLoad();
-    selectTab(tabKey, false, true);
+    if (scrLang !== lang) {
+      scrLang = lang;
+      scr.innerHTML = TABS.map(function (k) {
+        var on = k === tabKey;
+        return '<img data-k="' + k + '" alt="' + esc(t("tab." + k + ".t") + ": " + t("tab." + k + ".p")) + '" ' + (on ? 'src="' + scrSrc(k) + '" class="on"' : 'data-src="' + scrSrc(k) + '" aria-hidden="true"') + ' width="720" height="1560" decoding="async" draggable="false">';
+      }).join("");
+      if (scrNear) scrPreload();
+    } else $$("#scr img").forEach(function (im) { var k = im.getAttribute("data-k"); im.alt = t("tab." + k + ".t") + ": " + t("tab." + k + ".p"); });
+    markTab(tabKey);
   }
+  var scrNear = false;
+  (function () {
+    var box = $("#app");
+    if (box && "IntersectionObserver" in window) { var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { scrNear = true; scrPreload(); io.disconnect(); } }, { rootMargin: "900px 0px" }); io.observe(box); }
+    else { scrNear = true; scrPreload(); }
+  })();
   function markTab(k) {
     tabKey = k;
     $$("#tabs .tab").forEach(function (b) { var on = b.getAttribute("data-k") === k; b.setAttribute("aria-selected", on ? "true" : "false"); b.tabIndex = on ? 0 : -1; });
-    $$("#scrDots button").forEach(function (b) { b.setAttribute("aria-current", b.getAttribute("data-k") === k ? "true" : "false"); });
+    var scr = $("#scr"); if (scr) scr.setAttribute("aria-labelledby", "tab-" + k);
     var d = $("#tabdesc"); if (d) d.innerHTML = "<b>" + esc(t("tab." + k + ".t")) + "</b> " + esc(t("tab." + k + ".p"));
   }
-  function selectTab(k, focus, instant) {
-    var scr = $("#scr"), i = TABS.indexOf(k); if (i < 0) return;
-    markTab(k); scrLoad();
-    if (focus) { var tb = $('#tabs .tab[data-k="' + k + '"]'); if (tb) tb.focus(); }
-    if (scr && scr.clientWidth) scr.scrollTo({ left: i * scr.clientWidth, behavior: instant || reduce ? "auto" : "smooth" });
+  function showScreen(k) {
+    var im = $('#scr img[data-k="' + k + '"]'); if (!im) return;
+    var ticket = ++scrWant;
+    function swap() {
+      if (ticket !== scrWant) return;   // a later tap wins
+      $$("#scr img").forEach(function (x) { var on = x === im; x.classList.toggle("on", on); if (on) x.removeAttribute("aria-hidden"); else x.setAttribute("aria-hidden", "true"); });
+    }
+    var s = im.getAttribute("data-src"); if (s) { im.src = s; im.removeAttribute("data-src"); }
+    if (im.complete && im.naturalWidth) swap();
+    else if (im.decode) im.decode().then(swap, swap);
+    else { im.addEventListener("load", swap, { once: true }); im.addEventListener("error", swap, { once: true }); }
   }
-  function step(d) { var i = TABS.indexOf(tabKey); selectTab(TABS[(i + d + TABS.length) % TABS.length]); }
-  function hold() { pausedTill = Date.now() + 12000; }
-  (function () {
-    var scr = $("#scr"); if (!scr) return;
-    var tm = null;
-    scr.addEventListener("scroll", function () { clearTimeout(tm); tm = setTimeout(function () { var i = Math.round(scr.scrollLeft / Math.max(1, scr.clientWidth)); var k = TABS[Math.max(0, Math.min(TABS.length - 1, i))]; if (k !== tabKey) markTab(k); }, 90); }, { passive: true });
-    var drag = null;   // a mouse drags the strip too (touch already scrolls natively)
-    scr.addEventListener("pointerdown", function (ev) { hold(); if (ev.pointerType !== "mouse") return; drag = { x: ev.clientX, l: scr.scrollLeft }; scr.classList.add("drag"); scr.setPointerCapture(ev.pointerId); });
-    scr.addEventListener("pointermove", function (ev) { if (drag) scr.scrollLeft = drag.l - (ev.clientX - drag.x); });
-    function end(ev) { if (!drag) return; var dx = ev.clientX - drag.x, i = TABS.indexOf(tabKey); drag = null; scr.classList.remove("drag"); if (Math.abs(dx) > 40) i = Math.max(0, Math.min(TABS.length - 1, Math.round(scr.scrollLeft / scr.clientWidth))); selectTab(TABS[i]); }
-    scr.addEventListener("pointerup", end); scr.addEventListener("pointercancel", end);
-    scr.addEventListener("keydown", function (ev) { if (ev.key === "ArrowRight") { ev.preventDefault(); hold(); step(1); } if (ev.key === "ArrowLeft") { ev.preventDefault(); hold(); step(-1); } });
-    window.addEventListener("resize", function () { var j = TABS.indexOf(tabKey); scr.scrollTo({ left: j * scr.clientWidth, behavior: "auto" }); });
-    var pv = $("#scrPrev"), nx = $("#scrNext");
-    if (pv) pv.addEventListener("click", function () { hold(); step(-1); });
-    if (nx) nx.addEventListener("click", function () { hold(); step(1); });
-    // the phone turns its own pages while it is on screen; any touch pauses it
-    var vis = false, box = $(".appgrid");
-    if (box && "IntersectionObserver" in window) new IntersectionObserver(function (en) { vis = en[0].isIntersecting; }, { threshold: 0.35 }).observe(box);
-    if (!reduce) setInterval(function () { if (vis && !doc.hidden && Date.now() > pausedTill) step(1); }, 4500);
-  })();
+  function selectTab(k, focus) {
+    if (TABS.indexOf(k) < 0) return;
+    markTab(k); showScreen(k);
+    if (focus) { var tb = $('#tabs .tab[data-k="' + k + '"]'); if (tb) tb.focus(); }
+  }
   $$("#tabs .tab").forEach(function (b) {
-    b.addEventListener("click", function () { hold(); selectTab(b.getAttribute("data-k")); });
+    b.addEventListener("click", function () { selectTab(b.getAttribute("data-k")); });
     b.addEventListener("keydown", function (ev) {
       var all = $$("#tabs .tab"), i = all.indexOf(b), n = null;
       if (ev.key === "ArrowRight" || ev.key === "ArrowDown") n = all[(i + 1) % all.length];
       if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") n = all[(i - 1 + all.length) % all.length];
-      if (n) { ev.preventDefault(); hold(); selectTab(n.getAttribute("data-k"), true); }
+      if (ev.key === "Home") n = all[0];
+      if (ev.key === "End") n = all[all.length - 1];
+      if (n) { ev.preventDefault(); selectTab(n.getAttribute("data-k"), true); }
     });
   });
 

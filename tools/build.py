@@ -48,6 +48,9 @@ CONVEYOR = cockpit_json("conveyor.json")
 # OKX partner sign-up link and CRYPTO NOVA's lead-trader profile (both opened by the cockpit's links-audit). Fallbacks: OKX itself.
 OKX_REF = CFG.get("okx_ref") or "https://www.okx.com/"
 COPY_URL = REAL.get("copy_url") or CFG.get("okx_copy_url") or "https://www.okx.com/copy-trading"
+# OKX's own help: identity verification and depositing (step 2 of «Подключиться к системе CRYPTO NOVA», brief of 29.10)
+OKX_HELP_KYC = "https://www.okx.com/help/4402551261837"
+OKX_HELP_DEP = "https://www.okx.com/help/4572795342989"
 N_COINS = len(MARKETS.get("top") or []) or 150
 N_DESKS = (CONVEYOR.get("counts") or {}).get("paper") or 14
 
@@ -142,7 +145,7 @@ def tabs():
     return "".join(out)
 
 
-PATH_GO = ["#what", "#how", "#why", "#portfolio", "#try", "#start"]
+PATH_GO = ["#what", "#how", "#why", "#portfolio", "#try", "#connect"]
 
 
 def path():
@@ -165,7 +168,8 @@ def why():
     return f'<ul class="whylist">{"".join(out)}</ul>'
 
 
-START_GO = ["#what", "#portfolio", APPSTORE, "#connect", "#app"]
+# owner 29.10: copying CRYPTO NOVA is the offer — «Подключиться к системе» is step 3 and the one primary button
+START_GO = ["#what", "#portfolio", "#connect", APPSTORE, "#app"]
 
 
 def start():
@@ -175,7 +179,7 @@ def start():
         out.append(f'<li class="st"><span class="sn" aria-hidden="true">{i:02d}</span><div class="stb"><h3 data-i="start.s{i}.t">{x(f"start.s{i}.t")}</h3>'
                    f'<p data-i="start.s{i}.p">{x(f"start.s{i}.p")}</p><p class="need"><b data-i="start.need">{x("start.need")}</b> '
                    f'<span data-i="start.s{i}.n">{x(f"start.s{i}.n")}</span></p></div>'
-                   f'<a class="btn{" primary" if i == 3 else ""}" href="{href}" data-i="start.s{i}.a">{x(f"start.s{i}.a")}</a></li>')
+                   f'<a class="btn{" primary" if href == "#connect" else ""}" href="{href}" data-i="start.s{i}.a">{x(f"start.s{i}.a")}</a></li>')
     return f'<ol class="startlist">{"".join(out)}</ol>'
 
 
@@ -229,7 +233,7 @@ with open(os.path.join(SRC, "index.html"), encoding="utf-8") as f:
     page = f.read()
 blocks = {"stores": stores(), "tabs": tabs(), "faq": faq(), "path": path(), "why": why(), "start": start(), "footer": footer(),
           "hreflang": hreflang(), "v": V, "appstore": APPSTORE, "okx_ref": html.escape(OKX_REF, quote=True),
-          "copy_url": html.escape(COPY_URL, quote=True)}
+          "copy_url": html.escape(COPY_URL, quote=True), "okx_help_kyc": OKX_HELP_KYC, "okx_help_dep": OKX_HELP_DEP}
 
 
 def fill(m):
