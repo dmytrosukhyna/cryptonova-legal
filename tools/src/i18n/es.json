@@ -284,7 +284,7 @@
  "faq.q1": "¿Tengo que pagar?",
  "faq.a1": "No. La app es gratis: la cartera pública, la demo, las lecciones, la hucha y NOVA AI (5 preguntas al día), sin suscripciones ni compras. Si copias a CRYPTO NOVA en OKX, el exchange retiene una parte de tu beneficio para el lead trader; el porcentaje se ve en el perfil antes de empezar.",
  "faq.q2": "¿La app opera por mí?",
- "faq.a2": "No. La app no opera en tu cuenta, no la ve y no guarda dinero. Solo el propio OKX puede repetir operaciones en tu cuenta, si activas el copy trading. Puedes detenerlo en OKX en cualquier momento.",
+ "faq.a2": "No — las operaciones en tu cuenta las repite el propio OKX cuando activas la copia de CRYPTO NOVA; puedes detenerla en OKX en cualquier momento. La app es tu pantalla: en ella ves qué hace el sistema, qué operaciones repite OKX y cómo se mueve la cartera que copias. La app no necesita contraseñas, claves ni dinero: tus fondos se quedan en tu cuenta de OKX.",
  "faq.q3": "¿La cartera pública es real?",
  "faq.a3": "Sí. Es la cuenta real de CRYPTO NOVA en OKX: historial desde el {since}, capital inicial de {start}. El piloto automático del sistema abre las operaciones. Los depósitos y retiros no forman parte del resultado. Los días y las operaciones con pérdidas se muestran igual que los ganadores.",
  "faq.q4": "¿Dónde está mi dinero?",
