@@ -458,14 +458,19 @@ h3{font:650 1.125rem/1.35 var(--body);letter-spacing:-.005em}
 .cnk h3{font:650 1.125rem/1.3 var(--display);text-transform:uppercase;letter-spacing:.02em}
 .cnk p{margin-top:8px;color:var(--soft);font-size:.9375rem;line-height:1.55}
 .cnk .cnhelp{margin-top:10px;font-size:.875rem;font-weight:600}
-.cnk>:nth-last-child(2){margin-bottom:22px}
-.cnk .btn{margin-top:auto;width:100%;min-height:54px}
+.cnk .cnb{margin-bottom:22px}
+.cnk .btn{margin-top:auto;width:100%;min-height:54px;padding:11px 12px}
+/* three steps side by side share their rows: titles, texts and buttons line up, and the buttons are one height even if a
+   label takes two lines in some browser */
+@supports (grid-template-rows:subgrid){
+  @media (min-width:901px){.cnsteps3{row-gap:14px}.cnk{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:0}.cnk .btn{margin-top:0;align-self:stretch}}
+}
 .cninfo{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:14px 18px;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(5,10,26,.45);color:var(--soft);font-size:.9375rem;line-height:1.5}
 .ii{flex:none;display:grid;place-items:center;width:22px;height:22px;margin-top:1px;border-radius:50%;border:1.5px solid var(--ice);color:var(--ice);font:700 .8125rem/1 var(--display)}
 .cnfine{margin-top:14px;display:grid;gap:6px;max-width:92ch}
 .cnfine p{color:var(--muted);font-size:.875rem;line-height:1.55}
 @media (max-width:900px){.cnsteps3{grid-template-columns:1fr}.cnk{padding:20px 18px}.cnk .btn{max-width:420px}}
-@media (max-width:560px){.cnk .btn{max-width:none}}
+@media (max-width:560px){.cnk .btn{max-width:none;font-size:.9375rem}}
 
 /* ---------- app: a static, upright phone (owner 29.10: no tilt, no 3D); the tabs switch its screen ---------- */
 .appgrid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:32px 56px;align-items:start}
