@@ -1,8 +1,8 @@
 /* CRYPTO NOVA — the NOVA AI emblem, alive (owner 29.10: «обнови светящийся шар с нашим фирменным логотипом» and «он должен
    быть динамичным — вращаться, двигаться, как старый»). It is the owner's picture in motion: the glowing «N» core and the
    BTC / ETH / SOL / BNB coins are cut from his picture (assets/img/nova-parts.webp, tools in the site README); the three
-   glowing orbits are drawn live with the picture's geometry, turn slowly in the plane, the coins travel along them, light
-   flows along the rings and the core breathes softly. With prefers-reduced-motion it stands still in the picture's own pose.
+   glowing orbits are drawn live with the picture's geometry, turn in the plane, the coins travel along them, light flows
+   along the rings and the core breathes (owner 29.10 18:08 «немножко больше динамики» — twice the pace of the first cut). With prefers-reduced-motion it stands still in the picture's own pose.
    100-unit design grid, scaled to any size at the screen's pixel density.
    NovaSphere.draw(ctx, cx, cy, half, t, {busy, still}); NovaSphere.mount(canvas, {busy: fn}); NovaSphere.ready(fn) runs fn
    once the picture parts are loaded; every <canvas data-sphere> mounts itself. */
@@ -25,12 +25,12 @@
      coins: [name, angle at t = 0] (t = 0 is the picture's own pose) */
   var K = 50 / 640;
   var ORB = [
-    { g: -1.44, b: 0.41, R: 523 * K, w: 0.34, coins: [] },
-    { g: 0.50, b: 0.35, R: 580 * K, w: 0.26, coins: [["btc", -2.38], ["bnb", 0.62]] },
-    { g: -0.36, b: 0.33, R: 550 * K, w: -0.3, coins: [["eth", 0.42], ["sol", 2.36]] }
+    { g: -1.44, b: 0.41, R: 523 * K, w: 0.68, coins: [] },
+    { g: 0.50, b: 0.35, R: 580 * K, w: 0.52, coins: [["btc", -2.38], ["bnb", 0.62]] },
+    { g: -0.36, b: 0.33, R: 550 * K, w: -0.6, coins: [["eth", 0.42], ["sol", 2.36]] }
   ];
   var FAINT = [{ g: 0.2, b: 0.62, R: 44 }, { g: -0.9, b: 0.5, R: 40 }];
-  var RS = 13.6, CR = 4.1, ROT = 0.045, TEMPO = 1;
+  var RS = 13.6, CR = 4.1, ROT = 0.09, TEMPO = 1;
   var STARS = [];
   (function () { var s = 11; function r() { s = (s * 16807) % 2147483647; return s / 2147483647; }
     for (var i = 0; i < 22; i++) { var a = r() * TAU, d = 17 + r() * 30; STARS.push({ x: Math.cos(a) * d, y: Math.sin(a) * d * 0.9, s: 0.25 + r() * 0.45, ph: r() * TAU }); } })();
@@ -58,7 +58,7 @@
     function path() { g.beginPath(); for (var i = 0; i <= n; i++) { var p = op(o, a0 + (a1 - a0) * i / n, rot); if (i) g.lineTo(p.x, p.y); else g.moveTo(p.x, p.y); } }
     var conic = !!g.createConicGradient, body = "rgba(150,210,255,.9)";
     if (conic) {   // the picture's colours: cold blue and white light with warm gold passages, flowing slowly along the ring
-      body = g.createConicGradient(t * 0.35 * (o.w > 0 ? 1 : -1) + o.g, 0, 0);
+      body = g.createConicGradient(t * 0.6 * (o.w > 0 ? 1 : -1) + o.g, 0, 0);
       body.addColorStop(0, "rgba(80,165,255,.95)"); body.addColorStop(0.16, "rgba(235,248,255,1)"); body.addColorStop(0.27, "rgba(255,196,120,.95)");
       body.addColorStop(0.38, "rgba(120,190,255,.95)"); body.addColorStop(0.62, "rgba(60,140,255,.9)"); body.addColorStop(0.8, "rgba(230,246,255,1)");
       body.addColorStop(0.9, "rgba(255,210,150,.9)"); body.addColorStop(1, "rgba(80,165,255,.95)");
@@ -86,7 +86,7 @@
     }
   }
   function core(g, t, glow, small) {
-    var p = 0.5 + 0.5 * Math.sin(t * 1.25);   // the soft breath
+    var p = 0.5 + 0.5 * Math.sin(t * 1.6);   // the soft breath, a little livelier (owner 29.10 18:08)
     var halo = g.createRadialGradient(0, 0, RS * 0.85, 0, 0, RS * 1.75);
     halo.addColorStop(0, "rgba(90,170,255," + ((0.42 + 0.16 * p) * glow).toFixed(3) + ")"); halo.addColorStop(1, "rgba(90,170,255,0)");
     g.fillStyle = halo; g.beginPath(); g.arc(0, 0, RS * 1.75, 0, TAU); g.fill();
